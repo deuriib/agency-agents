@@ -142,6 +142,12 @@ Building the future, one commit at a time.
 | 📚 [Technical Writer](engineering/engineering-technical-writer.md) | Developer docs, API reference, tutorials | Clear, accurate technical documentation |
 | 💬 [WeChat Mini Program Developer](engineering/engineering-wechat-mini-program-developer.md) | WeChat ecosystem, Mini Programs, payment integration | Building performant apps for the WeChat ecosystem |
 | 👁️ [Code Reviewer](engineering/engineering-code-reviewer.md) | Constructive code review, security, maintainability | PR reviews, code quality gates, mentoring through review |
+| 🔭 [Observability Reviewer](engineering/engineering-review-observability.md) | Telemetry, logs, metrics, traces, alert quality | Diagnosing production failures from evidence, not reproduction |
+| 🛡️ [Reliability Reviewer](engineering/engineering-review-reliability.md) | Correctness, resilience under failure, deterministic behavior | Stress-testing outages, retries, timeouts, and edge-case failure modes |
+| ⚖️ [Risk Reviewer](engineering/engineering-review-risk.md) | Change risk, release safety, business/technical trade-offs | Evaluating whether a release is safe, reversible, and appropriately conditioned |
+| 🔄 [Resilience Reviewer](engineering/engineering-review-resilience.md) | Fault isolation, failure containment, recovery design | Reviewing degraded-mode behavior, retry storms, and auto-healing strategies |
+| 📖 [Readability Reviewer](engineering/engineering-review-readability.md) | Code clarity, naming, maintainability, onboarding speed | Making code understandable by humans and AI agents without guesswork |
+| 🔐 [Security Reviewer](engineering/engineering-review-security.md) | Threat modeling, exploitation analysis, trust-boundary review | Auditing code for attack paths, insecure defaults, and real-world risk |
 | 🗄️ [Database Optimizer](engineering/engineering-database-optimizer.md) | Schema design, query optimization, indexing strategies | PostgreSQL/MySQL tuning, slow query debugging, migration planning |
 | 🌿 [Git Workflow Master](engineering/engineering-git-workflow-master.md) | Branching strategies, conventional commits, advanced Git | Git workflow design, history cleanup, CI-friendly branch management |
 | 🏛️ [Software Architect](engineering/engineering-software-architect.md) | System design, DDD, architectural patterns, trade-off analysis | Architecture decisions, domain modeling, system evolution strategy |
@@ -388,6 +394,7 @@ The unique specialists who don't fit in a box.
 | 🌍 [Cultural Intelligence Strategist](specialized/specialized-cultural-intelligence-strategist.md) | Global UX, representation, cultural exclusion | Ensuring software resonates across cultures |
 | 🗣️ [Developer Advocate](specialized/specialized-developer-advocate.md) | Community building, DX, developer content | Bridging product and developer community |
 | 🔬 [Model QA Specialist](specialized/specialized-model-qa.md) | ML audits, feature analysis, interpretability | End-to-end QA for machine learning models |
+| 🥊 [Refuter Reviewer](specialized/review-refuter.md) | Adversarial reasoning, assumption testing, decision quality | Challenging weak premises, alternative plans, and hidden trade-offs before launch |
 | 🗃️ [ZK Steward](specialized/zk-steward.md) | Knowledge management, Zettelkasten, notes | Building connected, validated knowledge bases |
 | 🔌 [MCP Builder](specialized/specialized-mcp-builder.md) | Model Context Protocol servers, AI agent tooling | Building MCP servers that extend AI agent capabilities |
 | 📄 [Document Generator](specialized/specialized-document-generator.md) | PDF, PPTX, DOCX, XLSX generation from code | Professional document creation, reports, data visualization |
