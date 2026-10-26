@@ -59,6 +59,7 @@ cp engineering/*.md ~/.claude/agents/
 ### Option 3: Use as Reference
 
 Each agent file contains:
+
 - Identity & personality traits
 - Core mission & workflows
 - Technical deliverables with code examples
@@ -124,7 +125,7 @@ See the [Multi-Tool Integrations](#-multi-tool-integrations) section below for f
 Building the future, one commit at a time.
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 🎨 [Frontend Developer](engineering/engineering-frontend-developer.md) | React/Vue/Angular, UI implementation, performance | Modern web apps, pixel-perfect UIs, Core Web Vitals optimization |
 | 🏗️ [Backend Architect](engineering/engineering-backend-architect.md) | API design, database architecture, scalability | Server-side systems, microservices, cloud infrastructure |
 | 📱 [Mobile App Builder](engineering/engineering-mobile-app-builder.md) | iOS/Android, React Native, Flutter | Native and cross-platform mobile applications |
@@ -202,7 +203,7 @@ Building the future, one commit at a time.
 Making it beautiful, usable, and delightful.
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 🎯 [UI Designer](design/design-ui-designer.md) | Visual design, component libraries, design systems | Interface creation, brand consistency, component design |
 | 🔍 [UX Researcher](design/design-ux-researcher.md) | User testing, behavior analysis, research | Understanding users, usability testing, design insights |
 | 🏛️ [UX Architect](design/design-ux-architect.md) | Technical architecture, CSS systems, implementation | Developer-friendly foundations, implementation guidance |
@@ -233,7 +234,7 @@ Turning ad spend into measurable business outcomes.
 Turning pipeline into revenue through craft, not CRM busywork.
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 🎯 [Outbound Strategist](sales/sales-outbound-strategist.md) | Signal-based prospecting, multi-channel sequences, ICP targeting | Building pipeline through research-driven outreach, not volume |
 | 🔍 [Discovery Coach](sales/sales-discovery-coach.md) | SPIN, Gap Selling, Sandler — question design and call structure | Preparing for discovery calls, qualifying opportunities, coaching reps |
 | ♟️ [Deal Strategist](sales/sales-deal-strategist.md) | MEDDPICC qualification, competitive positioning, win planning | Scoring deals, exposing pipeline risk, building win strategies |
@@ -250,7 +251,7 @@ Turning pipeline into revenue through craft, not CRM busywork.
 Growing your audience, one authentic interaction at a time.
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 🚀 [Growth Hacker](marketing/marketing-growth-hacker.md) | Rapid user acquisition, viral loops, experiments | Explosive growth, user acquisition, conversion optimization |
 | 📝 [Content Creator](marketing/marketing-content-creator.md) | Multi-platform content, editorial calendars | Content strategy, copywriting, brand storytelling |
 | 🐦 [Twitter Engager](marketing/marketing-twitter-engager.md) | Real-time engagement, thought leadership | Twitter strategy, LinkedIn campaigns, professional social |
@@ -294,7 +295,7 @@ Growing your audience, one authentic interaction at a time.
 Building the right thing at the right time.
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 🎯 [Sprint Prioritizer](product/product-sprint-prioritizer.md) | Agile planning, feature prioritization | Sprint planning, resource allocation, backlog management |
 | 🔍 [Trend Researcher](product/product-trend-researcher.md) | Market intelligence, competitive analysis | Market research, opportunity assessment, trend identification |
 | 💬 [Feedback Synthesizer](product/product-feedback-synthesizer.md) | User feedback analysis, insights extraction | Feedback analysis, user insights, product priorities |
@@ -307,7 +308,7 @@ Building the right thing at the right time.
 Keeping the trains running on time (and under budget).
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 🎬 [Studio Producer](project-management/project-management-studio-producer.md) | High-level orchestration, portfolio management | Multi-project oversight, strategic alignment, resource allocation |
 | 🐑 [Project Shepherd](project-management/project-management-project-shepherd.md) | Cross-functional coordination, timeline management | End-to-end project coordination, stakeholder management |
 | ⚙️ [Studio Operations](project-management/project-management-studio-operations.md) | Day-to-day efficiency, process optimization | Operational excellence, team support, productivity |
@@ -321,7 +322,7 @@ Keeping the trains running on time (and under budget).
 Breaking things so users don't have to.
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 📸 [Evidence Collector](testing/testing-evidence-collector.md) | Screenshot-based QA, visual proof | UI testing, visual verification, bug documentation |
 | 🔍 [Reality Checker](testing/testing-reality-checker.md) | Evidence-based certification, quality gates | Production readiness, quality approval, release certification |
 | 📊 [Test Results Analyzer](testing/testing-test-results-analyzer.md) | Test evaluation, metrics analysis | Test output analysis, quality insights, coverage reporting |
@@ -337,7 +338,7 @@ Breaking things so users don't have to.
 Defending the stack — from secure-by-design architecture to breach response.
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 🛡️ [Security Architect](security/security-architect.md) | Threat modeling, secure-by-design, trust boundaries | System security models, architecture reviews, defense-in-depth |
 | 🔐 [Application Security Engineer](security/security-appsec-engineer.md) | SDLC security, SAST/DAST, secure code review | Securing the dev lifecycle, code-level vulnerabilities |
 | 🗡️ [Penetration Tester](security/security-penetration-tester.md) | Authorized pentests, red team ops, exploitation | Finding exploitable weaknesses before attackers do |
@@ -356,7 +357,7 @@ Defending the stack — from secure-by-design architecture to breach response.
 The backbone of the operation.
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 💬 [Support Responder](support/support-support-responder.md) | Customer service, issue resolution | Customer support, user experience, support operations |
 | 📊 [Analytics Reporter](support/support-analytics-reporter.md) | Data analysis, dashboards, insights | Business intelligence, KPI tracking, data visualization |
 | 💰 [Finance Tracker](support/support-finance-tracker.md) | Financial planning, budget management | Financial analysis, cash flow, business performance |
@@ -369,7 +370,7 @@ The backbone of the operation.
 Building the immersive future.
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 🏗️ [XR Interface Architect](spatial-computing/xr-interface-architect.md) | Spatial interaction design, immersive UX | AR/VR/XR interface design, spatial computing UX |
 | 💻 [macOS Spatial/Metal Engineer](spatial-computing/macos-spatial-metal-engineer.md) | Swift, Metal, high-performance 3D | macOS spatial computing, Vision Pro native apps |
 | 🌐 [XR Immersive Developer](spatial-computing/xr-immersive-developer.md) | WebXR, browser-based AR/VR | Browser-based immersive experiences, WebXR apps |
@@ -382,7 +383,7 @@ Building the immersive future.
 The unique specialists who don't fit in a box.
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 🎭 [Agents Orchestrator](specialized/agents-orchestrator.md) | Multi-agent coordination, workflow management | Complex projects requiring multiple agent coordination |
 | 🔍 [LSP/Index Engineer](specialized/lsp-index-engineer.md) | Language Server Protocol, code intelligence | Code intelligence systems, LSP implementation, semantic indexing |
 | 📥 [Sales Data Extraction Agent](specialized/sales-data-extraction-agent.md) | Excel monitoring, sales metric extraction | Sales data ingestion, MTD/YTD/Year End metrics |
@@ -442,13 +443,14 @@ The unique specialists who don't fit in a box.
 | 🧡 [Aging Parent Care Companion](specialized/healthcare-aging-parent-care-companion.md) | Family caregiver decision-support | Appointment/medication coordination, care-team comms, caregiver wellbeing (HIPAA-aligned) |
 | 🏛️ [Master Plan Architect](specialized/specialized-master-plan-architect.md) | Architectural teaching, red-team plan critique | Deep architecture teaching, risk critique, comprehensive Markdown implementation plans (no code execution) |
 | 🎧 [Focus Music Architect](specialized/specialized-focus-music-architect.md) | Instrumental focus-music prompt engineering, neuroacoustics | Soundscape architecture, BPM curves, binaural layers for generative audio models |
+|   [Vasquez](specialized/vasquez.md) | Agency-Flow process steward | Agency-Flow process gate for methodology compliance |
 
 ### 💵 Finance Division
 
 Accounting, financial analysis, tax strategy, and investment research specialists.
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 📒 [Bookkeeper & Controller](finance/finance-bookkeeper-controller.md) | Month-end close, reconciliation, GAAP compliance, internal controls | Day-to-day accounting operations, audit readiness, financial record-keeping |
 | 📊 [Financial Analyst](finance/finance-financial-analyst.md) | Financial modeling, forecasting, scenario analysis, decision support | Three-statement models, variance analysis, data-driven business intelligence |
 | 📈 [FP&A Analyst](finance/finance-fpa-analyst.md) | Budgeting, rolling forecasts, variance analysis, business reviews | Annual operating plans, monthly business reviews, strategic resource allocation |
@@ -462,7 +464,7 @@ Building worlds, systems, and experiences across every major engine.
 #### Cross-Engine Agents (Engine-Agnostic)
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 🎯 [Game Designer](game-development/game-designer.md) | Systems design, GDD authorship, economy balancing, gameplay loops | Designing game mechanics, progression systems, writing design documents |
 | 🗺️ [Level Designer](game-development/level-designer.md) | Layout theory, pacing, encounter design, environmental storytelling | Building levels, designing encounter flow, spatial narrative |
 | 🎨 [Technical Artist](game-development/technical-artist.md) | Shaders, VFX, LOD pipeline, art-to-engine optimization | Bridging art and engineering, shader authoring, performance-safe asset pipelines |
@@ -473,7 +475,7 @@ Building worlds, systems, and experiences across every major engine.
 #### Unity
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 🏗️ [Unity Architect](game-development/unity/unity-architect.md) | ScriptableObjects, data-driven modularity, DOTS/ECS | Large-scale Unity projects, data-driven system design, ECS performance work |
 | ✨ [Unity Shader Graph Artist](game-development/unity/unity-shader-graph-artist.md) | Shader Graph, HLSL, URP/HDRP, Renderer Features | Custom Unity materials, VFX shaders, post-processing passes |
 | 🌐 [Unity Multiplayer Engineer](game-development/unity/unity-multiplayer-engineer.md) | Netcode for GameObjects, Unity Relay/Lobby, server authority, prediction | Online Unity games, client prediction, Unity Gaming Services integration |
@@ -482,7 +484,7 @@ Building worlds, systems, and experiences across every major engine.
 #### Unreal Engine
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | ⚙️ [Unreal Systems Engineer](game-development/unreal-engine/unreal-systems-engineer.md) | C++/Blueprint hybrid, GAS, Nanite constraints, memory management | Complex Unreal gameplay systems, Gameplay Ability System, engine-level C++ |
 | 🎨 [Unreal Technical Artist](game-development/unreal-engine/unreal-technical-artist.md) | Material Editor, Niagara, PCG, Substrate | Unreal materials, Niagara VFX, procedural content generation |
 | 🌐 [Unreal Multiplayer Architect](game-development/unreal-engine/unreal-multiplayer-architect.md) | Actor replication, GameMode/GameState hierarchy, dedicated server | Unreal online games, replication graphs, server authoritative Unreal |
@@ -491,7 +493,7 @@ Building worlds, systems, and experiences across every major engine.
 #### Godot
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 📜 [Godot Gameplay Scripter](game-development/godot/godot-gameplay-scripter.md) | GDScript 2.0, signals, composition, static typing | Godot gameplay systems, scene composition, performance-conscious GDScript |
 | 🌐 [Godot Multiplayer Engineer](game-development/godot/godot-multiplayer-engineer.md) | MultiplayerAPI, ENet/WebRTC, RPCs, authority model | Online Godot games, scene replication, server-authoritative Godot |
 | ✨ [Godot Shader Developer](game-development/godot/godot-shader-developer.md) | Godot shading language, VisualShader, RenderingDevice | Custom Godot materials, 2D/3D effects, post-processing, compute shaders |
@@ -505,7 +507,7 @@ Building worlds, systems, and experiences across every major engine.
 #### Roblox Studio
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | ⚙️ [Roblox Systems Scripter](game-development/roblox-studio/roblox-systems-scripter.md) | Luau, RemoteEvents/Functions, DataStore, server-authoritative module architecture | Building secure Roblox game systems, client-server communication, data persistence |
 | 🎯 [Roblox Experience Designer](game-development/roblox-studio/roblox-experience-designer.md) | Engagement loops, monetization, D1/D7 retention, onboarding flow | Designing Roblox game loops, Game Passes, daily rewards, player retention |
 | 👗 [Roblox Avatar Creator](game-development/roblox-studio/roblox-avatar-creator.md) | UGC pipeline, accessory rigging, Creator Marketplace submission | Roblox UGC items, HumanoidDescription customization, in-experience avatar shops |
@@ -515,7 +517,7 @@ Building worlds, systems, and experiences across every major engine.
 Scholarly rigor for world-building, storytelling, and narrative design.
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 🌍 [Anthropologist](academic/academic-anthropologist.md) | Cultural systems, kinship, rituals, belief systems | Designing culturally coherent societies with internal logic |
 | 🌐 [Geographer](academic/academic-geographer.md) | Physical/human geography, climate, cartography | Building geographically coherent worlds with realistic terrain and settlements |
 | 📚 [Historian](academic/academic-historian.md) | Historical analysis, periodization, material culture | Validating historical coherence, enriching settings with authentic period detail |
@@ -530,7 +532,7 @@ Scholarly rigor for world-building, storytelling, and narrative design.
 Mapping the Earth, analyzing the built world, and extracting intelligence from geospatial data.
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 🧠 [Technical Consultant](gis/gis-technical-consultant.md) | GIS strategy, gap analysis, technology roadmaps, digital transformation | Understanding business needs, selecting the right geospatial stack, planning multi-phase GIS programs |
 | 🔧 [Solution Engineer](gis/gis-solution-engineer.md) | Esri + FOSS4G prototype building, PoC delivery, technical feasibility | Building working demos, validating technical approaches, pre-sales support |
 | 🖥️ [GIS Analyst](gis/gis-analyst.md) | Map production, data QC, symbology, layouts, spatial queries | Day-to-day GIS operations, creating publication-ready maps, maintaining data integrity |
@@ -552,7 +554,7 @@ Mapping the Earth, analyzing the built world, and extracting intelligence from g
 Building AI agents for regulated clinical and sovereign health contexts.
 
 | Agent | Specialty | When to Use |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | 🩺 [Clinical Evidence Agent](healthcare/healthcare-clinical-evidence-agent.md) | Evidence standards, validated vs unvalidated claims, diagnostic authority boundaries | Making clinical claims credibly without overstepping into diagnostic authority |
 | 🌍 [Sovereign Health Systems Agent](healthcare/healthcare-sovereign-health-systems-agent.md) | Government health mandates, UHC policy, emerging market deployment | Health tech teams operating at the intersection of national health infrastructure and sovereign health policy |
 | 🧭 [Healthcare Innovation Strategist](healthcare/healthcare-innovation-strategist.md) | Narrative architecture for healthcare founders across investor, regulatory, sovereign, and clinical audiences | Healthcare founders who need to translate clinical and financial complexity into language that moves capital and builds trust |
@@ -574,6 +576,7 @@ Finding, evaluating, and synthesizing existing evidence rather than generating n
 ### Scenario 1: Building a Startup MVP
 
 **Your Team**:
+
 1. 🎨 **Frontend Developer** - Build the React app
 2. 🏗️ **Backend Architect** - Design the API and database
 3. 🚀 **Growth Hacker** - Plan user acquisition
@@ -587,6 +590,7 @@ Finding, evaluating, and synthesizing existing evidence rather than generating n
 ### Scenario 2: Marketing Campaign Launch
 
 **Your Team**:
+
 1. 📝 **Content Creator** - Develop campaign content
 2. 🐦 **Twitter Engager** - Twitter strategy and execution
 3. 📸 **Instagram Curator** - Visual content and stories
@@ -600,6 +604,7 @@ Finding, evaluating, and synthesizing existing evidence rather than generating n
 ### Scenario 3: Enterprise Feature Development
 
 **Your Team**:
+
 1. 👔 **Senior Project Manager** - Scope and task planning
 2. 💎 **Senior Developer** - Complex implementation
 3. 🎨 **UI Designer** - Design system and components
@@ -697,15 +702,18 @@ Each agent is designed with:
 
 ## 🎁 What Makes This Special?
 
-### Unlike Generic AI Prompts:
+### Unlike Generic AI Prompts
+
 - ❌ Generic "Act as a developer" prompts
 - ✅ Deep specialization with personality and process
 
-### Unlike Prompt Libraries:
+### Unlike Prompt Libraries
+
 - ❌ One-off prompt collections
 - ✅ Comprehensive agent systems with workflows and deliverables
 
-### Unlike AI Tools:
+### Unlike AI Tools
+
 - ❌ Black box tools you can't customize
 - ✅ Transparent, forkable, adaptable agent personalities
 
@@ -768,12 +776,14 @@ The Agency works natively with Claude Code, and ships conversion + install scrip
 ### ⚡ Quick Install
 
 **Step 1 -- Generate integration files:**
+
 ```bash
 ./scripts/convert.sh
 # Faster (parallel, output order may vary): ./scripts/convert.sh --parallel
 ```
 
 **Step 2 -- Install (interactive, auto-detects your tools):**
+
 ```bash
 ./scripts/install.sh
 # Faster (parallel, output order may vary): ./scripts/install.sh --no-interactive --parallel
@@ -808,6 +818,7 @@ The installer scans your system for installed tools, shows a checkbox UI, and le
 ```
 
 **Or install a specific tool directly:**
+
 ```bash
 ./scripts/install.sh --tool cursor
 ./scripts/install.sh --tool opencode
@@ -819,6 +830,7 @@ The installer scans your system for installed tools, shows a checkbox UI, and le
 ```
 
 **Non-interactive (CI/scripts):**
+
 ```bash
 ./scripts/install.sh --no-interactive --tool all
 ```
@@ -847,6 +859,7 @@ Agents are copied directly from the repo into `~/.claude/agents/` -- no conversi
 ```
 
 Then activate in Claude Code:
+
 ```
 Use the Frontend Developer agent to review this component.
 ```
@@ -864,6 +877,7 @@ Agents are copied directly from the repo into `~/.github/agents/` and `~/.copilo
 ```
 
 Then activate in GitHub Copilot:
+
 ```
 Use the Frontend Developer agent to review this component.
 ```
@@ -881,6 +895,7 @@ Each agent becomes a skill in `~/.gemini/config/skills/agency-<slug>/`.
 ```
 
 Activate in Gemini with Antigravity:
+
 ```
 @agency-frontend-developer review this React component
 ```
@@ -913,12 +928,14 @@ cd /your/project
 ```
 
 Or install globally:
+
 ```bash
 mkdir -p ~/.config/opencode/agents
 cp integrations/opencode/agents/*.md ~/.config/opencode/agents/
 ```
 
 Activate in OpenCode:
+
 ```
 @backend-architect design this API.
 ```
@@ -937,6 +954,7 @@ cd /your/project
 ```
 
 Rules are auto-applied when Cursor detects them in the project. Reference them explicitly:
+
 ```
 Use the @security-engineer rules to review this code.
 ```
@@ -958,11 +976,13 @@ cd /your/project
 ```
 
 Then reference agents in your Aider session:
+
 ```
 Use the Frontend Developer agent to refactor this component.
 ```
 
 When you want an agent's full instructions, read its file in:
+
 ```
 /read-only /path/to/agency-agents/engineering/engineering-frontend-developer.md
 ```
@@ -981,6 +1001,7 @@ cd /your/project
 ```
 
 Reference agents in Windsurf's Cascade:
+
 ```
 Use the Reality Checker agent to verify this is production ready.
 ```
@@ -1020,6 +1041,7 @@ cd /your/project
 ```
 
 **Usage in Qwen Code:**
+
 - Reference by name: `Use the frontend-developer agent to review this component`
 - Or let Qwen auto-delegate based on task context
 - Manage via `/agents` command in interactive mode
@@ -1040,6 +1062,7 @@ Agents are converted to Kimi Code CLI format (YAML + system prompt) and installe
 ```
 
 **Usage with Kimi Code:**
+
 ```bash
 # Use an agent
 kimi --agent-file ~/.config/kimi/agents/frontend-developer/agent.yaml
@@ -1065,6 +1088,7 @@ Each agent is converted into a Codex custom agent TOML file and installed to `~/
 ```
 
 Then reference the custom agent by name in Codex:
+
 ```
 Use the Frontend Developer agent to review this component.
 ```
@@ -1083,16 +1107,19 @@ Each agent becomes a DSH skill (`SKILL.md` with Agent-Skills frontmatter) in `${
 ```
 
 Custom user home:
+
 ```bash
 DSH_HOME=~/.config/dsh ./scripts/install.sh --tool dsh
 ```
 
 Project-scoped install (run from your project root):
+
 ```bash
 DSH_SKILLS_DIR=.dsh/skills ./scripts/install.sh --tool dsh
 ```
 
 Activate in DeepSeek Harness — user- and model-invocable by default:
+
 ```
 /agency-frontend-developer review this React component
 ```
@@ -1132,7 +1159,7 @@ When you add new agents or edit existing ones, regenerate all integration files:
 Community-maintained translations and regional adaptations. These are independently maintained -- see each repo for coverage and version compatibility.
 
 | Language | Maintainer | Link | Notes |
-|----------|-----------|------|-------|
+| ---------- | ----------- | ------ | ------- |
 | 🇨🇳 简体中文 (zh-CN) | [@jnMetaCode](https://github.com/jnMetaCode) | [agency-agents-zh](https://github.com/jnMetaCode/agency-agents-zh) | 141 translated agents + 46 China-market originals |
 | 🇨🇳 简体中文 (zh-CN) | [@dsclca12](https://github.com/dsclca12) | [agent-teams](https://github.com/dsclca12/agent-teams) | Independent translation with Bilibili, WeChat, Xiaohongshu localization |
 | 🇧🇷 Português brasileiro (pt-BR) | [@jnMetaCode](https://github.com/jnMetaCode) | [agency-agents-pt-BR](https://github.com/jnMetaCode/agency-agents-pt-BR) | 184 upstream agents translated; Brazil-market PRs welcome |
