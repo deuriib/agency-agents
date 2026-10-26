@@ -136,7 +136,7 @@ def verify(
                 if agent: all_agents.append(agent)
 
     with console.status(f"[bold yellow]Verifying hashes for {tool}..."):
-   mismatches = hash_manager.verify_manifest(manifest_path, all_agents, tool, engine)
+        mismatches = hash_manager.verify_manifest(manifest_path, all_agents, tool, engine)
 
     if mismatches:
         console.print("[bold red]❌ Hash Mismatches found:[/bold red]")
