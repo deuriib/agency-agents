@@ -1,0 +1,33 @@
+name: Project Quality Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Lint, Tools, and Divisions
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v1
+
+      - name: Install Dependencies
+        run: uv sync
+
+      - name: Run Linting
+        run: uv run python -m agency_agents lint
+
+      - name: Verify Hash Manifest
+        run: uv run python -m agency_agents verify claude-code
+
+      - name: Run Tests
+        run: uv run pytest src/agency_agents/tests

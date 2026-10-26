@@ -1,0 +1,47 @@
+from pydantic import BaseModel, Field, field_validator
+from typing import Dict, Optional, List, Any
+import re
+import unicodedata
+
+class AgentFrontmatter(BaseModel):
+    """
+    Represents the YAML frontmatter of an agent file.
+    Equivalent to the parsing logic in scripts/lib.sh.
+    """
+    name: str = Field(..., description="The human-readable name of the agent")
+    description: Optional[str] = None
+    version: Optional[str] = "1.0.0"
+    tags: List[str] = Field(default_factory=list)
+    icon: Optional[str] = None
+    vibe: Optional[str] = None
+    color: Optional[str] = None
+    extra: Dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("name")
+    @classmethod
+    def name_must_be_present(cls, v):
+        if not v or not v.strip():
+            raise ValueError("Agent name cannot be empty")
+        return v
+
+class Agent(BaseModel):
+    """
+    The complete Agent domain model.
+    """
+    slug: str
+    path: str
+    frontmatter: AgentFrontmatter
+    body: str
+
+    @property
+    def filename(self) -> str:
+        return f"{self.slug}.md"
+
+def slugify(text: str) -> str:
+    """
+    Standardized slugification: "Frontend Developer" -> "frontend-developer"
+    Replaces the bash slugify implementation in lib.sh.
+    """
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+    text = re.sub(r'[^\w\s-]', '', text).strip().lower()
+    return re.sub(r'[-\s]+', '-', text)
