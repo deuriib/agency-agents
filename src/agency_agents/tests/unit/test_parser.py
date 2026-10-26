@@ -23,6 +23,50 @@ def test_parser_missing_frontmatter():
     agent = parser.create_agent("test.md", content)
     assert agent is None
 
+
+def test_parser_antigravity_subagent():
+    """Verify that subagent: true is correctly parsed as a boolean."""
+    content = "---\nname: Antigravity Agent\nsubagent: true\ndescription: A subagent\n---\nBody"
+    parser = MarkdownParser()
+    agent = parser.create_agent("antigravity.md", content)
+    
+    assert agent is not None
+    assert agent.frontmatter.subagent is True
+
+def test_parser_antigravity_not_subagent():
+    """Verify that subagent: false is correctly parsed as a boolean."""
+    content = "---\nname: Regular Agent\nsubagent: false\ndescription: A regular agent\n---\nBody"
+    parser = MarkdownParser()
+    agent = parser.create_agent("agent.md", content)
+    
+    assert agent is not None
+    assert agent.frontmatter.subagent is False
+
+def test_parser_boolean_case_insensitivity():
+    """Verify boolean parsing is case-insensitive (TRUE, True, tRUe)."""
+    cases = ["true", "True", "TRUE", "tRUe", "false", "False", "FALSE", "fAlSe"]
+    expected = [True] * 4 + [False] * 4
+    
+    parser = MarkdownParser()
+    for val, exp in zip(cases, expected):
+        content = f"---\nname: Test\nsubagent: {val}\n---\nBody"
+        agent = parser.create_agent("test.md", content)
+        assert agent.frontmatter.subagent == exp
+
+def test_parser_invalid_boolean_value():
+    """Verify that non-boolean values for subagent remain strings or are handled by Pydantic."""
+    content = "---\nname: Test\nsubagent: maybe\n---\nBody"
+    parser = MarkdownParser()
+    agent = parser.create_agent("test.md", content)
+    # It should return None because Pydantic validation fails for 'maybe' as bool
+    assert agent is None
+
+def test_parser_missing_subagent():
+    """Verify that omitting subagent results in None (Optional)."""
+    content = "---\nname: Test\n---\nBody"
+    parser = MarkdownParser()
+    agent = parser.create_agent("test.md", content)
+    assert agent.frontmatter.subagent is True
 def test_parser_invalid_frontmatter_fields():
     content = "---\nwrong_field: value\n---\nBody"
     parser = MarkdownParser()

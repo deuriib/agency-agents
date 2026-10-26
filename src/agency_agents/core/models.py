@@ -15,6 +15,7 @@ class AgentFrontmatter(BaseModel):
     icon: Optional[str] = None
     vibe: Optional[str] = None
     color: Optional[str] = None
+    subagent: Optional[bool] = True
     extra: Dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("name")
@@ -24,6 +25,35 @@ class AgentFrontmatter(BaseModel):
             raise ValueError("Agent name cannot be empty")
         return v
 
+    def to_yaml(self) -> str:
+        """Converts the frontmatter model back to a YAML string."""
+        lines = []
+        # Explicitly handle standard fields to keep order and formatting
+        fields = [
+            ("name", self.name),
+            ("description", self.description),
+            ("version", self.version),
+            ("tags", self.tags),
+            ("icon", self.icon),
+            ("vibe", self.vibe),
+            ("color", self.color),
+            ("subagent", self.subagent),
+        ]
+        for k, v in fields:
+            if v is not None:
+                # Format tags as a simple YAML list
+                if isinstance(v, list):
+                    if not v: continue
+                    v_str = f"[{', '.join(map(str, v))}]"
+                else:
+                    v_str = str(v).lower() if isinstance(v, bool) else str(v)
+                lines.append(f"{k}: {v_str}")
+        
+        # Add extra fields
+        for k, v in self.extra.items():
+            lines.append(f"{k}: {v}")
+            
+        return "\n".join(lines)
 class Agent(BaseModel):
     """
     The complete Agent domain model.

@@ -18,19 +18,48 @@ class BaseRenderer:
         """Returns a list of (filename, content) tuples."""
         raise NotImplementedError
 
+    def frontmatter_overrides(self, frontmatter: Any) -> None:
+        """Strategy hook to inject tool-specific frontmatter. Default: no change."""
+        pass
+
+    def _get_effective_frontmatter(self, agent: Any) -> Any:
+        """Helper to get a copy of frontmatter with overrides applied."""
+        import copy
+        fm = copy.copy(agent.frontmatter)
+        self.frontmatter_overrides(fm)
+        return fm
+
+    def render(self, context: RenderContext) -> List[Tuple[str, str]]:
+        """Returns a list of (filename, content) tuples."""
+        raise NotImplementedError
+
+    def frontmatter_overrides(self, frontmatter: Any) -> None:
+        """Strategy hook to inject tool-specific frontmatter. Default: no change."""
+        pass
+
 class IdentityRenderer(BaseRenderer):
     def render(self, context: RenderContext) -> List[Tuple[str, str]]:
-        return [("agent.md", context.agent.body)]
+        fm = self._get_effective_frontmatter(context.agent)
+        content = f"---\\n{fm.to_yaml()}\\n---\\n{context.agent.body}"
+        return [("agent.md", content)]
+
+class AntigravityRenderer(IdentityRenderer):
+    def frontmatter_overrides(self, frontmatter: Any) -> None:
+        frontmatter.subagent = True
+
+class OpencodeRenderer(IdentityRenderer):
+    def frontmatter_overrides(self, frontmatter: Any) -> None:
+        frontmatter.extra["mode"] = "subagent"
 
 class CodexTomlRenderer(BaseRenderer):
     def render(self, context: RenderContext) -> List[Tuple[str, str]]:
-        fm = context.agent.frontmatter
+        fm = self._get_effective_frontmatter(context.agent)
         content = f'name = "{fm.name}"\ndescription = "{fm.description or ""}"\nbody = """{context.agent.body}"""'
         return [("agent.toml", content)]
 
 class OpenClawRenderer(BaseRenderer):
     def render(self, context: RenderContext) -> List[Tuple[str, str]]:
-        fm = context.agent.frontmatter
+        fm = self._get_effective_frontmatter(context.agent)
         return [
             ("SOUL.md", f"# Soul: {fm.name}\n\n{context.agent.body}"),
             ("AGENTS.md", f"# Agent: {fm.name}\n\n{fm.description or ''}"),
@@ -48,7 +77,7 @@ class QwenRenderer(BaseRenderer):
         return ", ".join([mapping.get(t, t) for t in tools])
 
     def render(self, context: RenderContext) -> List[Tuple[str, str]]:
-        fm = context.agent.frontmatter
+        fm = self._get_effective_frontmatter(context.agent)
         tools = fm.extra.get("tools", "")
         mapped_tools = self._map_tools(tools)
         content = f"--- \nname: {fm.name}\ntools: {mapped_tools}\n---\n\n{context.agent.body}"
@@ -56,13 +85,31 @@ class QwenRenderer(BaseRenderer):
 
 class VibeRenderer(BaseRenderer):
     def render(self, context: RenderContext) -> List[Tuple[str, str, str]]:
-        fm = context.agent.frontmatter
+        fm = self._get_effective_frontmatter(context.agent)
         toml_content = f'name = "{fm.name}"\ncolor = "{fm.color or "#FFFFFF"}"\n'
         md_content = f"# {fm.name}\n\n{context.agent.body}"
         return [
             ("agent.toml", toml_content),
             ("prompt.md", md_content)
         ]
+
+class KimiRenderer(BaseRenderer):
+    def render(self, context: RenderContext) -> List[Tuple[str, str]]:
+        fm = self._get_effective_frontmatter(context.agent)
+        return [
+            ("agent.yaml", f"name: {fm.name}\nversion: {fm.version}"),
+            ("system.md", context.agent.body)
+        ]
+
+class ZCodeRenderer(IdentityRenderer):
+    def render(self, context: RenderContext) -> List[Tuple[str, str]]:
+        fm = self._get_effective_frontmatter(context.agent)
+        content = f"---\\n{fm.to_yaml()}\\n---\\n{context.agent.body}"
+        return [("agent.md", content)]
+
+class OsaurusRenderer(BaseRenderer):
+    def render(self, context: RenderContext) -> List[Tuple[str, str]]:
+        return [("SKILL.md", context.agent.body)]
 
 class KimiRenderer(BaseRenderer):
     def render(self, context: RenderContext) -> List[Tuple[str, str]]:
@@ -74,7 +121,8 @@ class KimiRenderer(BaseRenderer):
 
 class ZCodeRenderer(BaseRenderer):
     def render(self, context: RenderContext) -> List[Tuple[str, str]]:
-        return [("agent.md", context.agent.body)]
+        content = f"---\\n{context.agent.frontmatter.to_yaml()}\\n---\\n{context.agent.body}"
+        return [("agent.md", content)]
 
 class OsaurusRenderer(BaseRenderer):
     def render(self, context: RenderContext) -> List[Tuple[str, str]]:
@@ -97,6 +145,7 @@ def _parallel_render_worker(agent_data: tuple):
         "zcode-md": ZCodeRenderer(),
         "skill-md": OsaurusRenderer(),
     }
+
     renderer = renderers.get(format_name, IdentityRenderer())
     context = RenderContext(agent, tool, Path(""))
     return (agent.slug, renderer.render(context))
