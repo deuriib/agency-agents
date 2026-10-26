@@ -1,0 +1,37 @@
+[tools]
+python = "3.13"
+uv = "0.12.12"
+
+[tasks.lint]
+description = "Perform full project linting: divisions, tools, and agents"
+run = "uv run python -m agency_agents lint"
+
+[tasks.install]
+description = "Install agents for all tools"
+run = "uv run python -m agency_agents install"
+
+[tasks.install-interactive]
+description = "Interactive wizard for agent installation"
+run = "uv run python -m agency_agents install --interactive"
+
+[tasks.test]
+description = "Run the full suite of pytests"
+run = "uv run pytest src/agency_agents/tests"
+
+[tasks.verify]
+description = "Verify conversion outputs against SHA256 manifest"
+run = "uv run python -m agency_agents verify"
+
+[tasks.update-manifest]
+description = "Regenerate the SHA256 manifest for tools"
+run = "uv run python -m agency_agents update-manifest"
+
+[tasks.check]
+description = "Run all validation and tests"
+depends = ["lint", "test"]
+run = "echo All checks passed!"
+
+[tasks.full-pipeline]
+description = "Complete pipeline: lint, test, verify and install"
+depends = ["lint", "test", "verify", "install"]
+run = "echo Pipeline completed successfully!"
