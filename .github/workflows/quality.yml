@@ -21,7 +21,7 @@ jobs:
         uses: astral-sh/setup-uv@v1
 
       - name: Install Dependencies
-        run: uv pip install typer rich pydantic pytest
+        run: uv sync
 
       - name: Run Linting
         run: uv run python -m agency_agents lint
