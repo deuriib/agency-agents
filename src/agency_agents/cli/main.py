@@ -17,6 +17,7 @@ from agency_agents.infrastructure.catalog import CatalogManager
 from agency_agents.infrastructure.tui import TUIWizard
 from agency_agents.infrastructure.hash_manager import HashManager
 from agency_agents.core.converter import ConverterEngine
+from agency_agents.core.originality import run_originality_check
 
 # Windows consoles default to cp1252 and crash on the / of status output.
 # Force UTF-8 before rich builds its console so the CLI is portable.
@@ -299,6 +300,19 @@ def update_manifest(
     manifest_path.write_text(content, encoding='utf-8')
     
     console.print(f"[bold green]✓ Manifest updated successfully at {manifest_path}[/bold green]")
+
+@app.command("check-originality")
+def check_originality(
+    files: Optional[List[Path]] = typer.Argument(None, help="Agent .md files to check (default: audit the whole roster)"),
+    fail: float = typer.Option(40.0, "--fail", help="FAIL threshold percent (default 40)"),
+    warn: float = typer.Option(20.0, "--warn", help="WARN threshold percent (default 20)"),
+):
+    """Flag agent files that substantially duplicate an existing agent."""
+    root_dir = Path(".").absolute()
+    code = run_originality_check(files, repo_root=root_dir, fail_threshold=fail, warn_threshold=warn)
+    if code != 0:
+        raise typer.Exit(code=code)
+
 
 if __name__ == "__main__":
     app()
