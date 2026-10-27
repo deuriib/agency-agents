@@ -50,7 +50,7 @@ class IdentityRenderer(BaseRenderer):
 class AntigravityRenderer(IdentityRenderer):
     """Antigravity agents are always registered as subagents."""
     def frontmatter_overrides(self, frontmatter: Any) -> None:
-        frontmatter.subagent = True
+        frontmatter.extra["subagent"] = True
 
 
 class OpencodeRenderer(IdentityRenderer):

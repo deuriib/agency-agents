@@ -15,7 +15,6 @@ class AgentFrontmatter(BaseModel):
     icon: Optional[str] = None
     vibe: Optional[str] = None
     color: Optional[str] = None
-    subagent: Optional[bool] = True
     extra: Dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("name")
@@ -37,7 +36,6 @@ class AgentFrontmatter(BaseModel):
             ("icon", self.icon),
             ("vibe", self.vibe),
             ("color", self.color),
-            ("subagent", self.subagent),
         ]
         for k, v in fields:
             if v is not None:
@@ -51,9 +49,16 @@ class AgentFrontmatter(BaseModel):
         
         # Add extra fields
         for k, v in self.extra.items():
-            lines.append(f"{k}: {v}")
+            if isinstance(v, bool):
+                v_str = str(v).lower()
+            elif isinstance(v, list):
+                v_str = f"[{', '.join(map(str, v))}]"
+            else:
+                v_str = str(v)
+            lines.append(f"{k}: {v_str}")
             
         return "\n".join(lines)
+    
 class Agent(BaseModel):
     """
     The complete Agent domain model.
