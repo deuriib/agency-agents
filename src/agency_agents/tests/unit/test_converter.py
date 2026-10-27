@@ -32,8 +32,7 @@ def test_vibe_multi_file():
 def test_antigravity_overrides():
     """Verify that AntigravityRenderer correctly injects subagent: true."""
     engine = ConverterEngine(Path("."))
-    # Agent with subagent=False to ensure the override works
-    fm = AgentFrontmatter(name="AntiTest", subagent=False)
+    fm = AgentFrontmatter(name="AntiTest")
     agent = Agent(slug="anti", path="p", frontmatter=fm, body="Body")
     outputs = engine.convert_agent_for_tool(agent, "antigravity")
     
