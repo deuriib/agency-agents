@@ -44,7 +44,10 @@ def test_parallel_conversion_accuracy(tmp_path):
     results = engine.convert_all_parallel(agents, "claude-code", jobs=2)
     assert len(results) == 10
     for agent in agents:
-        assert results[agent.slug][0][1] == agent.body
+        # Invariant: the parallel path must produce byte-identical output
+        # to the sequential path for the same agent + tool.
+        expected = engine.convert_agent_for_tool(agent, "claude-code")
+        assert results[agent.slug] == expected
 
 def test_missing_tool_conversion(tmp_path):
     import json

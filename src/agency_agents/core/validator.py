@@ -23,12 +23,12 @@ class LintEngine:
         catalog = self.catalog.load_divisions()
         defined_divisions = set(catalog.divisions.keys())
         
-        # Directories to ignore
-        ignore = {"integrations", "strategy", "examples", "scripts", "src", ".git"}
-        
+        # Support dirs that are deliberately not divisions
+        ignore = {"integrations", "strategy", "examples", "scripts", "src"}
+        # Dot-dirs (.git, .venv, .pytest_cache, .github...) are tooling state, never divisions
         actual_dirs = {
-            d.name for d in self.root_dir.iterdir() 
-            if d.is_dir() and d.name not in ignore
+            d.name for d in self.root_dir.iterdir()
+            if d.is_dir() and not d.name.startswith(".") and d.name not in ignore
         }
 
         missing_on_disk = defined_divisions - actual_dirs

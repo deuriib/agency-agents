@@ -87,7 +87,10 @@ def test_edge_case_empty_body(project_env):
     engine = ConverterEngine(root)
     agent = Agent(slug="empty", path="p", frontmatter=AgentFrontmatter(name="Empty"), body="")
     outputs = engine.convert_agent_for_tool(agent, "claude-code")
-    assert outputs[0][1] == ""
+    content = outputs[0][1]
+    # Invariant: an empty body still produces a valid agent document with frontmatter.
+    assert "name: Empty" in content
+    assert content.endswith("---\n")
 
 def test_edge_case_extreme_tags(project_env):
     root = project_env

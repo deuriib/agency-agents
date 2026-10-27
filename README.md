@@ -41,13 +41,13 @@ The fastest way in — no clone, no terminal. [**Agency Agents**](https://agency
 brew install --cask msitarzewski/agency-agents/agency-agents
 ```
 
-Prefer the command line? The script-based options below install the same agents.
+Prefer the command line? The Python CLI below installs the same agents (requires Python 3.13+ and [uv](https://docs.astral.sh/uv/); inside the repo run with `uv run python -m agency_agents`).
 
 ### Option 2: Use with Claude Code
 
 ```bash
 # Install all agents to your Claude Code directory
-./scripts/install.sh --tool claude-code
+python -m agency_agents install --tool claude-code
 
 # Or manually copy a category if you only want one division
 cp engineering/*.md ~/.claude/agents/
@@ -70,46 +70,43 @@ Browse the agents below and copy/adapt the ones you need!
 ### Option 4: Use with Other Tools (GitHub Copilot, Antigravity, Gemini CLI, OpenCode, OpenClaw, Cursor, Aider, Windsurf, Kimi Code, Codex, Osaurus, Hermes, Mistral Vibe, DeepSeek Harness)
 
 ```bash
-# Step 1 -- generate integration files for all supported tools
-./scripts/convert.sh
-
-# Step 2 -- install interactively (auto-detects what you have installed)
-./scripts/install.sh
+# Install interactively (auto-detects what you have installed; conversion happens inline)
+python -m agency_agents install
 
 # Or target a specific tool directly
-./scripts/install.sh --tool antigravity
-./scripts/install.sh --tool gemini-cli
-./scripts/install.sh --tool opencode
-./scripts/install.sh --tool copilot
-./scripts/install.sh --tool openclaw
-./scripts/install.sh --tool cursor
-./scripts/install.sh --tool aider
-./scripts/install.sh --tool windsurf
-./scripts/install.sh --tool kimi
-./scripts/install.sh --tool codex
-./scripts/install.sh --tool osaurus
-./scripts/install.sh --tool hermes
-./scripts/install.sh --tool vibe
-./scripts/install.sh --tool dsh
+python -m agency_agents install --tool antigravity
+python -m agency_agents install --tool gemini-cli
+python -m agency_agents install --tool opencode
+python -m agency_agents install --tool copilot
+python -m agency_agents install --tool openclaw
+python -m agency_agents install --tool cursor
+python -m agency_agents install --tool aider
+python -m agency_agents install --tool windsurf
+python -m agency_agents install --tool kimi
+python -m agency_agents install --tool codex
+python -m agency_agents install --tool osaurus
+python -m agency_agents install --tool hermes
+python -m agency_agents install --tool vibe
+python -m agency_agents install --tool dsh
 ```
 
 **Install only the teams you need** (not everyone wants every division):
 
 ```bash
-./scripts/install.sh                                    # interactive wizard: pick tools + teams
-./scripts/install.sh --tool claude-code --division engineering,security
-./scripts/install.sh --tool cursor --agent frontend-developer,ui-designer
-./scripts/install.sh --list teams                       # see every team + agent count
-./scripts/install.sh --tool opencode --division engineering --dry-run
+python -m agency_agents install                                    # interactive wizard: pick tools + teams
+python -m agency_agents install --tool claude-code --division engineering,security
+python -m agency_agents install --tool cursor --agent frontend-developer,ui-designer
+python -m agency_agents install --list teams                       # see every team + agent count
+python -m agency_agents install --tool opencode --division engineering --dry-run
 ```
 
 `--agent` and `--agents-file` take an agent's slug (as `--list agents` prints it), its display name, or its file name without `.md` — the id the [runbook rosters](strategy/runbooks.json) use — so a runbook's team installs as listed:
 
 ```bash
-python3 -c 'import json, sys
+python -c 'import json, sys
 for r in json.load(open("strategy/runbooks.json"))["runbooks"]:
     if r["slug"] == sys.argv[1]: [print(a) for g in r["roster"] for a in g["agents"]]' startup-mvp > team.txt
-./scripts/install.sh --tool claude-code --agents-file team.txt
+python -m agency_agents install --tool claude-code --agents-file team.txt
 ```
 
 > **OpenCode note:** OpenCode's runtime currently registers only ~119 agents and silently drops the rest ([upstream bug](https://github.com/anomalyco/opencode/issues/27988)). Installing a subset with `--division` keeps you under that limit. The installer warns you when a selection would exceed it.
@@ -778,15 +775,8 @@ The Agency works natively with Claude Code, and ships conversion + install scrip
 **Step 1 -- Generate integration files:**
 
 ```bash
-./scripts/convert.sh
-# Faster (parallel, output order may vary): ./scripts/convert.sh --parallel
-```
-
-**Step 2 -- Install (interactive, auto-detects your tools):**
-
-```bash
-./scripts/install.sh
-# Faster (parallel, output order may vary): ./scripts/install.sh --no-interactive --parallel
+python -m agency_agents install
+# Faster (parallel, output order may vary): python -m agency_agents install --no-interactive --parallel
 ```
 
 The installer scans your system for installed tools, shows a checkbox UI, and lets you pick exactly what to install:
@@ -820,29 +810,27 @@ The installer scans your system for installed tools, shows a checkbox UI, and le
 **Or install a specific tool directly:**
 
 ```bash
-./scripts/install.sh --tool cursor
-./scripts/install.sh --tool opencode
-./scripts/install.sh --tool openclaw
-./scripts/install.sh --tool antigravity
-./scripts/install.sh --tool codex
-./scripts/install.sh --tool osaurus
-./scripts/install.sh --tool hermes
+python -m agency_agents install --tool cursor
+python -m agency_agents install --tool opencode
+python -m agency_agents install --tool openclaw
+python -m agency_agents install --tool antigravity
+python -m agency_agents install --tool codex
+python -m agency_agents install --tool osaurus
+python -m agency_agents install --tool hermes
 ```
 
 **Non-interactive (CI/scripts):**
 
 ```bash
-./scripts/install.sh --no-interactive --tool all
+python -m agency_agents install --no-interactive
 ```
 
-**Faster runs (parallel)** — On multi-core machines, use `--parallel` so each tool is processed in parallel. Output order across tools is non-deterministic. Works with both interactive and non-interactive install: e.g. `./scripts/install.sh --interactive --parallel` (pick tools, then install in parallel) or `./scripts/install.sh --no-interactive --parallel`. Job count defaults to `nproc` (Linux), `sysctl -n hw.ncpu` (macOS), or 4; override with `--jobs N`.
+**Faster runs (parallel)** — On multi-core machines, use `--parallel` so each tool is processed in parallel. Output order across tools is non-deterministic. Works with both interactive and non-interactive install: e.g. `python -m agency_agents install --interactive --parallel` (pick tools, then install in parallel) or `python -m agency_agents install --no-interactive --parallel`. Job count defaults to `nproc` (Linux), `sysctl -n hw.ncpu` (macOS), or 4; override with `--jobs N`.
 
 ```bash
-./scripts/convert.sh --parallel                    # convert all tools in parallel
-./scripts/convert.sh --parallel --jobs 8           # cap parallel jobs
-./scripts/install.sh --no-interactive --parallel   # install all detected tools in parallel
-./scripts/install.sh --interactive --parallel      # pick tools, then install in parallel
-./scripts/install.sh --no-interactive --parallel --jobs 4
+python -m agency_agents install --no-interactive --parallel   # install all detected tools in parallel
+python -m agency_agents install --interactive --parallel      # pick tools, then install in parallel
+python -m agency_agents install --no-interactive --parallel --jobs 4
 ```
 
 ---
@@ -855,7 +843,7 @@ The installer scans your system for installed tools, shows a checkbox UI, and le
 Agents are copied directly from the repo into `~/.claude/agents/` -- no conversion needed.
 
 ```bash
-./scripts/install.sh --tool claude-code
+python -m agency_agents install --tool claude-code
 ```
 
 Then activate in Claude Code:
@@ -873,7 +861,7 @@ See [integrations/claude-code/README.md](integrations/claude-code/README.md) for
 Agents are copied directly from the repo into `~/.github/agents/` and `~/.copilot/agents/` -- no conversion needed.
 
 ```bash
-./scripts/install.sh --tool copilot
+python -m agency_agents install --tool copilot
 ```
 
 Then activate in GitHub Copilot:
@@ -891,7 +879,7 @@ See [integrations/github-copilot/README.md](integrations/github-copilot/README.m
 Each agent becomes a skill in `~/.gemini/config/skills/agency-<slug>/`.
 
 ```bash
-./scripts/install.sh --tool antigravity
+python -m agency_agents install --tool antigravity
 ```
 
 Activate in Gemini with Antigravity:
@@ -910,8 +898,7 @@ Installs as Gemini CLI subagents.
 On a fresh clone, generate the Gemini agent files before running the installer.
 
 ```bash
-./scripts/convert.sh --tool gemini-cli
-./scripts/install.sh --tool gemini-cli
+python -m agency_agents install --tool gemini-cli
 ```
 
 See [integrations/gemini-cli/README.md](integrations/gemini-cli/README.md) for details.
@@ -924,7 +911,7 @@ Agents are placed in `.opencode/agents/` in your project root (project-scoped).
 
 ```bash
 cd /your/project
-/path/to/agency-agents/scripts/install.sh --tool opencode
+python -m agency_agents install --tool opencode
 ```
 
 Or install globally:
@@ -950,7 +937,7 @@ Each agent becomes a `.mdc` rule file in `.cursor/rules/` of your project.
 
 ```bash
 cd /your/project
-/path/to/agency-agents/scripts/install.sh --tool cursor
+python -m agency_agents install --tool cursor
 ```
 
 Rules are auto-applied when Cursor detects them in the project. Reference them explicitly:
@@ -972,7 +959,7 @@ file lists the agents rather than inlining them.
 
 ```bash
 cd /your/project
-/path/to/agency-agents/scripts/install.sh --tool aider
+python -m agency_agents install --tool aider
 ```
 
 Then reference agents in your Aider session:
@@ -997,7 +984,7 @@ All agents are compiled into `.windsurfrules` in your project root.
 
 ```bash
 cd /your/project
-/path/to/agency-agents/scripts/install.sh --tool windsurf
+python -m agency_agents install --tool windsurf
 ```
 
 Reference agents in Windsurf's Cascade:
@@ -1015,8 +1002,7 @@ See [integrations/windsurf/README.md](integrations/windsurf/README.md) for detai
 Each agent becomes a workspace with `SOUL.md`, `AGENTS.md`, and `IDENTITY.md` in `~/.openclaw/agency-agents/`.
 
 ```bash
-./scripts/convert.sh --tool openclaw
-./scripts/install.sh --tool openclaw
+python -m agency_agents install --tool openclaw
 ```
 
 If the `openclaw` CLI is available, the installer registers each workspace automatically.
@@ -1036,8 +1022,7 @@ SubAgents are installed to `.qwen/agents/` in your project root (project-scoped)
 ```bash
 # Convert and install (run from your project root)
 cd /your/project
-./scripts/convert.sh --tool qwen
-./scripts/install.sh --tool qwen
+python -m agency_agents install --tool qwen
 ```
 
 **Usage in Qwen Code:**
@@ -1057,8 +1042,7 @@ Agents are converted to Kimi Code CLI format (YAML + system prompt) and installe
 
 ```bash
 # Convert and install
-./scripts/convert.sh --tool kimi
-./scripts/install.sh --tool kimi
+python -m agency_agents install --tool kimi
 ```
 
 **Usage with Kimi Code:**
@@ -1083,8 +1067,7 @@ See [integrations/kimi/README.md](integrations/kimi/README.md) for details.
 Each agent is converted into a Codex custom agent TOML file and installed to `~/.codex/agents/`.
 
 ```bash
-./scripts/convert.sh --tool codex
-./scripts/install.sh --tool codex
+python -m agency_agents install --tool codex
 ```
 
 Then reference the custom agent by name in Codex:
@@ -1102,20 +1085,19 @@ See [integrations/codex/README.md](integrations/codex/README.md) for details.
 Each agent becomes a DSH skill (`SKILL.md` with Agent-Skills frontmatter) in `${DSH_HOME:-$HOME/.dsh}/skills/agency-<slug>/`. Skills are discovered live — no restart needed.
 
 ```bash
-./scripts/convert.sh --tool dsh
-./scripts/install.sh --tool dsh
+python -m agency_agents install --tool dsh
 ```
 
 Custom user home:
 
 ```bash
-DSH_HOME=~/.config/dsh ./scripts/install.sh --tool dsh
+python -m agency_agents install --tool dsh --scope user   # custom user home not yet supported; use --scope project for repo-local installs
 ```
 
 Project-scoped install (run from your project root):
 
 ```bash
-DSH_SKILLS_DIR=.dsh/skills ./scripts/install.sh --tool dsh
+python -m agency_agents install --tool dsh --scope project
 ```
 
 Activate in DeepSeek Harness — user- and model-invocable by default:
@@ -1134,10 +1116,8 @@ See [integrations/dsh/README.md](integrations/dsh/README.md) for details.
 When you add new agents or edit existing ones, regenerate all integration files:
 
 ```bash
-./scripts/convert.sh                    # regenerate all (serial)
-./scripts/convert.sh --parallel         # regenerate all in parallel (faster)
-./scripts/convert.sh --tool codex       # regenerate just one tool
-./scripts/convert.sh --tool cursor      # regenerate just one tool
+python -m agency_agents install --no-interactive --parallel   # regenerate all (serial/parallel via --parallel)
+python -m agency_agents verify claude-code                    # sanity-check hashes after regenerating
 ```
 
 ---
