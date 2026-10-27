@@ -1091,7 +1091,7 @@ python -m agency_agents install --tool dsh
 Custom user home:
 
 ```bash
-python -m agency_agents install --tool dsh --scope user   # custom user home not yet supported; use --scope project for repo-local installs
+DSH_HOME=~/.config/dsh python -m agency_agents install --tool dsh
 ```
 
 Project-scoped install (run from your project root):

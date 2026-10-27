@@ -17,7 +17,14 @@ class InstallationManager:
         self.catalog = CatalogManager(root_dir)
         self.converter = ConverterEngine(root_dir)
 
-    def resolve_path(self, pattern: str, slug: str, scope: str = "user") -> Path:
+    def resolve_path(self, pattern: str, slug: str, scope: str = "user", tool_kebab: Optional[str] = None) -> Path:
+        # DSH honors env overrides for its skills root (legacy parity).
+        if tool_kebab == "dsh":
+            if scope == "user" and os.environ.get("DSH_HOME"):
+                return Path(os.environ["DSH_HOME"]) / "skills" / slug / "SKILL.md"
+            if scope == "project" and os.environ.get("DSH_SKILLS_DIR"):
+                return Path(os.environ["DSH_SKILLS_DIR"]) / slug / "SKILL.md"
+
         path_str = pattern.replace("{slug}", slug)
         full_path = Path(path_str)
         if scope == "user":
@@ -63,14 +70,19 @@ class InstallationManager:
 
         if outputs is None:
             outputs = self.converter.convert_agent_for_tool(agent, tool_kebab)
-        if not outputs: return
+        if not outputs:
+            return
 
         dests = tool.dest.get(scope, [])
         if not dests: return
 
+        slug = agent.slug
+        if tool.slugPrefix:
+            slug = f"{tool.slugPrefix}{slug}"
+
         for i, pattern in enumerate(dests):
             filename, content = outputs[i] if i < len(outputs) else outputs[0]
-            target_base = self.resolve_path(pattern, agent.slug, scope)
+            target_base = self.resolve_path(pattern, slug, scope, tool_kebab=tool_kebab)
             target_base.parent.mkdir(parents=True, exist_ok=True)
             target_base.write_text(content, encoding='utf-8')
 
