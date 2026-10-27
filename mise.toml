@@ -7,8 +7,8 @@ description = "Perform full project linting: divisions, tools, and agents"
 run = "uv run python -m agency_agents lint"
 
 [tasks.install]
-description = "Install agents for all tools"
-run = "uv run python -m agency_agents install"
+description = "Install agents for all tools (non-interactive)"
+run = "uv run python -m agency_agents install --no-interactive"
 
 [tasks.install-interactive]
 description = "Interactive wizard for agent installation"
@@ -19,19 +19,26 @@ description = "Run the full suite of pytests"
 run = "uv run pytest src/agency_agents/tests"
 
 [tasks.verify]
-description = "Verify conversion outputs against SHA256 manifest"
-run = "uv run python -m agency_agents verify"
+description = "Verify conversion outputs against SHA256 manifest (claude-code)"
+run = "uv run python -m agency_agents verify claude-code"
 
 [tasks.update-manifest]
-description = "Regenerate the SHA256 manifest for tools"
-run = "uv run python -m agency_agents update-manifest"
+description = "Regenerate the SHA256 manifest for claude-code"
+run = "uv run python -m agency_agents update-manifest claude-code"
+
+[tasks.check-originality]
+description = "Flag agent files that substantially duplicate an existing agent"
+run = "uv run python -m agency_agents check-originality"
+
+[tasks.convert]
+description = "Generate integration files for all tools into ./integrations"
+run = "uv run python -m agency_agents convert"
 
 [tasks.check]
 description = "Run all validation and tests"
-depends = ["lint", "test"]
-run = "echo All checks passed!"
+depends = ["lint", "test", "verify", "check-originality"]
 
 [tasks.full-pipeline]
-description = "Complete pipeline: lint, test, verify and install"
-depends = ["lint", "test", "verify", "install"]
+description = "Complete pipeline: lint, test, verify, install and convert"
+depends = ["lint", "test", "verify", "install", "convert"]
 run = "echo Pipeline completed successfully!"
