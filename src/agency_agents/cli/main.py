@@ -18,6 +18,7 @@ from agency_agents.infrastructure.tui import TUIWizard
 from agency_agents.infrastructure.hash_manager import HashManager
 from agency_agents.core.converter import ConverterEngine
 from agency_agents.core.originality import run_originality_check
+from agency_agents.infrastructure.hash_manager import HashManager
 
 # Windows consoles default to cp1252 and crash on the / of status output.
 # Force UTF-8 before rich builds its console so the CLI is portable.
@@ -312,6 +313,81 @@ def check_originality(
     code = run_originality_check(files, repo_root=root_dir, fail_threshold=fail, warn_threshold=warn)
     if code != 0:
         raise typer.Exit(code=code)
+
+
+@app.command("convert")
+def convert(
+    tool: Optional[str] = typer.Option(None, "--tool", help="Specific tool to convert (default: all)"),
+    out: Path = typer.Option(Path("integrations"), "--out", help="Output directory for generated files"),
+    parallel: bool = typer.Option(False, "--parallel", help="Run conversions in parallel"),
+    jobs: int = typer.Option(4, "--jobs", help="Number of parallel jobs"),
+):
+    """Generate tool-specific integration files from the agent roster (legacy convert.sh)."""
+    root_dir = Path(".").absolute()
+    catalog = CatalogManager(root_dir)
+    installer = InstallationManager(root_dir, Path.home())
+    engine = ConverterEngine(root_dir)
+    parser = MarkdownParser()
+
+    divisions = list(catalog.load_divisions().divisions.keys())
+    by_division = _collect_by_division(root_dir, divisions)
+    all_agents = [a for agents in by_division.values() for a in agents]
+
+    selected_tools = [tool] if tool else list(catalog.load_tools().tools.keys())
+    out.mkdir(parents=True, exist_ok=True)
+
+    for t_kebab in selected_tools:
+        tool_def = catalog.load_tools().tools.get(t_kebab)
+        if not tool_def:
+            console.print(f"[bold red]Unknown tool: {t_kebab}[/bold red]")
+            continue
+        if tool_def.installKind == "plugin":
+            # Hermes is a built artifact; delegate to the restored builder.
+            target = out / t_kebab
+            target.mkdir(parents=True, exist_ok=True)
+            build_script = root_dir / "scripts" / "build-hermes-plugin.py"
+            if not build_script.exists():
+                console.print(f"[bold yellow]Skipping {t_kebab}: build script missing.[/bold yellow]")
+                continue
+            import subprocess
+            subprocess.run(
+                ["uv", "run", "python", str(build_script), "--out", str(target)],
+                check=False, capture_output=True, text=True,
+            )
+            console.print(f"[bold green]✓ {t_kebab}: built into {target}[/bold green]")
+            continue
+        if tool_def.installKind == "roster":
+            # Roster tools produce a single consolidated file.
+            header = f"# Agency Agents Roster for {tool_def.label}\n\n"
+            body = "".join(f"## {a.frontmatter.name}\n{a.body}\n\n---\n\n" for a in all_agents)
+            target = out / t_kebab
+            target.mkdir(parents=True, exist_ok=True)
+            filename = "CONVENTIONS.md" if t_kebab == "aider" else ".windsurfrules"
+            (target / filename).write_text(header + body, encoding="utf-8")
+            console.print(f"[bold green]✓ {t_kebab}: {len(all_agents)} agents -> {target / filename}[/bold green]")
+            continue
+
+        target = out / t_kebab
+        target.mkdir(parents=True, exist_ok=True)
+        count = 0
+        if parallel:
+            outputs_by_slug = engine.convert_all_parallel(all_agents, t_kebab, jobs=jobs)
+        else:
+            outputs_by_slug = None
+        for agent in all_agents:
+            outputs = (
+                outputs_by_slug.get(agent.slug) if outputs_by_slug else None
+            ) or engine.convert_agent_for_tool(agent, t_kebab)
+            if not outputs:
+                continue
+            agent_dir = target / agent.slug
+            agent_dir.mkdir(parents=True, exist_ok=True)
+            for filename, content in outputs:
+                (agent_dir / filename).write_text(content, encoding="utf-8")
+            count += 1
+        console.print(f"[bold green]✓ {t_kebab}: {count} agents -> {target}[/bold green]")
+
+    console.print("[bold green]✓ Conversion complete.[/bold green]")
 
 
 if __name__ == "__main__":
