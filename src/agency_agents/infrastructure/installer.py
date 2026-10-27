@@ -17,7 +17,14 @@ class InstallationManager:
         self.catalog = CatalogManager(root_dir)
         self.converter = ConverterEngine(root_dir)
 
-    def resolve_path(self, pattern: str, slug: str, scope: str = "user") -> Path:
+    def resolve_path(self, pattern: str, slug: str, scope: str = "user", tool_kebab: Optional[str] = None) -> Path:
+        # DSH honors env overrides for its skills root (legacy parity).
+        if tool_kebab == "dsh":
+            if scope == "user" and os.environ.get("DSH_HOME"):
+                return Path(os.environ["DSH_HOME"]) / "skills" / slug / "SKILL.md"
+            if scope == "project" and os.environ.get("DSH_SKILLS_DIR"):
+                return Path(os.environ["DSH_SKILLS_DIR"]) / slug / "SKILL.md"
+
         path_str = pattern.replace("{slug}", slug)
         full_path = Path(path_str)
         if scope == "user":
@@ -50,19 +57,32 @@ class InstallationManager:
                 if p.exists() and p.is_dir():
                     pass
 
-    def install_agent_for_tool(self, agent: Agent, tool_kebab: str, scope: str = "user"):
+    def install_agent_for_tool(
+        self,
+        agent: Agent,
+        tool_kebab: str,
+        scope: str = "user",
+        outputs: Optional[List[Tuple[str, str]]] = None,
+    ):
         tool = self.catalog.load_tools().tools.get(tool_kebab)
-        if not tool: return
+        if not tool:
+            return
 
-        outputs = self.converter.convert_agent_for_tool(agent, tool_kebab)
-        if not outputs: return
+        if outputs is None:
+            outputs = self.converter.convert_agent_for_tool(agent, tool_kebab)
+        if not outputs:
+            return
 
         dests = tool.dest.get(scope, [])
         if not dests: return
 
+        slug = agent.slug
+        if tool.slugPrefix:
+            slug = f"{tool.slugPrefix}{slug}"
+
         for i, pattern in enumerate(dests):
             filename, content = outputs[i] if i < len(outputs) else outputs[0]
-            target_base = self.resolve_path(pattern, agent.slug, scope)
+            target_base = self.resolve_path(pattern, slug, scope, tool_kebab=tool_kebab)
             target_base.parent.mkdir(parents=True, exist_ok=True)
             target_base.write_text(content, encoding='utf-8')
 
@@ -115,7 +135,14 @@ class InstallationManager:
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"Hermes plugin build failed: {e.stderr}")
 
-    def install_all_for_tool(self, agents: List[Agent], tool_kebab: str, scope: str = "user"):
+    def install_all_for_tool(
+        self,
+        agents: List[Agent],
+        tool_kebab: str,
+        scope: str = "user",
+        parallel: bool = False,
+        jobs: int = 4,
+    ):
         tool = self.catalog.load_tools().tools.get(tool_kebab)
         if not tool: return
 
@@ -130,7 +157,13 @@ class InstallationManager:
         collisions = self.check_collisions(agents, tool_kebab, scope)
         if collisions:
             raise RuntimeError(f"Installation failed due to slug collisions:\n" + "\n".join(collisions))
-        
+
         self.prune_output(tool_kebab, scope)
+
+        outputs_by_slug: Dict[str, List[Tuple[str, str]]] = {}
+        if parallel:
+            outputs_by_slug = self.converter.convert_all_parallel(agents, tool_kebab, jobs=jobs)
+
         for agent in agents:
-            self.install_agent_for_tool(agent, tool_kebab, scope)
+            outputs = outputs_by_slug.get(agent.slug) if parallel else None
+            self.install_agent_for_tool(agent, tool_kebab, scope=scope, outputs=outputs)
