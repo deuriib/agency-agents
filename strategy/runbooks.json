@@ -185,7 +185,7 @@
           "agents": [
             "agents-orchestrator",
             "project-manager-senior",
-            "product-product-manager",
+            "product-manager",
             "design-ux-architect",
             "design-ui-designer",
             "engineering-mobile-app-builder",
@@ -230,7 +230,7 @@
           "agents": [
             "agents-orchestrator",
             "project-manager-senior",
-            "product-product-manager",
+            "product-manager",
             "engineering-data-engineer",
             "engineering-database-optimizer",
             "engineering-backend-architect",
@@ -273,7 +273,7 @@
           "agents": [
             "agents-orchestrator",
             "project-manager-senior",
-            "product-product-manager",
+            "product-manager",
             "design-ui-designer",
             "design-ux-researcher",
             "engineering-frontend-developer",
@@ -319,7 +319,7 @@
           "agents": [
             "agents-orchestrator",
             "project-manager-senior",
-            "product-product-manager",
+            "product-manager",
             "engineering-ai-engineer",
             "engineering-prompt-engineer",
             "engineering-backend-architect",
@@ -394,7 +394,7 @@
           "agents": [
             "agents-orchestrator",
             "project-manager-senior",
-            "product-product-manager",
+            "product-manager",
             "engineering-backend-architect",
             "engineering-platform-engineer",
             "engineering-devops-automator",
