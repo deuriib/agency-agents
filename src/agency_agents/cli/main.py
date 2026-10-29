@@ -15,10 +15,9 @@ from agency_agents.core.selection import (
 from agency_agents.infrastructure.installer import InstallationManager
 from agency_agents.infrastructure.catalog import CatalogManager
 from agency_agents.infrastructure.tui import TUIWizard
-from agency_agents.infrastructure.hash_manager import HashManager
+from agency_agents.infrastructure.hash_manager import HashManager, ManifestError
 from agency_agents.core.converter import ConverterEngine
 from agency_agents.core.originality import run_originality_check
-from agency_agents.infrastructure.hash_manager import HashManager
 
 # Windows consoles default to cp1252 and crash on the / of status output.
 # Force UTF-8 before rich builds its console so the CLI is portable.
@@ -236,9 +235,58 @@ def install(
 
     console.print("[bold green]✓ Installation process completed![/bold green] ")
 
+def _load_all_agents(root_dir: Path, engine: ConverterEngine) -> List:
+    """Parse every agent in every division once."""
+    parser = MarkdownParser()
+    agents = []
+    for div in engine.catalog.load_divisions().divisions.keys():
+        div_path = root_dir / div
+        if div_path.exists() and div_path.is_dir():
+            for file in div_path.rglob("*.md"):
+                agent = parser.create_agent(str(file), file.read_text(encoding="utf-8"))
+                if agent:
+                    agents.append(agent)
+    return agents
+
+
+def _per_agent_tools(engine: ConverterEngine) -> List[str]:
+    """Tools whose artifact is one rendered file per agent (manifest scope)."""
+    return [
+        kebab
+        for kebab, tool in engine.catalog.load_tools().tools.items()
+        if tool.installKind == "per-agent"
+    ]
+
+
+def _resolve_targets(engine: ConverterEngine, tool: Optional[str], all_tools: bool) -> List[str]:
+    """Resolve a single tool argument or the full per-agent set."""
+    if all_tools:
+        if tool:
+            console.print("[bold red]❌ Use either a tool argument or --all, not both.[/bold red]")
+            raise typer.Exit(code=1)
+        return _per_agent_tools(engine)
+
+    if not tool:
+        console.print("[bold red]❌ Name a tool or pass --all.[/bold red]")
+        raise typer.Exit(code=1)
+
+    tool_def = engine.catalog.load_tools().tools.get(tool)
+    if tool_def is None:
+        console.print(f"[bold red]❌ Unknown tool: {tool}[/bold red]")
+        raise typer.Exit(code=1)
+    if tool_def.installKind != "per-agent":
+        console.print(
+            f"[bold red]❌ {tool} is a '{tool_def.installKind}' tool; "
+            "the manifest covers per-agent tools only.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    return [tool]
+
+
 @app.command()
 def verify(
-    tool: str, 
+    tool: Optional[str] = typer.Argument(None, help="Tool to verify (omit with --all)"),
+    all_tools: bool = typer.Option(False, "--all", help="Verify every per-agent tool"),
     manifest_path: Path = typer.Option(Path("convert-outputs.sha256"), help="Path to the hash manifest")
 ):
     """
@@ -247,60 +295,65 @@ def verify(
     root_dir = Path(".").absolute()
     engine = ConverterEngine(root_dir)
     hash_manager = HashManager()
-    parser = MarkdownParser()
-    
-    all_agents = []
-    divisions = engine.catalog.load_divisions().divisions.keys()
-    for div in divisions:
-        div_path = root_dir / div
-        if div_path.exists() and div_path.is_dir():
-            for file in div_path.rglob("*.md"):
-                agent = parser.create_agent(str(file), file.read_text(encoding='utf-8'))
-                if agent: all_agents.append(agent)
+    all_agents = _load_all_agents(root_dir, engine)
+    targets = _resolve_targets(engine, tool, all_tools)
 
-    with console.status(f"[bold yellow]Verifying hashes for {tool}..."):
-        mismatches = hash_manager.verify_manifest(manifest_path, all_agents, tool, engine)
+    failures = 0
+    for t_kebab in targets:
+        try:
+            mismatches = hash_manager.verify_manifest(manifest_path, all_agents, t_kebab, engine)
+        except ManifestError as e:
+            console.print(f"[bold red]❌ {e}[/bold red]")
+            raise typer.Exit(code=1)
 
-    if mismatches:
-        console.print("[bold red]❌ Hash Mismatches found:[/bold red]")
-        for m in mismatches:
-            console.print(f"  - {m}")
+        if mismatches:
+            failures += len(mismatches)
+            console.print(f"[bold red]❌ {t_kebab}: {len(mismatches)} mismatch(es)[/bold red]")
+            for m in mismatches[:20]:
+                console.print(f"  - {m}")
+            if len(mismatches) > 20:
+                console.print(f"  … and {len(mismatches) - 20} more")
+        else:
+            console.print(f"[bold green]✓ {t_kebab}: all hashes match[/bold green]")
+
+    if failures:
         raise typer.Exit(code=1)
-    else:
-        console.print("[bold green]✓ All hashes match the manifest![/bold green]")
 
 @app.command()
 def update_manifest(
-    tool: str, 
+    tool: Optional[str] = typer.Argument(None, help="Tool to regenerate (omit with --all)"),
+    all_tools: bool = typer.Option(False, "--all", help="Regenerate every per-agent tool"),
     manifest_path: Path = typer.Option(Path("convert-outputs.sha256"), help="Path to update the hash manifest")
 ):
     """
-    Regenerate the SHA256 manifest for a specific tool based on current agents.
+    Regenerate the SHA256 manifest for one tool, or every per-agent tool with --all.
     """
     root_dir = Path(".").absolute()
     engine = ConverterEngine(root_dir)
     hash_manager = HashManager()
-    parser = MarkdownParser()
-    
-    all_agents = []
-    divisions = engine.catalog.load_divisions().divisions.keys()
-    for div in divisions:
-        div_path = root_dir / div
-        if div_path.exists() and div_path.is_dir():
-            for file in div_path.rglob("*.md"):
-                agent = parser.create_agent(str(file), file.read_text(encoding='utf-8'))
-                if agent: all_agents.append(agent)
+    all_agents = _load_all_agents(root_dir, engine)
 
-    with console.status(f"[bold yellow]Generating new manifest for {tool}..."):
-        new_manifest_lines = hash_manager.generate_manifest(all_agents, tool, engine)
-    
-    header = "# convert-outputs manifest v2 — one line per agent (its output across every tool), one per tool\n"
-    header += "# (non-agent files), one per contract. Platform-neutral hashes. Regenerate: python -m agency_agents update-manifest\n"
-    
-    content = header + "\n".join(new_manifest_lines)
-    manifest_path.write_text(content, encoding='utf-8')
-    
-    console.print(f"[bold green]✓ Manifest updated successfully at {manifest_path}[/bold green]")
+    if all_tools:
+        targets = _per_agent_tools(engine)
+        with console.status("[bold yellow]Regenerating manifest for every per-agent tool..."):
+            count = hash_manager.update_all(manifest_path, all_agents, targets, engine)
+        console.print(
+            f"[bold green]✓ Manifest regenerated: {count} entries "
+            f"across {len(targets)} tools at {manifest_path}[/bold green]"
+        )
+        return
+
+    targets = _resolve_targets(engine, tool, all_tools=False)
+    try:
+        with console.status(f"[bold yellow]Regenerating manifest for {targets[0]}..."):
+            count = hash_manager.update_tool(manifest_path, all_agents, targets[0], engine)
+    except ManifestError as e:
+        console.print(f"[bold red]❌ {e}[/bold red]")
+        raise typer.Exit(code=1)
+
+    console.print(
+        f"[bold green]✓ {targets[0]}: {count} entries updated at {manifest_path}[/bold green]"
+    )
 
 @app.command("check-originality")
 def check_originality(
