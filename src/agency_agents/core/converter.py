@@ -25,14 +25,14 @@ class BaseRenderer:
         """Returns a list of (filename, content) tuples."""
         raise NotImplementedError
 
-    def frontmatter_overrides(self, frontmatter: Any) -> None:
+    def frontmatter_overrides(self, frontmatter: Any, agent: Agent) -> None:
         """Strategy hook to inject tool-specific frontmatter. Default: no change."""
         return None
 
     def _get_effective_frontmatter(self, agent: Agent) -> Any:
         """Deep-copies the agent frontmatter so tool overrides never leak upstream."""
         fm = copy.deepcopy(agent.frontmatter)
-        self.frontmatter_overrides(fm)
+        self.frontmatter_overrides(fm, agent)
         return fm
 
     def _markdown_document(self, frontmatter: Any, body: str) -> str:
@@ -47,16 +47,36 @@ class IdentityRenderer(BaseRenderer):
         return [("agent.md", self._markdown_document(fm, context.agent.body))]
 
 
+# Render-level policy: roster agents promoted to the top of the hierarchy.
+# This is a rendering decision, not agent content — it never touches the source
+# frontmatter. Only the orchestrator is a primary agent today.
+PRIMARY_AGENT_SLUGS = frozenset({"agents-orchestrator"})
+
+
+def is_primary_agent(agent: Agent) -> bool:
+    """True when the agent is declared primary at render time."""
+    return agent.slug in PRIMARY_AGENT_SLUGS
+
+
 class AntigravityRenderer(IdentityRenderer):
-    """Antigravity agents are always registered as subagents."""
-    def frontmatter_overrides(self, frontmatter: Any) -> None:
-        frontmatter.extra["subagent"] = True
+    """Antigravity agents are subagents unless the render policy marks them
+    primary, in which case they are registered as the main agent instead."""
+    def frontmatter_overrides(self, frontmatter: Any, agent: Agent) -> None:
+        if is_primary_agent(agent):
+            frontmatter.extra.pop("subagent", None)
+            frontmatter.extra["mainAgent"] = True
+        else:
+            frontmatter.extra["subagent"] = True
 
 
 class OpencodeRenderer(IdentityRenderer):
-    """opencode agents must declare their subagent mode explicitly."""
-    def frontmatter_overrides(self, frontmatter: Any) -> None:
-        frontmatter.extra["mode"] = "subagent"
+    """opencode agents must declare their mode explicitly.
+
+    Defaults to `subagent` (on-demand via @agent-name). Agents marked primary
+    by the render policy are promoted to the primary agent picker.
+    """
+    def frontmatter_overrides(self, frontmatter: Any, agent: Agent) -> None:
+        frontmatter.extra["mode"] = "primary" if is_primary_agent(agent) else "subagent"
 
 
 class CodexTomlRenderer(BaseRenderer):

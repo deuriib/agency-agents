@@ -13,6 +13,12 @@ This copies files from `integrations/antigravity/` to
 `~/.gemini/config/skills/` (global). For project-scoped skills, Antigravity
 also reads `<project>/.agents/skills/`.
 
+Every agent is rendered as a subagent (`subagent: true`) except
+`agents-orchestrator`, which the converter promotes to the main agent
+(`mainAgent: true`). That promotion is a render-level policy
+(`PRIMARY_AGENT_SLUGS` in `src/agency_agents/core/converter.py`), not a
+frontmatter field.
+
 ## Activate a Skill
 
 In Antigravity, activate an agent by its slug:
