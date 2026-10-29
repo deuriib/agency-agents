@@ -49,6 +49,43 @@ def test_opencode_overrides():
     assert "mode: subagent" in outputs[0][1]
     assert "name: OpenTest" in outputs[0][1]
 
+def test_opencode_primary_mode():
+    """The orchestrator is rendered as a primary agent in opencode."""
+    engine = ConverterEngine(Path("."))
+    fm = AgentFrontmatter(name="Agents Orchestrator")
+    agent = Agent(slug="agents-orchestrator", path="p", frontmatter=fm, body="Body")
+    outputs = engine.convert_agent_for_tool(agent, "opencode")
+
+    assert "mode: primary" in outputs[0][1]
+    assert "mode: subagent" not in outputs[0][1]
+
+def test_antigravity_primary_mode():
+    """The orchestrator becomes a main agent, not a subagent."""
+    engine = ConverterEngine(Path("."))
+    fm = AgentFrontmatter(name="Agents Orchestrator")
+    agent = Agent(slug="agents-orchestrator", path="p", frontmatter=fm, body="Body")
+    outputs = engine.convert_agent_for_tool(agent, "antigravity")
+
+    assert "mainAgent: true" in outputs[0][1]
+    assert "subagent: true" not in outputs[0][1]
+
+def test_render_policy_is_scoped_to_orchestrator():
+    """Primary status is a render-level policy, not agent content."""
+    from agency_agents.core.converter import PRIMARY_AGENT_SLUGS
+
+    assert PRIMARY_AGENT_SLUGS == frozenset({"agents-orchestrator"})
+
+def test_identity_has_no_mode():
+    """mode/mainAgent are render directives; tool-agnostic output carries none."""
+    engine = ConverterEngine(Path("."))
+    fm = AgentFrontmatter(name="Agents Orchestrator")
+    agent = Agent(slug="agents-orchestrator", path="p", frontmatter=fm, body="Body")
+    outputs = engine.convert_agent_for_tool(agent, "claude-code")
+
+    assert "mode:" not in outputs[0][1]
+    assert "mainAgent:" not in outputs[0][1]
+    assert "subagent:" not in outputs[0][1]
+
 def test_identity_no_overrides():
     """Verify that standard identity tools do not get extra properties."""
     engine = ConverterEngine(Path("."))
