@@ -27,7 +27,7 @@ jobs:
         run: uv run python -m agency_agents lint
 
       - name: Verify Hash Manifest
-        run: uv run python -m agency_agents verify claude-code
+        run: uv run python -m agency_agents verify --all
 
       - name: Run Tests
         run: uv run pytest src/agency_agents/tests
