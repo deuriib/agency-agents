@@ -67,7 +67,7 @@ Each agent file contains:
 
 Browse the agents below and copy/adapt the ones you need!
 
-### Option 4: Use with Other Tools (GitHub Copilot, Antigravity, Gemini CLI, OpenCode, OpenClaw, Cursor, Aider, Windsurf, Kimi Code, Codex, Osaurus, Hermes, Mistral Vibe, DeepSeek Harness)
+### Option 4: Use with Other Tools (GitHub Copilot, Antigravity, Gemini CLI, OpenCode, OpenClaw, Cursor, Aider, Windsurf, Kimi Code, Codex, Osaurus, Hermes, Mistral Vibe, DeepSeek Harness, Pi Agent, Oh My Pi)
 
 ```bash
 # Install interactively (auto-detects what you have installed; conversion happens inline)
@@ -79,15 +79,18 @@ python -m agency_agents install --tool gemini-cli
 python -m agency_agents install --tool opencode
 python -m agency_agents install --tool copilot
 python -m agency_agents install --tool openclaw
-python -m agency_agents install --tool cursor
-python -m agency_agents install --tool aider
-python -m agency_agents install --tool windsurf
+python -m agency_agents install --tool cursor --scope project
+python -m agency_agents install --tool aider --scope project
+python -m agency_agents install --tool windsurf --scope project
 python -m agency_agents install --tool kimi
 python -m agency_agents install --tool codex
 python -m agency_agents install --tool osaurus
 python -m agency_agents install --tool hermes
 python -m agency_agents install --tool vibe
 python -m agency_agents install --tool dsh
+python -m agency_agents install --tool zcode
+python -m agency_agents install --tool pi-agent
+python -m agency_agents install --tool oh-my-pi
 ```
 
 **Install only the teams you need** (not everyone wants every division):
@@ -95,7 +98,7 @@ python -m agency_agents install --tool dsh
 ```bash
 python -m agency_agents install                                    # interactive wizard: pick tools + teams
 python -m agency_agents install --tool claude-code --division engineering,security
-python -m agency_agents install --tool cursor --agent frontend-developer,ui-designer
+python -m agency_agents install --tool cursor --scope project --agent frontend-developer,ui-designer
 python -m agency_agents install --list teams                       # see every team + agent count
 python -m agency_agents install --tool opencode --division engineering --dry-run
 ```
@@ -754,7 +757,7 @@ The Agency works natively with Claude Code, and ships conversion + install scrip
 
 - **[Claude Code](https://claude.ai/code)** — native `.md` agents, no conversion needed → `~/.claude/agents/`
 - **[GitHub Copilot](https://github.com/copilot)** — native `.md` agents, no conversion needed → `~/.github/agents/` + `~/.copilot/agents/`
-- **[Antigravity](https://github.com/google-gemini/antigravity)** — `SKILL.md` per agent → `~/.gemini/config/skills/`
+- **[Antigravity](https://github.com/google-gemini/antigravity)** — `.md` agents with role-specific tool declarations → `~/.gemini/config/agents/` (user) or `.agents/agents/` (project)
 - **[Gemini CLI](https://github.com/google-gemini/gemini-cli)** -- `.md` agent files -> `~/.gemini/agents/`
 - **[OpenCode](https://opencode.ai)** — `.md` agent files → `.opencode/agents/`
 - **[Cursor](https://cursor.sh)** — `.mdc` rule files → `.cursor/rules/`
@@ -767,50 +770,27 @@ The Agency works natively with Claude Code, and ships conversion + install scrip
 - **Osaurus** -- `SKILL.md` skills -> `~/.osaurus/skills/`
 - **[Hermes](integrations/hermes/README.md)** -- lazy-router plugin -> `~/.hermes/plugins/`
 - **[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)** — `SKILL.md` skills → `~/.dsh/skills/` (user) or `.dsh/skills/` (project)
+- **Pi Agent** — `.md` agents → `~/.pi/agent/agents/` (user) or `.pi/agents/` (project)
+- **Oh My Pi** — `.md` agents → `~/.omp/agent/agents/` (user) or `.omp/agents/` (project)
+- **ZCode** — `.md` agents → `~/.zcode/agents/` (user) or `.zcode/agents/` (project)
 
 ---
 
 ### ⚡ Quick Install
 
-**Step 1 -- Generate integration files:**
+**Step 1 -- Install agents:**
 
 ```bash
 python -m agency_agents install
 # Faster (parallel, output order may vary): python -m agency_agents install --no-interactive --parallel
 ```
 
-The installer scans your system for installed tools, shows a checkbox UI, and lets you pick exactly what to install:
-
-```
-  +------------------------------------------------+
-  |   The Agency -- Tool Installer                 |
-  +------------------------------------------------+
-
-  System scan: [*] = detected on this machine
-
-  [x]  1)  [*]  Claude Code     (claude.ai/code)
-  [x]  2)  [*]  Copilot         (~/.github + ~/.copilot)
-  [x]  3)  [*]  Antigravity     (~/.gemini/antigravity)
-  [ ]  4)  [ ]  Gemini CLI      (~/.gemini/agents)
-  [ ]  5)  [ ]  OpenCode        (opencode.ai)
-  [ ]  6)  [ ]  OpenClaw        (~/.openclaw/agency-agents)
-  [x]  7)  [*]  Cursor          (.cursor/rules)
-  [ ]  8)  [ ]  Aider           (CONVENTIONS.md)
-  [ ]  9)  [ ]  Windsurf        (.windsurfrules)
-  [ ] 10)  [ ]  Qwen Code       (~/.qwen/agents)
-  [ ] 11)  [ ]  Kimi Code       (~/.config/kimi/agents)
-  [ ] 12)  [ ]  Codex           (~/.codex/agents)
-  [ ] 13)  [ ]  Osaurus         (~/.osaurus/skills)
-  [ ] 14)  [ ]  Hermes          (~/.hermes/plugins)
-
-  [1-14] toggle   [a] all   [n] none   [d] detected
-  [Enter] install   [q] quit
-```
+The installer scans your system for installed tools, shows a checkbox UI, and lets you pick exactly what to install. Run `python -m agency_agents install --list tools` to print the current catalog.
 
 **Or install a specific tool directly:**
 
 ```bash
-python -m agency_agents install --tool cursor
+python -m agency_agents install --tool cursor --scope project
 python -m agency_agents install --tool opencode
 python -m agency_agents install --tool openclaw
 python -m agency_agents install --tool antigravity
@@ -825,7 +805,7 @@ python -m agency_agents install --tool hermes
 python -m agency_agents install --no-interactive
 ```
 
-**Faster runs (parallel)** — On multi-core machines, use `--parallel` so each tool is processed in parallel. Output order across tools is non-deterministic. Works with both interactive and non-interactive install: e.g. `python -m agency_agents install --interactive --parallel` (pick tools, then install in parallel) or `python -m agency_agents install --no-interactive --parallel`. Job count defaults to `nproc` (Linux), `sysctl -n hw.ncpu` (macOS), or 4; override with `--jobs N`.
+**Faster runs (parallel)** — Use `--parallel` so agents within each tool are rendered in parallel. Output order across tools is non-deterministic. Works with both interactive and non-interactive install: e.g. `python -m agency_agents install --interactive --parallel` (pick tools, then install in parallel) or `python -m agency_agents install --no-interactive --parallel`. Job count defaults to 4; override with `--jobs N`.
 
 ```bash
 python -m agency_agents install --no-interactive --parallel   # install all detected tools in parallel
@@ -876,7 +856,10 @@ See [integrations/github-copilot/README.md](integrations/github-copilot/README.m
 <details>
 <summary><strong>Antigravity (Gemini)</strong></summary>
 
-Each agent becomes a skill in `~/.gemini/config/skills/agency-<slug>/`.
+Each agent becomes a markdown file in `~/.gemini/config/agents/` (user) or
+`.agents/agents/` (project), with no `agency-` prefix. The renderer declares
+role-specific tools: `agents-orchestrator` is the main agent with delegation
+tools, and every other agent is a subagent with execution tools only.
 
 ```bash
 python -m agency_agents install --tool antigravity
@@ -885,7 +868,7 @@ python -m agency_agents install --tool antigravity
 Activate in Gemini with Antigravity:
 
 ```
-@agency-frontend-developer review this React component
+Use the frontend-developer agent to review this React component.
 ```
 
 See [integrations/antigravity/README.md](integrations/antigravity/README.md) for details.
@@ -911,14 +894,13 @@ Agents are placed in `.opencode/agents/` in your project root (project-scoped).
 
 ```bash
 cd /your/project
-python -m agency_agents install --tool opencode
+python -m agency_agents install --tool opencode --scope project
 ```
 
-Or install globally:
+Or install globally (user scope):
 
 ```bash
-mkdir -p ~/.config/opencode/agents
-cp integrations/opencode/agents/*.md ~/.config/opencode/agents/
+python -m agency_agents install --tool opencode
 ```
 
 Activate in OpenCode:
@@ -937,7 +919,7 @@ Each agent becomes a `.mdc` rule file in `.cursor/rules/` of your project.
 
 ```bash
 cd /your/project
-python -m agency_agents install --tool cursor
+python -m agency_agents install --tool cursor --scope project
 ```
 
 Rules are auto-applied when Cursor detects them in the project. Reference them explicitly:
@@ -959,7 +941,7 @@ file lists the agents rather than inlining them.
 
 ```bash
 cd /your/project
-python -m agency_agents install --tool aider
+python -m agency_agents install --tool aider --scope project
 ```
 
 Then reference agents in your Aider session:
@@ -984,7 +966,7 @@ All agents are compiled into `.windsurfrules` in your project root.
 
 ```bash
 cd /your/project
-python -m agency_agents install --tool windsurf
+python -m agency_agents install --tool windsurf --scope project
 ```
 
 Reference agents in Windsurf's Cascade:

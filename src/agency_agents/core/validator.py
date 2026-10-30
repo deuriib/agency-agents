@@ -1,6 +1,7 @@
 from typing import List, Tuple
 from pathlib import Path
 from agency_agents.infrastructure.catalog import CatalogManager
+from agency_agents.core.converter import NON_RENDERABLE_FORMATS, registered_formats
 from agency_agents.core.parser import MarkdownParser
 from agency_agents.core.models import Agent
 
@@ -48,13 +49,32 @@ class LintEngine:
         """
         errors = []
         catalog = self.catalog.load_tools()
-        
+        renderer_formats = registered_formats()
+
         for kebab, tool in catalog.tools.items():
             if kebab != tool.kebab:
                 errors.append(f"Tool key '{kebab}' does not match kebab field '{tool.kebab}'")
             if not tool.id or not tool.label or not tool.format or not tool.installKind:
                 errors.append(f"Tool '{kebab}' is missing required fields (id, label, format, or installKind)")
-        
+
+            if tool.installKind == "per-agent" and tool.format not in renderer_formats:
+                errors.append(
+                    f"Tool '{kebab}' is per-agent but format '{tool.format}' has no renderer. "
+                    f"Register it in converter._FORMAT_RENDERERS."
+                )
+            if (
+                tool.installKind != "per-agent"
+                and tool.format not in renderer_formats
+                and tool.format not in NON_RENDERABLE_FORMATS
+            ):
+                errors.append(
+                    f"Tool '{kebab}' ({tool.installKind}) declares format '{tool.format}' with no renderer "
+                    f"and is not a known non-renderable format."
+                )
+
+            if not any(tool.dest.get(scope) for scope in ("user", "project")):
+                errors.append(f"Tool '{kebab}' has no destination for either user or project scope")
+
         return errors
 
     def lint_agents(self, division_path: Path) -> List[Tuple[Path, str]]:

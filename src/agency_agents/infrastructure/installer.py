@@ -66,15 +66,22 @@ class InstallationManager:
     ):
         tool = self.catalog.load_tools().tools.get(tool_kebab)
         if not tool:
-            return
+            raise RuntimeError(f"Unknown tool: {tool_kebab}")
+
+        dests = tool.dest.get(scope, [])
+        if not dests:
+            supported = [s for s in ("user", "project") if tool.dest.get(s)]
+            raise RuntimeError(
+                f"{tool_kebab}: no destination for scope '{scope}' "
+                f"(supported: {', '.join(supported) or 'none'})"
+            )
 
         if outputs is None:
             outputs = self.converter.convert_agent_for_tool(agent, tool_kebab)
         if not outputs:
-            return
-
-        dests = tool.dest.get(scope, [])
-        if not dests: return
+            raise RuntimeError(
+                f"{tool_kebab}: renderer produced no output for agent '{agent.slug}'"
+            )
 
         slug = agent.slug
         if tool.slugPrefix:
@@ -89,7 +96,11 @@ class InstallationManager:
     def install_roster(self, agents: List[Agent], tool_kebab: str, scope: str = "user"):
         tool = self.catalog.load_tools().tools.get(tool_kebab)
         if not tool or tool.installKind != "roster":
-            return
+            raise RuntimeError(f"{tool_kebab}: not a roster tool")
+
+        dests = tool.dest.get(scope, [])
+        if not dests:
+            raise RuntimeError(f"{tool_kebab}: no destination for scope '{scope}'")
 
         header = f"# Agency Agents Roster for {tool.label}\n\n"
         body = ""
@@ -97,7 +108,6 @@ class InstallationManager:
             body += f"## {agent.frontmatter.name}\n{agent.body}\n\n---\n\n"
         
         full_content = header + body
-        dests = tool.dest.get(scope, [])
         for pattern in dests:
             target = self.resolve_path(pattern, "roster", scope)
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -144,7 +154,17 @@ class InstallationManager:
         jobs: int = 4,
     ):
         tool = self.catalog.load_tools().tools.get(tool_kebab)
-        if not tool: return
+        if not tool:
+            raise RuntimeError(f"Unknown tool: {tool_kebab}")
+        if not agents:
+            raise RuntimeError(f"{tool_kebab}: no agents selected")
+
+        if not tool.dest.get(scope):
+            supported = [s for s in ("user", "project") if tool.dest.get(s)]
+            raise RuntimeError(
+                f"{tool_kebab}: no destination for scope '{scope}' "
+                f"(supported: {', '.join(supported) or 'none'})"
+            )
 
         if tool.installKind == "plugin":
             self.install_plugin(tool_kebab, scope)

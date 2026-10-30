@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from agency_agents.core.converter import ConverterEngine
+from agency_agents.core.converter import ConverterEngine, UnknownFormatError
 from agency_agents.core.models import Agent, AgentFrontmatter
 from agency_agents.infrastructure.catalog import CatalogManager
 
@@ -59,3 +59,18 @@ def test_missing_tool_conversion(tmp_path):
     agent = Agent(slug="test", path="p", frontmatter=AgentFrontmatter(name="T"), body="B")
     outputs = engine.convert_agent_for_tool(agent, "non-existent-tool")
     assert outputs == []
+
+
+def test_unknown_format_fails_loudly(tmp_path):
+    """A tools.json typo must not fall back to identity rendering."""
+    import json
+    tools = {"tools": {"mystery": {"id":"m","label":"M","short":"M","kebab":"mystery","accent":"#000","icon":None,"order":1,"scope":{"user":True,"project":True},"detect":{"dirs":[],"agentsDir":None},"version":{"bin":"m","args":[]},"format":"does-not-exist","installKind":"per-agent","slugFrom":"name","dest":{"user":[".mystery/{slug}.md"],"project":[]}}}}
+    (tmp_path / "tools.json").write_text(json.dumps(tools))
+
+    engine = ConverterEngine(tmp_path)
+    agent = Agent(slug="test", path="p", frontmatter=AgentFrontmatter(name="T"), body="B")
+
+    with pytest.raises(UnknownFormatError, match="does-not-exist"):
+        engine.convert_agent_for_tool(agent, "mystery")
+    with pytest.raises(UnknownFormatError, match="unknown-format"):
+        engine.get_renderer("unknown-format")

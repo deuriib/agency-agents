@@ -69,6 +69,76 @@ def test_antigravity_primary_mode():
     assert "mainAgent: true" in outputs[0][1]
     assert "subagent: true" not in outputs[0][1]
 
+
+DELEGATION_TOOLS = frozenset(
+    {"invoke_subagent", "manage_subagents", "send_message", "manage_task"}
+)
+EXECUTION_TOOLS = frozenset(
+    {
+        "view_file",
+        "write_to_file",
+        "replace_file_content",
+        "grep_search",
+        "find_by_name",
+        "list_dir",
+        "run_command",
+    }
+)
+
+
+def _antigravity_tools(content: str) -> set[str]:
+    """Extract the rendered `tools:` list from Antigravity frontmatter."""
+    line = next(l for l in content.splitlines() if l.startswith("tools: "))
+    raw = line.removeprefix("tools: ").strip().strip("[]")
+    return {tool.strip() for tool in raw.split(",") if tool.strip()}
+
+
+def _render_antigravity(slug: str, **frontmatter_kwargs) -> str:
+    engine = ConverterEngine(Path("."))
+    fm = AgentFrontmatter(name=frontmatter_kwargs.pop("name", "AntiTest"), **frontmatter_kwargs)
+    agent = Agent(slug=slug, path="p", frontmatter=fm, body="Body")
+    return engine.convert_agent_for_tool(agent, "antigravity")[0][1]
+
+
+def test_antigravity_subagent_declares_execution_tools_only():
+    """Subagents get the execution surface and never the delegation surface."""
+    content = _render_antigravity("frontend-developer")
+
+    assert "subagent: true" in content
+    assert "mainAgent:" not in content
+    assert _antigravity_tools(content) == set(EXECUTION_TOOLS)
+    assert _antigravity_tools(content).isdisjoint(DELEGATION_TOOLS)
+
+
+def test_antigravity_main_agent_declares_delegation_tools():
+    """The main agent gets delegation plus execution tools."""
+    content = _render_antigravity("agents-orchestrator")
+
+    assert "mainAgent: true" in content
+    assert "subagent:" not in content
+    assert _antigravity_tools(content) == set(DELEGATION_TOOLS | EXECUTION_TOOLS)
+
+
+def test_antigravity_overwrites_source_tools():
+    """Claude-style source tool names must not leak into the rendered list."""
+    content = _render_antigravity("tester", extra={"tools": "Read, Write, Bash"})
+
+    tools = _antigravity_tools(content)
+    assert {"Read", "Write", "Bash"}.isdisjoint(tools)
+    assert "run_command" in tools
+
+
+def test_antigravity_does_not_mutate_source_frontmatter():
+    """Render overrides stay in the render layer."""
+    fm = AgentFrontmatter(name="AntiTest")
+    agent = Agent(slug="anti", path="p", frontmatter=fm, body="Body")
+
+    ConverterEngine(Path(".")).convert_agent_for_tool(agent, "antigravity")
+
+    assert "tools" not in agent.frontmatter.extra
+    assert "subagent" not in agent.frontmatter.extra
+
+
 def test_render_policy_is_scoped_to_orchestrator():
     """Primary status is a render-level policy, not agent content."""
     from agency_agents.core.converter import PRIMARY_AGENT_SLUGS

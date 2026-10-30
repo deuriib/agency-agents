@@ -37,3 +37,39 @@ def test_divisions_flags_untracked_support_dir(tmp_path):
     engine = LintEngine(tmp_path)
     errors = engine.check_divisions_consistency()
     assert any("rogue-div" in e for e in errors)
+
+
+def tool_entry(**overrides):
+    entry = {
+        "id": "x", "label": "X", "short": "X", "kebab": "x", "accent": "#000",
+        "icon": None, "order": 1,
+        "scope": {"user": True, "project": True},
+        "detect": {"dirs": [], "agentsDir": None},
+        "version": {"bin": "x", "args": []},
+        "format": "identity", "installKind": "per-agent", "slugFrom": "name",
+        "dest": {"user": [".x/{slug}.md"], "project": []},
+    }
+    entry.update(overrides)
+    return {"tools": {"x": entry}}
+
+
+def test_tools_flags_format_without_renderer(tmp_path):
+    (tmp_path / "tools.json").write_text(json.dumps(tool_entry(format="made-up-format")))
+
+    errors = LintEngine(tmp_path).check_tools_consistency()
+    assert any("made-up-format" in e and "no renderer" in e for e in errors)
+
+
+def test_tools_accepts_registered_format(tmp_path):
+    (tmp_path / "tools.json").write_text(json.dumps(tool_entry(format="antigravity-md")))
+
+    assert LintEngine(tmp_path).check_tools_consistency() == []
+
+
+def test_tools_flags_tool_without_destinations(tmp_path):
+    (tmp_path / "tools.json").write_text(
+        json.dumps(tool_entry(dest={"user": [], "project": []}))
+    )
+
+    errors = LintEngine(tmp_path).check_tools_consistency()
+    assert any("no destination" in e for e in errors)
