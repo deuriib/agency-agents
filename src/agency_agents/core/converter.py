@@ -60,13 +60,46 @@ def is_primary_agent(agent: Agent) -> bool:
 
 class AntigravityRenderer(IdentityRenderer):
     """Antigravity agents are subagents unless the render policy marks them
-    primary, in which case they are registered as the main agent instead."""
+    primary, in which case they are registered as the main agent instead.
+
+    Each category also declares the exact tools it may use. Antigravity reads
+    the `tools` list from frontmatter, so the renderer emits it here instead of
+    relying on the source agent's Claude-style tool names.
+    """
+    # Orchestration surface: delegation plus the shared execution tools.
+    MAIN_AGENT_TOOLS = (
+        "invoke_subagent",
+        "manage_subagents",
+        "send_message",
+        "manage_task",
+        "view_file",
+        "write_to_file",
+        "replace_file_content",
+        "grep_search",
+        "find_by_name",
+        "list_dir",
+        "run_command",
+    )
+    # Execution-only: every main-agent tool minus the delegation surface.
+    SUBAGENT_TOOLS = (
+        "view_file",
+        "write_to_file",
+        "replace_file_content",
+        "grep_search",
+        "find_by_name",
+        "list_dir",
+        "run_command",
+    )
+
     def frontmatter_overrides(self, frontmatter: Any, agent: Agent) -> None:
         if is_primary_agent(agent):
             frontmatter.extra.pop("subagent", None)
             frontmatter.extra["mainAgent"] = True
+            frontmatter.extra["tools"] = list(self.MAIN_AGENT_TOOLS)
         else:
+            frontmatter.extra.pop("mainAgent", None)
             frontmatter.extra["subagent"] = True
+            frontmatter.extra["tools"] = list(self.SUBAGENT_TOOLS)
 
 
 class OpencodeRenderer(IdentityRenderer):
