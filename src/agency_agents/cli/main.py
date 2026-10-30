@@ -14,7 +14,7 @@ from agency_agents.core.selection import (
 )
 from agency_agents.infrastructure.installer import InstallationManager
 from agency_agents.infrastructure.catalog import CatalogManager
-from agency_agents.infrastructure.tui import TUIWizard
+from agency_agents.infrastructure.tui import TUIWizard, WizardCancelled
 from agency_agents.infrastructure.hash_manager import HashManager, ManifestError
 from agency_agents.core.converter import ConverterEngine, UnknownFormatError
 from agency_agents.core.originality import run_originality_check
@@ -178,7 +178,7 @@ def _handle_list(console: Console, catalog, by_division, divisions, list_what: s
 def install(
     tool: Optional[str] = typer.Option(None, "--tool", help="Specific tool to install for"),
     interactive: bool = typer.Option(True, "--interactive/--no-interactive", help="Use interactive wizard"),
-    scope: str = typer.Option("user", "--scope", help="Installation scope: 'user' or 'project'"),
+    scope: Optional[str] = typer.Option(None, "--scope", help="Installation scope: 'user' or 'project' (asks in interactive mode, defaults to 'user' otherwise)"),
     parallel: bool = typer.Option(False, "--parallel", help="Run conversions in parallel"),
     jobs: int = typer.Option(4, "--jobs", help="Number of parallel jobs"),
     division: Optional[str] = typer.Option(None, "--division", help="Only these teams/divisions (comma-separated)"),
@@ -210,10 +210,18 @@ def install(
     interactive_run = interactive and not dry_run and not tool and not (division_ids or agent_ids or agents_file)
 
     if interactive_run:
-        wizard = TUIWizard(root_dir, catalog)
-        selected_tools = wizard.select_tools()
-        all_agents = [a for agents in by_division.values() for a in agents]
+        try:
+            selection = TUIWizard(root_dir, catalog).run(scope=scope)
+        except (WizardCancelled, KeyboardInterrupt, EOFError) as e:
+            message = str(e) or "Installation cancelled."
+            console.print(f"[bold yellow]{message}[/bold yellow]")
+            raise typer.Exit(code=1)
+
+        selected_tools = selection.tools
+        scope = selection.scope
+        all_agents = [a for d in selection.divisions for a in by_division[d]]
     else:
+        scope = scope or "user"
         selected_tools = [tool] if tool else list(catalog.load_tools().tools.keys())
         try:
             all_agents = select_agents(
