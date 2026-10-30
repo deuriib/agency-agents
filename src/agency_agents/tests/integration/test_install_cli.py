@@ -123,6 +123,36 @@ def test_install_unknown_agent_exits_1(tmp_path, monkeypatch):
     assert (tmp_path / ".claude").exists() is False
 
 
+def test_install_unknown_tool_exits_1(tmp_path, monkeypatch):
+    result = run_in_root(tmp_path, ["install", "--no-interactive", "--tool", "ghost-tool"], monkeypatch)
+    assert result.exit_code == 1
+    assert "Unknown tool" in result.output
+    assert "completed" not in result.output
+
+
+def test_install_project_only_tool_at_user_scope_exits_1(tmp_path, monkeypatch):
+    result = run_in_root(tmp_path, ["install", "--no-interactive", "--tool", "aider"], monkeypatch)
+    assert result.exit_code == 1
+    assert "no user destination" in result.output
+    assert (tmp_path / "CONVENTIONS.md").exists() is False
+
+
+def test_install_all_skips_project_only_tools_with_warning(tmp_path, monkeypatch):
+    result = run_in_root(tmp_path, ["install", "--no-interactive"], monkeypatch)
+    assert result.exit_code == 0, result.output
+    assert "Skipping tools with no user destination" in result.output
+    assert "aider" in result.output
+    assert (tmp_path / ".claude" / "agents" / "code-reviewer.md").exists()
+
+
+def test_convert_unknown_tool_exits_1(tmp_path, monkeypatch):
+    result = run_in_root(tmp_path, ["convert", "--tool", "ghost-tool", "--out", "out"], monkeypatch)
+    assert result.exit_code == 1
+    assert "Unknown tool" in result.output
+    assert "Conversion complete" not in result.output
+    assert (tmp_path / "out").exists() is False
+
+
 def test_list_teams_shows_counts(tmp_path):
     result = run_in_root(tmp_path, ["install", "--list", "teams"])
     assert result.exit_code == 0, result.output

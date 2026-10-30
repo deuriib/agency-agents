@@ -16,7 +16,7 @@ from agency_agents.infrastructure.installer import InstallationManager
 from agency_agents.infrastructure.catalog import CatalogManager
 from agency_agents.infrastructure.tui import TUIWizard
 from agency_agents.infrastructure.hash_manager import HashManager, ManifestError
-from agency_agents.core.converter import ConverterEngine
+from agency_agents.core.converter import ConverterEngine, UnknownFormatError
 from agency_agents.core.originality import run_originality_check
 
 # Windows consoles default to cp1252 and crash on the / of status output.
@@ -80,18 +80,27 @@ def lint():
         console.print("[bold green]✓ All agents passed linting.[/bold green]")
 
 def _collect_by_division(root_dir: Path, divisions) -> Dict[str, List]:
-    """Scan every division dir once; returns division name -> parsed agents."""
+    """Scan every division dir once; returns division name -> parsed agents.
+
+    A markdown file that opens with frontmatter but cannot be parsed is a hard
+    error: silently dropping it would convert an incomplete roster.
+    """
     by_division: Dict[str, List] = {}
     parser = MarkdownParser()
     for div in divisions:
         div_path = root_dir / div
         if not (div_path.exists() and div_path.is_dir()):
             continue
-        by_division[div] = [
-            agent
-            for file in div_path.rglob("*.md")
-            if (agent := parser.create_agent(str(file), file.read_text(encoding="utf-8")))
-        ]
+        agents = []
+        for file in div_path.rglob("*.md"):
+            content = file.read_text(encoding="utf-8")
+            agent = parser.create_agent(str(file), content)
+            if agent is None:
+                if content.startswith("---"):
+                    raise ValueError(f"Cannot parse agent frontmatter: {file}")
+                continue  # non-agent markdown (README, notes) is not part of the roster
+            agents.append(agent)
+        by_division[div] = agents
     return by_division
 
 
@@ -124,6 +133,15 @@ def _print_plan(console: Console, installer: InstallationManager, agents, tools,
             console.print(f"    {pattern}  [{marker}]")
         if not dests:
             console.print("    [dim]no destinations for this scope[/dim]")
+
+def _collect_roster(console: Console, root_dir: Path, divisions) -> Dict[str, List]:
+    """Parse the roster or exit with a clean error instead of a traceback."""
+    try:
+        return _collect_by_division(root_dir, divisions)
+    except ValueError as e:
+        console.print(f"[bold red]❌ {e}[/bold red]")
+        raise typer.Exit(code=1)
+
 
 def _handle_list(console: Console, catalog, by_division, divisions, list_what: str):
     """--list: print roster information and exit."""
@@ -178,12 +196,12 @@ def install(
 
     if list_what:
         divisions = list(catalog.load_divisions().divisions.keys())
-        by_division = _collect_by_division(root_dir, divisions)
+        by_division = _collect_roster(console, root_dir, divisions)
         _handle_list(console, catalog, by_division, divisions, list_what)
         return
 
     divisions = list(catalog.load_divisions().divisions.keys())
-    by_division = _collect_by_division(root_dir, divisions)
+    by_division = _collect_roster(console, root_dir, divisions)
     division_ids = [d.strip() for d in division.split(",") if d.strip()] if division else []
     agent_ids = [a.strip() for a in agent.split(",") if a.strip()] if agent else []
 
@@ -208,6 +226,39 @@ def install(
             console.print(f"[bold red]❌ {e}[/bold red]")
             raise typer.Exit(code=1)
 
+    tools_catalog = catalog.load_tools().tools
+    unknown = [t for t in selected_tools if t not in tools_catalog]
+    if unknown:
+        console.print(f"[bold red]❌ Unknown tool(s): {', '.join(unknown)}[/bold red]")
+        raise typer.Exit(code=1)
+
+    if scope not in ("user", "project"):
+        console.print(f"[bold red]❌ Invalid scope '{scope}'. Use 'user' or 'project'.[/bold red]")
+        raise typer.Exit(code=1)
+
+    unsupported = [t for t in selected_tools if not tools_catalog[t].dest.get(scope)]
+    if unsupported:
+        if tool is None:
+            # "install everything" means everything valid for this scope; make
+            # the skip visible instead of reporting a clean success.
+            console.print(
+                f"[bold yellow]⚠ Skipping tools with no {scope} destination: "
+                f"{', '.join(unsupported)} (use --scope project)[/bold yellow]"
+            )
+            selected_tools = [t for t in selected_tools if t not in unsupported]
+        else:
+            for t in unsupported:
+                supported = [s for s in ("user", "project") if tools_catalog[t].dest.get(s)]
+                console.print(
+                    f"[bold red]❌ {t} has no {scope} destination "
+                    f"(supported: {', '.join(supported) or 'none'})[/bold red]"
+                )
+            raise typer.Exit(code=1)
+
+    if not selected_tools:
+        console.print("[bold yellow]No tools applicable to this scope — nothing to install.[/bold yellow]")
+        return
+
     if not all_agents:
         console.print("[bold yellow]No agents matched the selection — nothing to install.[/bold yellow]")
         return
@@ -220,6 +271,7 @@ def install(
         console.print("[bold green]✓ Dry run complete — no files written.[/bold green]")
         return
 
+    failures: List[str] = []
     for t_kebab in selected_tools:
         with console.status(f"[bold yellow]Installing for {t_kebab}..."):
             try:
@@ -230,23 +282,44 @@ def install(
                     parallel=parallel,
                     jobs=jobs
                 )
-            except RuntimeError as e:
+            except (RuntimeError, UnknownFormatError) as e:
+                failures.append(t_kebab)
                 console.print(f"[bold red]❌ Error installing {t_kebab}:[/bold red] {e}")
+
+    if failures:
+        console.print(
+            f"[bold red]❌ {len(failures)} tool(s) failed to install: "
+            f"{', '.join(failures)}[/bold red]"
+        )
+        raise typer.Exit(code=1)
 
     console.print("[bold green]✓ Installation process completed![/bold green] ")
 
 def _load_all_agents(root_dir: Path, engine: ConverterEngine) -> List:
-    """Parse every agent in every division once."""
+    """Parse every agent in every division once; unparsable agents are fatal."""
     parser = MarkdownParser()
     agents = []
     for div in engine.catalog.load_divisions().divisions.keys():
         div_path = root_dir / div
         if div_path.exists() and div_path.is_dir():
             for file in div_path.rglob("*.md"):
-                agent = parser.create_agent(str(file), file.read_text(encoding="utf-8"))
-                if agent:
-                    agents.append(agent)
+                content = file.read_text(encoding="utf-8")
+                agent = parser.create_agent(str(file), content)
+                if agent is None:
+                    if content.startswith("---"):
+                        raise ValueError(f"Cannot parse agent frontmatter: {file}")
+                    continue
+                agents.append(agent)
     return agents
+
+
+def _load_roster(console: Console, root_dir: Path, engine: ConverterEngine) -> List:
+    """Load every agent or exit with a clean error instead of a traceback."""
+    try:
+        return _load_all_agents(root_dir, engine)
+    except ValueError as e:
+        console.print(f"[bold red]❌ {e}[/bold red]")
+        raise typer.Exit(code=1)
 
 
 def _per_agent_tools(engine: ConverterEngine) -> List[str]:
@@ -295,7 +368,7 @@ def verify(
     root_dir = Path(".").absolute()
     engine = ConverterEngine(root_dir)
     hash_manager = HashManager()
-    all_agents = _load_all_agents(root_dir, engine)
+    all_agents = _load_roster(console, root_dir, engine)
     targets = _resolve_targets(engine, tool, all_tools)
 
     failures = 0
@@ -331,7 +404,7 @@ def update_manifest(
     root_dir = Path(".").absolute()
     engine = ConverterEngine(root_dir)
     hash_manager = HashManager()
-    all_agents = _load_all_agents(root_dir, engine)
+    all_agents = _load_roster(console, root_dir, engine)
 
     if all_tools:
         targets = _per_agent_tools(engine)
@@ -378,67 +451,86 @@ def convert(
     """Generate tool-specific integration files from the agent roster (legacy convert.sh)."""
     root_dir = Path(".").absolute()
     catalog = CatalogManager(root_dir)
-    installer = InstallationManager(root_dir, Path.home())
     engine = ConverterEngine(root_dir)
-    parser = MarkdownParser()
 
     divisions = list(catalog.load_divisions().divisions.keys())
-    by_division = _collect_by_division(root_dir, divisions)
+    by_division = _collect_roster(console, root_dir, divisions)
     all_agents = [a for agents in by_division.values() for a in agents]
+    if not all_agents:
+        console.print("[bold red]❌ No agents found to convert.[/bold red]")
+        raise typer.Exit(code=1)
 
-    selected_tools = [tool] if tool else list(catalog.load_tools().tools.keys())
+    tools_catalog = catalog.load_tools().tools
+    selected_tools = [tool] if tool else list(tools_catalog.keys())
+    unknown = [t for t in selected_tools if t not in tools_catalog]
+    if unknown:
+        console.print(f"[bold red]❌ Unknown tool(s): {', '.join(unknown)}[/bold red]")
+        raise typer.Exit(code=1)
+
     out.mkdir(parents=True, exist_ok=True)
+    failures: List[str] = []
 
     for t_kebab in selected_tools:
-        tool_def = catalog.load_tools().tools.get(t_kebab)
-        if not tool_def:
-            console.print(f"[bold red]Unknown tool: {t_kebab}[/bold red]")
-            continue
-        if tool_def.installKind == "plugin":
-            # Hermes is a built artifact; delegate to the restored builder.
-            target = out / t_kebab
-            target.mkdir(parents=True, exist_ok=True)
-            build_script = root_dir / "scripts" / "build-hermes-plugin.py"
-            if not build_script.exists():
-                console.print(f"[bold yellow]Skipping {t_kebab}: build script missing.[/bold yellow]")
+        tool_def = tools_catalog[t_kebab]
+        try:
+            if tool_def.installKind == "plugin":
+                # Hermes is a built artifact; delegate to the restored builder.
+                target = out / t_kebab
+                target.mkdir(parents=True, exist_ok=True)
+                build_script = root_dir / "scripts" / "build-hermes-plugin.py"
+                if not build_script.exists():
+                    raise RuntimeError(f"build script missing: {build_script}")
+                import subprocess
+                result = subprocess.run(
+                    ["uv", "run", "python", str(build_script), "--out", str(target)],
+                    capture_output=True, text=True,
+                )
+                if result.returncode != 0:
+                    detail = (result.stderr or result.stdout or "").strip()
+                    raise RuntimeError(f"build failed (exit {result.returncode}): {detail}")
+                console.print(f"[bold green]✓ {t_kebab}: built into {target}[/bold green]")
                 continue
-            import subprocess
-            subprocess.run(
-                ["uv", "run", "python", str(build_script), "--out", str(target)],
-                check=False, capture_output=True, text=True,
-            )
-            console.print(f"[bold green]✓ {t_kebab}: built into {target}[/bold green]")
-            continue
-        if tool_def.installKind == "roster":
-            # Roster tools produce a single consolidated file.
-            header = f"# Agency Agents Roster for {tool_def.label}\n\n"
-            body = "".join(f"## {a.frontmatter.name}\n{a.body}\n\n---\n\n" for a in all_agents)
-            target = out / t_kebab
-            target.mkdir(parents=True, exist_ok=True)
-            filename = "CONVENTIONS.md" if t_kebab == "aider" else ".windsurfrules"
-            (target / filename).write_text(header + body, encoding="utf-8")
-            console.print(f"[bold green]✓ {t_kebab}: {len(all_agents)} agents -> {target / filename}[/bold green]")
-            continue
 
-        target = out / t_kebab
-        target.mkdir(parents=True, exist_ok=True)
-        count = 0
-        if parallel:
-            outputs_by_slug = engine.convert_all_parallel(all_agents, t_kebab, jobs=jobs)
-        else:
-            outputs_by_slug = None
-        for agent in all_agents:
-            outputs = (
-                outputs_by_slug.get(agent.slug) if outputs_by_slug else None
-            ) or engine.convert_agent_for_tool(agent, t_kebab)
-            if not outputs:
+            if tool_def.installKind == "roster":
+                # Roster tools produce a single consolidated file.
+                header = f"# Agency Agents Roster for {tool_def.label}\n\n"
+                body = "".join(f"## {a.frontmatter.name}\n{a.body}\n\n---\n\n" for a in all_agents)
+                target = out / t_kebab
+                target.mkdir(parents=True, exist_ok=True)
+                filename = "CONVENTIONS.md" if t_kebab == "aider" else ".windsurfrules"
+                (target / filename).write_text(header + body, encoding="utf-8")
+                console.print(f"[bold green]✓ {t_kebab}: {len(all_agents)} agents -> {target / filename}[/bold green]")
                 continue
-            agent_dir = target / agent.slug
-            agent_dir.mkdir(parents=True, exist_ok=True)
-            for filename, content in outputs:
-                (agent_dir / filename).write_text(content, encoding="utf-8")
-            count += 1
-        console.print(f"[bold green]✓ {t_kebab}: {count} agents -> {target}[/bold green]")
+
+            target = out / t_kebab
+            target.mkdir(parents=True, exist_ok=True)
+            count = 0
+            if parallel:
+                outputs_by_slug = engine.convert_all_parallel(all_agents, t_kebab, jobs=jobs)
+            else:
+                outputs_by_slug = None
+            for agent in all_agents:
+                outputs = (
+                    outputs_by_slug.get(agent.slug) if outputs_by_slug else None
+                ) or engine.convert_agent_for_tool(agent, t_kebab)
+                if not outputs:
+                    raise RuntimeError(f"renderer produced no output for agent '{agent.slug}'")
+                agent_dir = target / agent.slug
+                agent_dir.mkdir(parents=True, exist_ok=True)
+                for filename, content in outputs:
+                    (agent_dir / filename).write_text(content, encoding="utf-8")
+                count += 1
+            console.print(f"[bold green]✓ {t_kebab}: {count} agents -> {target}[/bold green]")
+        except (RuntimeError, UnknownFormatError) as e:
+            failures.append(t_kebab)
+            console.print(f"[bold red]❌ {t_kebab}: {e}[/bold red]")
+
+    if failures:
+        console.print(
+            f"[bold red]❌ {len(failures)} tool(s) failed to convert: "
+            f"{', '.join(failures)}[/bold red]"
+        )
+        raise typer.Exit(code=1)
 
     console.print("[bold green]✓ Conversion complete.[/bold green]")
 
