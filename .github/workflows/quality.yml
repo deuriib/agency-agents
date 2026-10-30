@@ -31,3 +31,64 @@ jobs:
 
       - name: Run Tests
         run: uv run pytest src/agency_agents/tests
+
+  antigravity-staging:
+    name: Stage Antigravity Bundle
+    needs: quality
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v1
+
+      - name: Install Dependencies
+        run: uv sync
+
+      - name: Render Bundle
+        run: uv run python -m agency_agents convert --tool antigravity --out "$RUNNER_TEMP/bundle"
+
+      - name: Install into Staging HOME
+        env:
+          HOME: ${{ runner.temp }}/staging-home
+        run: uv run python -m agency_agents install --tool antigravity --no-interactive --scope user
+
+      - name: Assert Staged Artifacts
+        env:
+          HOME: ${{ runner.temp }}/staging-home
+        run: |
+          set -euo pipefail
+          agents_dir="$HOME/.gemini/config/agents"
+          main="$agents_dir/agents-orchestrator.md"
+          sub="$agents_dir/frontend-developer.md"
+
+          test -f "$main"
+          test -f "$sub"
+
+          # Main agent: promoted, with the delegation surface.
+          grep -q "mainAgent: true" "$main"
+          grep -q "invoke_subagent" "$main"
+          ! grep -q "subagent: true" "$main"
+
+          # Subagent: execution surface only, no delegation tools.
+          grep -q "subagent: true" "$sub"
+          ! grep -qE "invoke_subagent|manage_subagents|send_message|manage_task" "$sub"
+
+          # Every staged agent declares a tools list.
+          for file in "$agents_dir"/*.md; do
+            grep -q "^tools: \[" "$file"
+          done
+
+          echo "staged $(find "$agents_dir" -name '*.md' | wc -l) agents"
+
+      - name: Upload Staging Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: antigravity-staging-bundle
+          path: ${{ runner.temp }}/bundle
+          retention-days: 7
