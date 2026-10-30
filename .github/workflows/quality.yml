@@ -51,12 +51,20 @@ jobs:
         run: uv sync
 
       - name: Render Bundle
-        run: uv run python -m agency_agents convert --tool antigravity --out "$RUNNER_TEMP/bundle"
+        run: |
+          set -euo pipefail
+          for tool in antigravity pi-agent oh-my-pi; do
+            uv run python -m agency_agents convert --tool "$tool" --out "$RUNNER_TEMP/bundle"
+          done
 
       - name: Install into Staging HOME
         env:
           HOME: ${{ runner.temp }}/staging-home
-        run: uv run python -m agency_agents install --tool antigravity --no-interactive --scope user
+        run: |
+          set -euo pipefail
+          for tool in antigravity pi-agent oh-my-pi; do
+            uv run python -m agency_agents install --tool "$tool" --no-interactive --scope user
+          done
 
       - name: Assert Staged Artifacts
         env:
@@ -84,7 +92,14 @@ jobs:
             grep -q "^tools: \[" "$file"
           done
 
-          echo "staged $(find "$agents_dir" -name '*.md' | wc -l) agents"
+          # Pi Agent and Oh My Pi use the gemini-md renderer.
+          for path in "$HOME/.pi/agent/agents" "$HOME/.omp/agent/agents"; do
+            test -f "$path/agents-orchestrator.md"
+            test -f "$path/frontend-developer.md"
+            grep -q "^name: " "$path/frontend-developer.md"
+          done
+
+          echo "staged $(find "$agents_dir" -name '*.md' | wc -l) antigravity agents, plus pi-agent and oh-my-pi"
 
       - name: Upload Staging Bundle
         uses: actions/upload-artifact@v4
