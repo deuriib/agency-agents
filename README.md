@@ -5,8 +5,8 @@
 [![GitHub stars](https://img.shields.io/github/stars/msitarzewski/agency-agents?style=social)](https://github.com/msitarzewski/agency-agents)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://makeapullrequest.com)
-[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github)](https://github.com/sponsors/msitarzewski)
-[![Download the app](https://img.shields.io/github/v/release/msitarzewski/agency-agents-app?label=Download%20app&color=2563eb)](https://github.com/msitarzewski/agency-agents-app/releases/latest)
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github)](https://github.com/sponsors/deuriib)
+[![Download the app](https://img.shields.io/github/v/release/msitarzewski/agency-agents-app?label=Download%20app&color=2563eb)](https://github.com/deuriib/agency-agents-app/releases/latest)
 
 > ### 🆕 There's an app now
 >
@@ -35,7 +35,7 @@ Born from a Reddit thread and months of iteration, **The Agency** is a growing c
 
 The fastest way in — no clone, no terminal. [**Agency Agents**](https://agencyagents.app) is a native desktop app (macOS · Linux · Windows) that browses the whole roster and installs agents into Claude Code, Cursor, Codex, Gemini CLI, OpenCode, Qwen, and Osaurus for you, then keeps them up to date.
 
-**[⬇ Download the latest release](https://github.com/msitarzewski/agency-agents-app/releases/latest)** — or on a Mac:
+**[⬇ Download the latest release](https://github.com/deuriib/agency-agents-app/releases/latest)** — or on a Mac:
 
 ```bash
 brew install --cask msitarzewski/agency-agents/agency-agents
@@ -1152,8 +1152,8 @@ To everyone who has opened a PR, filed an issue, started a Discussion, or simply
 
 ## 💬 Community
 
-- **GitHub Discussions**: [Share your success stories](https://github.com/msitarzewski/agency-agents/discussions)
-- **Issues**: [Report bugs or request features](https://github.com/msitarzewski/agency-agents/issues)
+- **GitHub Discussions**: [Share your success stories](https://github.com/deuriib/agency-agents/discussions)
+- **Issues**: [Report bugs or request features](https://github.com/deuriib/agency-agents/issues)
 - **Reddit**: Join the conversation on r/ClaudeAI
 - **Twitter/X**: Share with #TheAgency
 
@@ -1173,7 +1173,7 @@ To everyone who has opened a PR, filed an issue, started a Discussion, or simply
 
 **🎭 The Agency: Your AI Dream Team Awaits 🎭**
 
-[⭐ Star this repo](https://github.com/msitarzewski/agency-agents) • [🍴 Fork it](https://github.com/msitarzewski/agency-agents/fork) • [🐛 Report an issue](https://github.com/msitarzewski/agency-agents/issues) • [❤️ Sponsor](https://github.com/sponsors/msitarzewski)
+[⭐ Star this repo](https://github.com/deuriib/agency-agents) • [🍴 Fork it](https://github.com/deuriib/agency-agents/fork) • [🐛 Report an issue](https://github.com/deuriib/agency-agents/issues) • [❤️ Sponsor](https://github.com/sponsors/deuriib)
 
 Made with ❤️ by the community, for the community
 
