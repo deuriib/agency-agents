@@ -19,7 +19,7 @@ def project_env(tmp_path):
             "opencode": {"id":"opencode","label":"opencode","short":"opencode","kebab":"opencode","accent":"#FF6B35","icon":"opencode","order":7,"scope":{"user":True,"project":True},"detect":{"dirs":[".config/opencode"],"agentsDir":None},"version":{"bin":"opencode","args":["--version"]},"format":"opencode-md","installKind":"per-agent","slugFrom":"name","dest":{"user":[".config/opencode/agents/{slug}.md"],"project":[".opencode/agents/{slug}.md"]}},
             "osaurus": {"id":"osaurus","label":"Osaurus","short":"Osaurus","kebab":"osaurus","accent":"#10B981","icon":None,"order":8,"scope":{"user":True,"project":False},"detect":{"dirs":[".osaurus"],"agentsDir":".osaurus/skills"},"version":{"bin":"osaurus","args":["--version"]},"format":"skill-md","installKind":"per-agent","slugFrom":"name","slugPrefix":"agency-","dest":{"user":[".osaurus/skills/{slug}/SKILL.md"],"project":[]}},
             "aider": {"id":"aider","label":"Aider","short":"Aider","kebab":"aider","accent":"#8B5CF6","icon":None,"order":9,"scope":{"user":False,"project":True},"detect":{"dirs":[],"agentsDir":None},"version":{"bin":"aider","args":["--version"]},"format":"aider-conventions","installKind":"roster","slugFrom":None,"dest":{"user":[],"project":["CONVENTIONS.md"]}},
-            "antigravity": {"id":"antigravity","label":"Antigravity","short":"antigravity","kebab":"antigravity","accent":"#0EA5E9","icon":"antigravity","order":10,"scope":{"user":True,"project":True},"detect":{"dirs":[".gemini/config/skills",".agents/skills"],"agentsDir":".gemini/config/skills"},"version":{"bin":"agy","args":["--version"]},"format":"skill-md","installKind":"per-agent","slugFrom":"name","slugPrefix":"agency-","dest":{"user":[".gemini/config/skills/{slug}/SKILL.md"],"project":[".agents/skills/{slug}/SKILL.md"]}},
+            "antigravity": {"id":"antigravity","label":"Antigravity","short":"antigravity","kebab":"antigravity","accent":"#0EA5E9","icon":"antigravity","order":10,"scope":{"user":True,"project":True},"detect":{"dirs":[".gemini/config/agents",".agents/agents"],"agentsDir":".gemini/config/agents"},"version":{"bin":"agy","args":["--version"]},"format":"antigravity-md","installKind":"per-agent","slugFrom":"name","dest":{"user":[".gemini/config/agents/{slug}.md"],"project":[".agents/agents/{slug}.md"]}},
             "kimi": {"id":"kimi","label":"Kimi","short":"Kimi","kebab":"kimi","accent":"#0F0F12","icon":"kimi","order":11,"scope":{"user":True,"project":False},"detect":{"dirs":[],"agentsDir":".config/kimi/agents"},"version":{"bin":"kimi","args":["--version"]},"format":"kimi-agent","installKind":"per-agent","slugFrom":"name","dest":{"user":[".config/kimi/agents/{slug}/agent.yaml",".config/kimi/agents/{slug}/system.md"],"project":[]}},
             "openclaw": {"id":"openclaw","label":"OpenClaw","short":"openclaw","kebab":"openclaw","accent":"#E11D48","icon":None,"order":12,"scope":{"user":True,"project":False},"detect":{"dirs":[".openclaw"],"agentsDir":".openclaw/agency-agents"},"version":{"bin":"openclaw","args":["--version"]},"format":"openclaw-workspace","installKind":"per-agent","slugFrom":"name","dest":{"user":[".openclaw/agency-agents/{slug}/SOUL.md",".openclaw/agency-agents/{slug}/AGENTS.md",".openclaw/agency-agents/{slug}/IDENTITY.md"],"project":[]}},
             "windsurf": {"id":"windsurf","label":"Windsurf","short":"Windsurf","kebab":"windsurf","accent":"#09B6A2","icon":"windsurf","order":13,"scope":{"user":False,"project":True},"detect":{"dirs":[".codeium"],"agentsDir":None},"version":{"bin":"windsurf","args":["--version"]},"format":"windsurf-rules","installKind":"roster","slugFrom":None,"dest":{"user":[],"project":[".windsurfrules"]}},
@@ -34,22 +34,22 @@ def project_env(tmp_path):
     return tmp_path
 
 def test_all_tools_installation(project_env):
-    """Verifies that every tool in tools.json can be processed without crashing."""
+    """Every tool installs through its declared mechanism and a valid scope."""
     root = project_env
     installer = InstallationManager(root, root / "home")
     fm = AgentFrontmatter(name="Global Agent")
     agent = Agent(slug="global-agent", path="p", frontmatter=fm, body="Global Body")
-    
-    tools = installer.catalog.load_tools().tools.keys()
-    for tool_kebab in tools:
-        # We use try-except because some plugins might fail if the build script is missing
-        # but the logic should not crash.
-        try:
-            installer.install_agent_for_tool(agent, tool_kebab, scope="user")
-        except RuntimeError as e:
-            if "Hermes build script not found" in str(e):
-                continue # Expected if script isn't in tmp_path
-            raise e
+
+    for kebab, tool in installer.catalog.load_tools().tools.items():
+        if tool.installKind == "plugin":
+            continue  # built artifact; missing-script behavior covered in edge cases
+        scope = "user" if tool.dest.get("user") else "project"
+        installer.install_all_for_tool([agent], kebab, scope=scope)
+
+        slug = f"{tool.slugPrefix or ''}{agent.slug}"
+        for pattern in tool.dest[scope]:
+            target = installer.resolve_path(pattern, slug, scope, tool_kebab=kebab)
+            assert target.exists(), f"{kebab}: expected {target}"
 
 def test_tool_specific_formats(project_env):
     root = project_env

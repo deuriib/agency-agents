@@ -11,6 +11,14 @@ Content = str
 RenderOutput = List[Tuple[Filename, Content]]
 
 
+class UnknownFormatError(ValueError):
+    """Raised when a tool declares a format no renderer implements.
+
+    Falling back to identity here is how a tool silently ships without its
+    declared behavior (e.g. Antigravity tools disappearing from frontmatter).
+    """
+
+
 class RenderContext:
     """Data passed to renderers to generate tool-specific files."""
     def __init__(self, agent: Agent, tool: ToolDefinition, target_path: Optional[Path] = None):
@@ -198,20 +206,19 @@ _FORMAT_RENDERERS: Dict[str, Type[BaseRenderer]] = {
     "zcode-md": ZcodeMdRenderer,
     "skill-md": SkillMdRenderer,
     "openclaw-workspace": OpenClawWorkspaceRenderer,
+    "antigravity-md": AntigravityRenderer,
 }
 
-# Tool-specific overrides take precedence over the format default.
-# These encode tool behavior that is not (yet) embedded in tools.json format names.
-# Reason: tools.json flips formats across tools over time (see antigravity),
-# behavior overrides live here so the catalog stays declarative.
-_TOOL_RENDERER_OVERRIDES: Dict[str, Type[BaseRenderer]] = {
-    "antigravity": AntigravityRenderer,
-    "opencode": OpencodeRenderer,
-}
+# Roster and plugin formats have no per-agent renderer: aider/windsurf install a
+# single consolidated file and hermes is a built artifact.
+NON_RENDERABLE_FORMATS = frozenset(
+    {"aider-conventions", "windsurf-rules", "hermes-router-plugin"}
+)
 
-# Formats that may fall back to identity until dedicated renderers are needed:
-# windsurf-rules / aider-conventions (roster installs via installer),
-# hermes-router-plugin (built via scripts/build-hermes-plugin.py).
+
+def registered_formats() -> frozenset[str]:
+    """Every format that resolves to a real renderer."""
+    return frozenset(_FORMAT_RENDERERS)
 
 
 def build_renderer_registry() -> Dict[str, BaseRenderer]:
@@ -220,27 +227,25 @@ def build_renderer_registry() -> Dict[str, BaseRenderer]:
 
 
 def select_renderer(tool: ToolDefinition, registry: Dict[str, BaseRenderer]) -> BaseRenderer:
-    """Pick the renderer for a tool: tool-level override first, format second."""
-    override = _TOOL_RENDERER_OVERRIDES.get(tool.kebab)
-    if override is not None:
-        return override()
-    return registry.get(tool.format, IdentityRenderer())
+    """Pick the renderer declared by the tool's format, or fail loudly."""
+    renderer = registry.get(tool.format)
+    if renderer is None:
+        raise UnknownFormatError(
+            f"Tool '{tool.kebab}' declares format '{tool.format}', which has no renderer. "
+            f"Register it in _FORMAT_RENDERERS. Known formats: {', '.join(sorted(registry))}"
+        )
+    return renderer
 
 
 def _parallel_render_worker(agent_data: tuple):
     """Standalone function for ProcessPoolExecutor to avoid pickling issues with complex objects."""
-    agent, tool_kebab, format_name, root_dir_str = agent_data
+    agent, tool_kebab, root_dir_str = agent_data
     catalog = CatalogManager(Path(root_dir_str))
     tool = catalog.load_tools().tools.get(tool_kebab)
-    registry = build_renderer_registry()
+    if tool is None:
+        raise ValueError(f"Unknown tool: {tool_kebab}")
 
-    effective_tool = copy.deepcopy(tool)
-    if effective_tool is not None:
-        # The worker rebuilds from the catalog; reapply the tool override decision.
-        renderer = select_renderer(effective_tool, registry)
-    else:
-        renderer = registry.get(format_name, IdentityRenderer())
-
+    renderer = select_renderer(tool, build_renderer_registry())
     context = RenderContext(agent, tool)
     return (agent.slug, renderer.render(context))
 
@@ -256,7 +261,14 @@ class ConverterEngine:
         self.renderers: Dict[str, BaseRenderer] = build_renderer_registry()
 
     def get_renderer(self, format_name: str) -> BaseRenderer:
-        return self.renderers.get(format_name, IdentityRenderer())
+        """Look up a renderer by format name; unknown formats are an error."""
+        renderer = self.renderers.get(format_name)
+        if renderer is None:
+            raise UnknownFormatError(
+                f"Unknown format '{format_name}'. Known formats: "
+                f"{', '.join(sorted(self.renderers))}"
+            )
+        return renderer
 
     def convert_agent_for_tool(self, agent: Agent, tool_kebab: str) -> RenderOutput:
         tool = self.catalog.load_tools().tools.get(tool_kebab)
@@ -272,9 +284,8 @@ class ConverterEngine:
         if not tool:
             return {}
 
-        format_name = tool.format
         worker_data = [
-            (agent, tool_kebab, format_name, str(self.root_dir))
+            (agent, tool_kebab, str(self.root_dir))
             for agent in agents
         ]
 
