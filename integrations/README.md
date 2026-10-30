@@ -1,266 +1,148 @@
 # 🔌 Integrations
 
-This directory contains The Agency integrations and converted formats for
-supported agentic coding tools.
+The Agency ships one renderer per tool format. `tools.json` is the single
+source of truth for formats, install kinds, destinations, and slugs; this page
+explains how to install and regenerate the artifacts.
 
 ## Supported Tools
 
-- **[Claude Code](#claude-code)** — `.md` agents, use the repo directly
-- **[GitHub Copilot](#github-copilot)** — `.md` agents, use the repo directly
-- **[Antigravity](#antigravity)** — `SKILL.md` per agent in `antigravity/`
-- **[Gemini CLI](#gemini-cli)** — `.md` agent files in `gemini-cli/agents/`
-- **[OpenCode](#opencode)** — `.md` agent files in `opencode/`
-- **[OpenClaw](#openclaw)** — `SOUL.md` + `AGENTS.md` + `IDENTITY.md` workspaces
-- **[Cursor](#cursor)** — `.mdc` rule files in `cursor/`
-- **[Aider](#aider)** — `CONVENTIONS.md` roster index in `aider/`
-- **[Windsurf](#windsurf)** — `.windsurfrules` in `windsurf/`
-- **[Kimi Code](#kimi-code)** — YAML agent specs in `kimi/`
-- **[Qwen Code](#qwen-code)** — project-scoped `.md` SubAgents in `.qwen/agents/`
-- **[Codex](#codex)** — `.toml` custom agents in `codex/`
-- **[Mistral Vibe](vibe/README.md)** — `.toml` agents + prompt files generated in `vibe/`
-- **Osaurus** -- `SKILL.md` skills generated in `osaurus/`
-- **[Hermes](hermes/README.md)** -- lazy-router plugin generated in `hermes/`
+| Tool | Format | Destination |
+| --- | --- | --- |
+| `claude-code` | `identity` | `~/.claude/agents/<slug>.md` |
+| `copilot` | `identity` | `~/.copilot/agents/<slug>.md` + `~/.github/agents/<slug>.md` |
+| `antigravity` | `antigravity-md` | `~/.gemini/config/agents/<slug>.md` (user), `.agents/agents/<slug>.md` (project) |
+| `gemini-cli` | `gemini-md` | `~/.gemini/agents/<slug>.md` |
+| `opencode` | `opencode-md` | `~/.config/opencode/agents/<slug>.md` (user), `.opencode/agents/<slug>.md` (project) |
+| `openclaw` | `openclaw-workspace` | `~/.openclaw/agency-agents/<slug>/{SOUL,AGENTS,IDENTITY}.md` |
+| `cursor` | `cursor-mdc` | `.cursor/rules/<slug>.mdc` (project only) |
+| `aider` | `aider-conventions` | `CONVENTIONS.md` roster (project only) |
+| `windsurf` | `windsurf-rules` | `.windsurfrules` roster (project only) |
+| `kimi` | `kimi-agent` | `~/.config/kimi/agents/<slug>/{agent.yaml,system.md}` |
+| `qwen` | `qwen-md` | `~/.qwen/agents/<slug>.md` (user), `.qwen/agents/<slug>.md` (project) |
+| `codex` | `codex-toml` | `~/.codex/agents/<slug>.toml` |
+| `vibe` | `vibe-toml` | `.vibe/agents/<slug>.toml` + `.vibe/prompts/<slug>.md` |
+| `zcode` | `zcode-md` | `~/.zcode/agents/<slug>.md` (user), `.zcode/agents/<slug>.md` (project) |
+| `osaurus` | `skill-md` | `~/.osaurus/skills/agency-<slug>/SKILL.md` |
+| `dsh` | `skill-md` | `~/.dsh/skills/agency-<slug>/SKILL.md` |
+| `pi-agent` | `gemini-md` | `~/.pi/agent/agents/<slug>.md` (user), `.pi/agents/<slug>.md` (project) |
+| `oh-my-pi` | `gemini-md` | `~/.omp/agent/agents/<slug>.md` (user), `.omp/agents/<slug>.md` (project) |
+| `hermes` | `hermes-router-plugin` | `~/.hermes/plugins/agency-agents-router` (built plugin) |
 
-## Quick Install
-
-```bash
-# Install for all detected tools automatically
-./scripts/install.sh
-
-# Install a specific home-scoped tool
-./scripts/install.sh --tool antigravity
-./scripts/install.sh --tool copilot
-./scripts/install.sh --tool openclaw
-./scripts/install.sh --tool claude-code
-./scripts/install.sh --tool codex
-./scripts/install.sh --tool osaurus
-./scripts/install.sh --tool hermes
-
-# Gemini CLI needs generated integration files on a fresh clone
-./scripts/convert.sh --tool gemini-cli
-./scripts/install.sh --tool gemini-cli
-
-# Qwen Code also needs generated SubAgent files on a fresh clone
-./scripts/convert.sh --tool qwen
-./scripts/install.sh --tool qwen
-```
-
-If you install OpenClaw and the gateway is already running, restart it after installation:
+## Install
 
 ```bash
-openclaw gateway restart
+# Interactive wizard
+python -m agency_agents install
+
+# One tool, user scope (default)
+python -m agency_agents install --tool antigravity
+
+# Project-scoped tools (OpenCode, Cursor, Aider, Windsurf, Qwen, ...)
+python -m agency_agents install --tool opencode --scope project
 ```
 
-For project-scoped tools such as OpenCode, Cursor, Aider, Windsurf, and Qwen
-Code, run
-the installer from your target project root as shown in the tool-specific
-sections below.
+The installer renders each agent from the source markdown on the fly. There is
+no separate conversion step to perform on a fresh clone.
 
-## Regenerating Integration Files
+Installing the full catalog (`--tool` omitted) skips tools that have no
+destination for the chosen scope and prints the skip. Naming a tool explicitly
+fails with exit code 1 instead of silently writing nothing.
 
-If you add or modify agents, regenerate all integration files:
+## Regenerate Integration Files
 
 ```bash
-./scripts/convert.sh
+# Every tool, written to integrations/<tool>/<slug>/
+python -m agency_agents convert
+
+# One tool
+python -m agency_agents convert --tool antigravity
 ```
 
----
-
-## Claude Code
-
-The Agency was originally designed for Claude Code. Agents work natively
-without conversion.
+Generated directories are gitignored. After changing a renderer or an agent,
+regenerate the hash manifest for the affected tool:
 
 ```bash
-cp -r <category>/*.md ~/.claude/agents/
-# or install everything at once:
-./scripts/install.sh --tool claude-code
+python -m agency_agents update-manifest antigravity
+python -m agency_agents verify --all
 ```
-
-See [claude-code/README.md](claude-code/README.md) for details.
-
----
-
-## GitHub Copilot
-
-The Agency also works natively with GitHub Copilot. Agents can be copied
-directly into `~/.github/agents/` and `~/.copilot/agents/` without conversion.
-
-```bash
-./scripts/install.sh --tool copilot
-```
-
-See [github-copilot/README.md](github-copilot/README.md) for details.
-
----
 
 ## Antigravity
 
-Skills are installed to `~/.gemini/config/skills/`. Each agent becomes
-a separate skill prefixed with `agency-` to avoid naming conflicts.
+Each agent is a markdown file in `~/.gemini/config/agents/` (user) or
+`.agents/agents/` (project). There is no `agency-` prefix. The renderer declares
+the tool surface per role:
+
+- `agents-orchestrator` is the main agent (`mainAgent: true`) and gets
+  `invoke_subagent`, `manage_subagents`, `send_message`, and `manage_task`
+  alongside the execution tools.
+- Every other agent is a subagent (`subagent: true`) and receives execution
+  tools only: `view_file`, `write_to_file`, `replace_file_content`,
+  `grep_search`, `find_by_name`, `list_dir`, `run_command`.
 
 ```bash
-./scripts/install.sh --tool antigravity
+python -m agency_agents install --tool antigravity
 ```
 
 See [antigravity/README.md](antigravity/README.md) for details.
 
----
+## Pi Agent and Oh My Pi
 
-## Gemini CLI
-
-Agents are packaged as Gemini CLI subagents.
-Subagents are installed to `~/.gemini/agents/`.
-Because the agent files are generated artifacts, run
-`./scripts/convert.sh --tool gemini-cli` before installing from a fresh clone.
+Both use the `gemini-md` renderer, so the output is the same agent markdown
+shape as Gemini CLI, installed into their own directories:
 
 ```bash
-./scripts/convert.sh --tool gemini-cli
-./scripts/install.sh --tool gemini-cli
+python -m agency_agents install --tool pi-agent
+python -m agency_agents install --tool oh-my-pi
 ```
 
-See [gemini-cli/README.md](gemini-cli/README.md) for details.
-
----
-
-## OpenCode
-
-Each agent becomes a project-scoped `.md` file in `.opencode/agents/`.
-
-```bash
-cd /your/project && /path/to/agency-agents/scripts/install.sh --tool opencode
-```
-
-See [opencode/README.md](opencode/README.md) for details.
-
----
+Project scope writes `.pi/agents/` and `.omp/agents/` respectively.
 
 ## OpenClaw
 
-Each agent becomes an OpenClaw workspace containing `SOUL.md`, `AGENTS.md`,
-and `IDENTITY.md`.
-
-Before installing, generate the OpenClaw workspaces:
+Each agent becomes a workspace with `SOUL.md`, `AGENTS.md`, and `IDENTITY.md`.
+Restart the gateway after installing if it is already running:
 
 ```bash
-./scripts/convert.sh --tool openclaw
+python -m agency_agents install --tool openclaw
+openclaw gateway restart
 ```
-
-Then install them:
-
-```bash
-./scripts/install.sh --tool openclaw
-```
-
-See [openclaw/README.md](openclaw/README.md) for details.
-
----
-
-## Cursor
-
-Each agent becomes a `.mdc` rule file. Rules are project-scoped — run the
-installer from your project root.
-
-```bash
-cd /your/project && /path/to/agency-agents/scripts/install.sh --tool cursor
-```
-
-See [cursor/README.md](cursor/README.md) for details.
-
----
-
-## Aider
-
-`CONVENTIONS.md` is the roster index — name, description, and the path to each
-agent's full instructions. Aider keeps a conventions file in context for the
-whole session, so the file lists the agents instead of inlining a million
-tokens of them.
-
-```bash
-cd /your/project && /path/to/agency-agents/scripts/install.sh --tool aider
-```
-
-See [aider/README.md](aider/README.md) for details.
-
----
-
-## Windsurf
-
-All agents are consolidated into a single `.windsurfrules` file for your
-project root.
-
-```bash
-cd /your/project && /path/to/agency-agents/scripts/install.sh --tool windsurf
-```
-
-See [windsurf/README.md](windsurf/README.md) for details.
-
----
 
 ## Kimi Code
 
-Each agent is converted to a Kimi Code CLI agent specification (YAML format with
-separate system prompt files). Agents are installed to `~/.config/kimi/agents/`.
-
-Because the Kimi agent files are generated from the source Markdown, run
-`./scripts/convert.sh --tool kimi` before installing from a fresh clone.
-
-```bash
-./scripts/convert.sh --tool kimi
-./scripts/install.sh --tool kimi
-```
-
-### Usage
-
-After installation, use an agent with the `--agent-file` flag:
+Kimi uses a YAML agent spec plus a separate system prompt. After installing,
+run an agent with `--agent-file`:
 
 ```bash
 kimi --agent-file ~/.config/kimi/agents/frontend-developer/agent.yaml
 ```
 
-Or in a specific project:
+## Hermes
+
+Hermes is a built plugin, not a per-agent render. `convert` runs the builder and
+fails the command if the build exits non-zero; `install` builds it into
+`~/.hermes/plugins/agency-agents-router`.
 
 ```bash
-cd /your/project
-kimi --agent-file ~/.config/kimi/agents/frontend-developer/agent.yaml \
-     --work-dir /your/project
+python -m agency_agents install --tool hermes
 ```
 
-See [kimi/README.md](kimi/README.md) for details.
+See [hermes/README.md](hermes/README.md) for details.
 
----
+## Per-tool guides
 
-## Qwen Code
-
-Each agent becomes a project-scoped `.md` SubAgent file in `.qwen/agents/`.
-
-From a fresh clone, generate the Qwen files first:
-
-```bash
-./scripts/convert.sh --tool qwen
-```
-
-Then install them from your project root:
-
-```bash
-cd /your/project && /path/to/agency-agents/scripts/install.sh --tool qwen
-```
-
-See [qwen/README.md](qwen/README.md) for details.
-
----
-
-## Codex
-
-Each agent is converted into a standalone Codex custom agent TOML file and
-installed to `~/.codex/agents/`.
-
-Because Codex uses generated TOML files rather than the source Markdown
-directly, run the converter before installing from a fresh clone:
-
-```bash
-./scripts/convert.sh --tool codex
-./scripts/install.sh --tool codex
-```
-
-See [codex/README.md](codex/README.md) for details.
+- [Claude Code](claude-code/README.md)
+- [GitHub Copilot](github-copilot/README.md)
+- [Antigravity](antigravity/README.md)
+- [Gemini CLI](gemini-cli/README.md)
+- [OpenCode](opencode/README.md)
+- [OpenClaw](openclaw/README.md)
+- [Cursor](cursor/README.md)
+- [Aider](aider/README.md)
+- [Windsurf](windsurf/README.md)
+- [Kimi Code](kimi/README.md)
+- [Qwen Code](qwen/README.md)
+- [Codex](codex/README.md)
+- [Mistral Vibe](vibe/README.md)
+- [Hermes](hermes/README.md)
+- [Pi Agent](pi-agent/README.md)
+- [Oh My Pi](oh-my-pi/README.md)
