@@ -197,6 +197,7 @@ Building the future, one commit at a time.
 | 🎯 [ATS Validator Architect](engineering/engineering-ats-validator-architect.md) | Resume parseability, ATS ingestion pipelines | BM25/TF-IDF relevance scoring, layout linearization audits, EU AI Act and NYC LL144 compliance |
 | 📑 [Universal Document Compiler](engineering/engineering-universal-document-compiler.md) | Schema-agnostic document ASTs, data-shape layout inference, paged publishing | Compiling arbitrary YAML trees into proposals, technical specs, executive dossiers |
 | 🛠️ [ServiceNow Developer & Mentor](engineering/engineering-servicenow-developer-mentor.md) | Business Rules, Script Includes, GlideAjax, ACLs, Flow Designer | ServiceNow development and step-by-step instance troubleshooting |
+| 🧾 [DGII e-CF Expert](engineering/engineering-dgii-ecf-expert.md) | Dominican e-CF XML, XMLDSig/C14N signing, DGII web services, event handling | Implementing, certifying, and operating electronic invoicing under Law 32-23 and Decreto 587-24 |
 
 ### 🎨 Design Division
 
@@ -456,6 +457,7 @@ Accounting, financial analysis, tax strategy, and investment research specialist
 | 📈 [FP&A Analyst](finance/finance-fpa-analyst.md) | Budgeting, rolling forecasts, variance analysis, business reviews | Annual operating plans, monthly business reviews, strategic resource allocation |
 | 🔍 [Investment Researcher](finance/finance-investment-researcher.md) | Due diligence, portfolio analysis, asset valuation, equity research | Investment thesis development, risk assessment, market research |
 | 🏛️ [Tax Strategist](finance/finance-tax-strategist.md) | Tax optimization, multi-jurisdictional compliance, transfer pricing | Entity structuring, ETR analysis, audit defense, strategic tax planning |
+| 💼 [DGII 606 Tax Compliance Specialist](finance/finance-dgii-606-tax-compliance-specialist.md) | Formato 606 filing, NCF/RNC validation, ITBIS/ISR retention auditing | Monthly purchase reporting, pre-validation, retention reconciliation, zero-activity filings |
 
 ### 🎮 Game Development Division
 
