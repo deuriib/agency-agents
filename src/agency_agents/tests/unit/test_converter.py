@@ -38,7 +38,7 @@ def test_antigravity_overrides():
     fm = AgentFrontmatter(name="AntiTest")
     agent = Agent(slug="anti", path="p", frontmatter=fm, body="Body")
     outputs = engine.convert_agent_for_tool(agent, "antigravity")
-    
+
     assert "subagent: true" in outputs[0][1]
     assert "name: AntiTest" in outputs[0][1]
 
@@ -48,7 +48,7 @@ def test_opencode_overrides():
     fm = AgentFrontmatter(name="OpenTest")
     agent = Agent(slug="open", path="p", frontmatter=fm, body="Body")
     outputs = engine.convert_agent_for_tool(agent, "opencode")
-    
+
     assert "mode: subagent" in outputs[0][1]
     assert "name: OpenTest" in outputs[0][1]
 
@@ -165,5 +165,5 @@ def test_identity_no_overrides():
     fm = AgentFrontmatter(name="Standard")
     agent = Agent(slug="std", path="p", frontmatter=fm, body="Body")
     outputs = engine.convert_agent_for_tool(agent, "claude-code")
-    
+
     assert "mode: subagent" not in outputs[0][1]

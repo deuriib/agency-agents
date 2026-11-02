@@ -1,0 +1,39 @@
+name: Documentation or infrastructure task
+description: Report wrong docs, a broken workflow, or repository tooling that needs work.
+title: "docs: "
+labels: ["type: docs", "status: needs-triage"]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of task
+      options:
+        - Wrong or outdated documentation
+        - Missing documentation
+        - Broken CI workflow
+        - Repository tooling (pre-commit, mise, labels)
+        - Release automation
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Where is it?
+      placeholder: "README.md § Installation, or .github/workflows/ci.yml"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong?
+    validations:
+      required: true
+
+  - type: textarea
+    id: fix
+    attributes:
+      label: Suggested fix
+    validations:
+      required: false

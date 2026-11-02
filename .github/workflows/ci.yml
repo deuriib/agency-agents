@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          version: "0.12.12"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv sync --frozen
+      - name: Ruff
+        run: uv run ruff check .
+      - name: Agent catalog lint
+        run: uv run python -m agency_agents lint
+
+  types:
+    name: types
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          version: "0.12.12"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv sync --frozen
+      - name: mypy
+        # Non-blocking in Wave 2: the strict config exists but the codebase is not
+        # clean yet (190 errors at the time of writing). Becomes blocking in Wave 3.
+        continue-on-error: true
+        run: uv run mypy src/agency_agents
+
+  test:
+    name: test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          version: "0.12.12"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv sync --frozen
+      - name: Pytest with coverage floor
+        run: |
+          set -euo pipefail
+          uv run pytest -q \
+            --cov=agency_agents \
+            --cov-branch \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-fail-under=80
+
+  verify-manifest:
+    name: verify-manifest
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          version: "0.12.12"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv sync --frozen
+      - name: Verify conversion outputs
+        run: uv run python -m agency_agents verify --all
+
+  security:
+    name: security
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          version: "0.12.12"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - run: uv sync --frozen
+      - name: Dependency audit
+        run: |
+          set -euo pipefail
+          # Audit the exported runtime requirements, not the environment: the
+          # project itself is installed editable and is not on PyPI, which makes
+          # an environment-wide audit fail on its own distribution.
+          uv export --format requirements-txt --no-dev --no-emit-project \
+            --no-hashes -o "$RUNNER_TEMP/requirements.txt"
+          uv run pip-audit --strict -r "$RUNNER_TEMP/requirements.txt" \
+            --progress-spinner off
+      - name: Workflow and config lint
+        run: uv run yamllint -d relaxed .github/
+
+  required:
+    name: ci/required
+    needs: [lint, types, test, verify-manifest, security]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Fail if any required job did not succeed
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          set -euo pipefail
+          echo "$NEEDS"
+          if echo "$NEEDS" | grep -Eq '"result": "(failure|cancelled)"'; then
+            echo "At least one required job failed"
+            exit 1
+          fi
+          echo "All required jobs succeeded"

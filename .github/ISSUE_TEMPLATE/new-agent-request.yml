@@ -1,46 +1,70 @@
-name: New Agent Request
-description: Suggest a new agent to add to The Agency
-labels: ["enhancement", "new-agent"]
+name: New agent request
+description: Propose a new agent for the roster.
+title: "feat(agents): "
+labels: ["type: feature", "area: agents", "status: needs-triage"]
 body:
-  - type: input
-    id: agent-name
+  - type: markdown
     attributes:
-      label: Agent Name
-      placeholder: e.g. Database Engineer
+      value: |
+        Before requesting an agent, check the catalog. The roster already covers
+        a wide range of divisions, and a request that duplicates an existing
+        agent will be closed with a pointer to it.
+
+  - type: input
+    id: name
+    attributes:
+      label: Proposed agent name
+      placeholder: "Database Reliability Engineer"
     validations:
       required: true
 
   - type: dropdown
-    id: category
+    id: division
     attributes:
-      label: Category
+      label: Division
       options:
-        - engineering
+        - academic
         - design
+        - engineering
+        - finance
+        - game-development
+        - gis
+        - healthcare
         - marketing
+        - paid-media
         - product
         - project-management
-        - testing
-        - support
+        - research
+        - sales
+        - security
         - spatial-computing
         - specialized
-        - strategy
-        - new category (describe below)
+        - support
+        - testing
+        - new division (explain below)
     validations:
       required: true
 
   - type: textarea
-    id: description
+    id: gap
     attributes:
-      label: What would this agent do?
-      placeholder: Describe the agent's specialty, when you'd use it, and what gap it fills.
+      label: What gap does this agent fill?
+      description: Name the task that no existing agent handles well, and why.
     validations:
       required: true
 
   - type: textarea
-    id: use-cases
+    id: overlap
     attributes:
-      label: Example use cases
-      placeholder: Give 2-3 real scenarios where this agent would be useful.
+      label: Existing agents it overlaps with
+      description: List the closest agents and explain how this one differs.
+    validations:
+      required: true
+
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: Representative deliverables
+      description: Three concrete artifacts this agent would produce.
     validations:
       required: false

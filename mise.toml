@@ -2,9 +2,61 @@
 python = "3.13"
 uv = "0.12.12"
 
+# ---------------------------------------------------------------------------
+# Quality gates. `mise run ci` must reproduce the GitHub Actions gate exactly.
+# ---------------------------------------------------------------------------
+
 [tasks.lint]
-description = "Perform full project linting: divisions, tools, and agents"
-run = "uv run python -m agency_agents lint"
+description = "Lint Python, workflow YAML and the agent catalog"
+run = [
+    "uv run ruff check .",
+    "uv run yamllint -d relaxed .github/",
+    "uv run python -m agency_agents lint",
+]
+
+[tasks.types]
+description = "Type-check the package with mypy in strict mode"
+run = "uv run mypy src/agency_agents"
+
+[tasks.test]
+description = "Run the test suite without coverage"
+run = "uv run pytest -q"
+
+[tasks.coverage]
+description = "Run tests with coverage and enforce the 80% floor"
+run = "uv run pytest -q --cov=agency_agents --cov-branch --cov-report=term-missing --cov-fail-under=80"
+
+[tasks.verify]
+description = "Verify conversion outputs against the SHA256 manifest"
+run = "uv run python -m agency_agents verify --all"
+
+[tasks.check]
+description = "Full local gate: lint, coverage and manifest verification"
+depends = ["lint", "coverage", "verify"]
+
+[tasks.ci]
+description = "Reproduce the GitHub Actions gate exactly"
+depends = ["lint", "types", "coverage", "verify"]
+
+# ---------------------------------------------------------------------------
+# Tooling
+# ---------------------------------------------------------------------------
+
+[tasks.hooks]
+description = "Install the git hooks managed by pre-commit"
+run = "uv run pre-commit install"
+
+[tasks.hooks-run]
+description = "Run every pre-commit hook against the whole tree"
+run = "uv run pre-commit run --all-files"
+
+[tasks.version]
+description = "Print the version release-please will use as its baseline"
+run = "uv run python -c \"import agency_agents; print(agency_agents.__version__)\""
+
+# ---------------------------------------------------------------------------
+# Agent catalog operations
+# ---------------------------------------------------------------------------
 
 [tasks.install]
 description = "Install agents for all tools (non-interactive)"
@@ -13,14 +65,6 @@ run = "uv run python -m agency_agents install --no-interactive"
 [tasks.install-interactive]
 description = "Interactive wizard for agent installation"
 run = "uv run python -m agency_agents install --interactive"
-
-[tasks.test]
-description = "Run the full suite of pytests"
-run = "uv run pytest src/agency_agents/tests"
-
-[tasks.verify]
-description = "Verify conversion outputs against SHA256 manifest (claude-code)"
-run = "uv run python -m agency_agents verify claude-code"
 
 [tasks.update-manifest]
 description = "Regenerate the SHA256 manifest for claude-code"
@@ -34,11 +78,7 @@ run = "uv run python -m agency_agents check-originality"
 description = "Generate integration files for all tools into ./integrations"
 run = "uv run python -m agency_agents convert"
 
-[tasks.check]
-description = "Run all validation and tests"
-depends = ["lint", "test", "verify", "check-originality"]
-
 [tasks.full-pipeline]
-description = "Complete pipeline: lint, test, verify, install and convert"
-depends = ["lint", "test", "verify", "install", "convert"]
+description = "Lint, test, verify, install and convert end to end"
+depends = ["check", "install", "convert"]
 run = "echo Pipeline completed successfully!"

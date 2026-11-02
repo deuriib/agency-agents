@@ -7,19 +7,19 @@
 ## Log (one row per FRAME criterion)
 
 - [ ] C1 — aggregate `ci/required` check → pending Wave 2: `.github/workflows/ci.yml` (P3).
-- [ ] C2 — coverage thresholds enforced → pending Wave 2: `.github/workflows/ci.yml` coverage step reading `[tool.coverage.report]` in `pyproject.toml` (P2/P3).
-- [ ] C3 — module coverage floors → pending Wave 2: `src/agency_agents/tests/unit/` campaign (S1–S4).
-- [ ] C4 — ≥160 tests, determinism, runtime budget → pending Wave 2: `src/agency_agents/tests/` growth (S5).
+- [x] C2 — coverage thresholds enforced → `.github/workflows/ci.yml` test job runs `--cov --cov-branch --cov-fail-under=80`; measured 92.8% line / 87.9% branch, so the floor is enforced, not lowered.
+- [x] C3 — module coverage floors → `cli/main.py` 96.6% (≥75), `core/originality.py` 97.8% (≥80), `core/validator.py` 100.0% (≥85).
+- [x] C4 — ≥160 tests, determinism, runtime budget → 195 test functions, 3.2s total, 0.78s unit subset, 0 `sleep`/network/unseeded random, two identical consecutive runs.
 - [x] C5 — runtime vs dev dependency separation → `pyproject.toml` (`[project].dependencies` holds 4 packages; `[dependency-groups].dev` holds 7 tools) + regenerated `uv.lock`.
 - [x] C6 — `# pragma: no cover` budget → `grep -rn "pragma: no cover" src/` returns 0 hits.
-- [ ] C7 — pre-commit hooks → pending Wave 2: `.pre-commit-config.yaml` (P6).
-- [ ] C8 — `mise run check` parity with CI → pending Wave 2: `mise.toml` (P7).
+- [x] C7 — pre-commit hooks → `.pre-commit-config.yaml` defines 10 hooks; `pre-commit run --all-files` exits 0.
+- [x] C8 — `mise run check` parity with CI → `mise.toml` `check` runs lint, coverage and verify in one command; `mise run check` exits 0 in 5.5s.
 - [x] C9 — release PR opened from Conventional Commits → PR #34 (`release-please--branches--main--components--agency-agents`); minor bump `1.3.0` → `1.4.0` computed with no manual edits.
 - [x] C10 — tag + GitHub Release with artifacts → tag `v1.4.1`, CHANGELOG entry, published release, and both assets attached by the `release-assets` job: `agency_agents-1.4.1-py3-none-any.whl` and `agency_agents-1.4.1.tar.gz`.
 - [x] C11 — version owned by the release process → release PR #34 wrote `pyproject.toml` and `src/agency_agents/__init__.py` to `1.4.0` and generated the CHANGELOG sections; 0 hand edits.
 - [ ] C12 — labels as code → pending Wave 2: `.github/labels.yml` + `.github/workflows/labels-sync.yml` (P8).
-- [ ] C13 — issue forms → pending Wave 2: `.github/ISSUE_TEMPLATE/*.yml` + `config.yml` (P9).
-- [ ] C14 — PR template + Code of Conduct → pending Wave 2: `.github/PULL_REQUEST_TEMPLATE.md` + `CODE_OF_CONDUCT.md` (P9/P10).
+- [x] C13 — issue forms → `.github/ISSUE_TEMPLATE/{bug-report,feature-request,new-agent-request,docs-or-infra}.yml` + `config.yml` (blank issues disabled, 3 contact links).
+- [x] C14 — PR template + Code of Conduct → `.github/PULL_REQUEST_TEMPLATE.md` (linked issue, Conventional type, test evidence) + `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1).
 - [ ] C15 — `main` ruleset protection → pending Wave 3: `scripts/github/apply-ruleset.sh` + `scripts/github/ruleset.json` (P11).
 - [ ] C16 — Dependabot + vulnerability alerts → pending Wave 3: `.github/dependabot.yml` + API enablement (P12).
 - [ ] C17 — CodeQL for Python → pending Wave 3: `.github/workflows/codeql.yml` (P13).
@@ -40,6 +40,12 @@
 - `release-assets` job added to `release.yml` after observing that `v1.4.0` shipped with **0 assets** while C10 requires sdist and wheel. `uv build` was verified locally: `agency_agents-1.4.0.tar.gz` (92.6K) and `agency_agents-1.4.0-py3-none-any.whl` (78.3K). Confirmed in production on `v1.4.1`.
 - **Second bypass, and the reason it keeps happening**: release PR #36 was merged while `release-gate` was red again (same 65% coverage floor). `v1.4.1` is also published below the floor. The root cause is structural, not personal: **C15 (ruleset protection) is not built yet**, so no required check exists and every gate is advisory. A gate that nothing enforces is a comment. Fixing the order of work: Wave 2 creates `ci/required`, and C15 must land immediately after it — merging anything before that keeps producing red releases.
 
+- `ruff format --check` (P6) deferred — it would reformat 64 files and bury the Wave 2 diff; pre-commit ships `ruff check` only. Dedicated formatting change is a Wave 3 item.
+- `actionlint` replaced by `yamllint -d relaxed .github/` inside the `security` job — actionlint needs a Go toolchain or a third-party action, and C1 only requires a security scan, which `pip-audit` provides.
+- Label sync implemented as `scripts/github/sync_labels.py` calling `gh label create --force`, not `EndBug/label-sync` — idempotent by construction, no third-party action in the supply chain, and auditable in this repository.
+- Markdown excluded from `trailing-whitespace` and `end-of-file-fixer` — two trailing spaces are a hard line break in Markdown, so stripping them changes rendered output. Without the exclusion the hooks rewrote 66 agent files.
+- `pip-audit` audits the exported runtime requirements instead of the environment — the project is installed editable and is not on PyPI, so an environment-wide audit fails on its own distribution.
+
 ## Artifacts produced (grouped by domain)
 
 - Engineering:
@@ -53,6 +59,14 @@
   - `.github/workflows/quality.yml` — `setup-uv` pinned to uv `0.12.12` so `[dependency-groups]` is honoured.
   - `.gitignore` — coverage artifacts ignored.
   - `src/agency_agents/**` (19 files) — import ordering normalised by `ruff --fix`.
+  - `.github/workflows/ci.yml` — `lint`, `types`, `test`, `verify-manifest`, `security`, aggregated by `required` (display name `ci/required`).
+  - `.github/workflows/labels-sync.yml` + `.github/labels.yml` + `scripts/github/sync_labels.py` — 21 labels across 5 categories, idempotent sync.
+  - `.github/ISSUE_TEMPLATE/{bug-report,feature-request,new-agent-request,docs-or-infra}.yml` + `config.yml` — 4 forms, blank issues disabled.
+  - `.github/PULL_REQUEST_TEMPLATE.md` — linked issue, Conventional type, test evidence.
+  - `CODE_OF_CONDUCT.md` — Contributor Covenant 2.1.
+  - `.pre-commit-config.yaml` — 10 hooks, Markdown exempt from whitespace rewriting.
+  - `mise.toml` — `check`, `ci`, `hooks`, `hooks-run`, `version` and the catalog tasks with descriptions.
+  - 15 code and config files — trailing whitespace and final newline normalisation.
 
 ## Cross-domain handoffs
 
@@ -62,6 +76,7 @@
 - SHA-pinning and least-privilege `permissions:` conventions available to `docs-site-mkdocs` — Owner: Platform Engineer — Pending (due 2026-11-16).
 - `ci/required` aggregate gains a docs build job when the site project lands — Owner: Platform Engineer — Pending (due 2026-11-23).
 - Per-wave exit checks so VERIFY can attribute regressions — Owner: Senior Developer — Pending (due 2026-11-30).
+- PyPI trusted publishing of `py-agency-agents` through `release.yml` and the `pypi` environment (OIDC) belongs to a future project, not this one. Note for that project: `release-please` derives the version-file path from `package-name` by replacing `-` with `_`, so renaming the distribution to `py-agency-agents` would make it look for `src/py_agency_agents/__init__.py` and silently stop bumping `src/agency_agents/__init__.py` unless an explicit `extra-files` entry is added — Owner: Platform Engineer — Pending (due 2026-12-14).
 
 ## Assigned team
 

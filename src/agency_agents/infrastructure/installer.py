@@ -36,10 +36,10 @@ class InstallationManager:
     def check_collisions(self, agents: List[Agent], tool_kebab: str, scope: str = "user") -> List[str]:
         tool = self.catalog.load_tools().tools.get(tool_kebab)
         if not tool: return []
-        
+
         seen_paths = {}
         collisions = []
-        
+
         for agent in agents:
             dests = tool.dest.get(scope, [])
             for pattern in dests:
@@ -47,7 +47,7 @@ class InstallationManager:
                 if target in seen_paths:
                     collisions.append(f"Collision: {agent.slug} and {seen_paths[target]} both target {target}")
                 seen_paths[target] = agent.slug
-        
+
         return collisions
 
     def prune_output(self, tool_kebab: str, scope: str = "user"):
@@ -108,7 +108,7 @@ class InstallationManager:
         body = ""
         for agent in agents:
             body += f"## {agent.frontmatter.name}\n{agent.body}\n\n---\n\n"
-        
+
         full_content = header + body
         for pattern in dests:
             target = self.resolve_path(pattern, "roster", scope)
@@ -134,9 +134,9 @@ class InstallationManager:
         dest_pattern = tool.dest.get(scope, [None])[0]
         if not dest_pattern:
             raise RuntimeError(f"No destination defined for plugin {tool_kebab}")
-        
+
         out_dir = self.resolve_path(dest_pattern, "router", scope).parent
-        
+
         try:
             subprocess.run(
                 ["uv", "run", "python", str(build_script), "--out", str(out_dir)],

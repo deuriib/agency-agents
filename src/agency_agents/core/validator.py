@@ -25,7 +25,7 @@ class LintEngine:
         errors = []
         catalog = self.catalog.load_divisions()
         defined_divisions = set(catalog.divisions.keys())
-        
+
         # Support dirs that are deliberately not divisions
         ignore = {"integrations", "strategy", "examples", "scripts", "src"}
         # Dot-dirs (.git, .venv, .pytest_cache, .github...) are tooling state, never divisions
@@ -88,15 +88,15 @@ class LintEngine:
         for file in division_path.rglob("*.md"):
             content = file.read_text(encoding='utf-8')
             agent = self.parser.create_agent(str(file), content)
-            
+
             if not agent:
                 # Check if it's intended to be an agent file (starts with ---)
                 if content.startswith("---"):
                     issues.append((file, "Invalid frontmatter or missing required fields (name)"))
                 continue
-            
+
             # Additional custom lint rules go here
             if not agent.frontmatter.description:
                 issues.append((file, "Missing description in frontmatter"))
-                
+
         return issues

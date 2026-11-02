@@ -13,7 +13,7 @@ def test_parser_valid_agent():
     content = "---\nname: Test Agent\ndescription: A test agent\n---\nBody content"
     parser = MarkdownParser()
     agent = parser.create_agent("test.md", content)
-    
+
     assert agent is not None
     assert agent.frontmatter.name == "Test Agent"
     assert agent.slug == "test-agent"

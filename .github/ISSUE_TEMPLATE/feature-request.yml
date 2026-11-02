@@ -1,0 +1,51 @@
+name: Feature request
+description: Propose a capability the CLI or the repository does not have yet.
+title: "feat: "
+labels: ["type: feature", "status: needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the situation, not the solution. A good problem statement survives a change of approach.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behaviour
+      description: What should happen instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What did you try, and why is it not enough?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - CLI
+        - Converter / renderer
+        - Installer
+        - CI / release automation
+        - Documentation
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: This is a single capability, not a bundle of unrelated changes.
+          required: true

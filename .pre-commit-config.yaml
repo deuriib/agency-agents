@@ -1,0 +1,40 @@
+default_language_version:
+  python: python3.13
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # Markdown is excluded from whitespace rewriting: two trailing spaces are a
+      # hard line break in Markdown, so stripping them changes rendered output.
+      - id: trailing-whitespace
+        exclude: \.md$
+      - id: end-of-file-fixer
+        exclude: \.md$
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=600"]
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: ["-d", "relaxed"]
+
+  - repo: local
+    hooks:
+      - id: agency-lint
+        name: agency-agents catalog lint
+        entry: uv run python -m agency_agents lint
+        language: system
+        pass_filenames: false
+        types_or: [markdown]
