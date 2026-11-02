@@ -1,6 +1,6 @@
 [project]
 name = "agency-agents"
-version = "1.5.0"
+version = "1.6.0"
 description = "A catalog of specialized AI agent personas, rendered and installed across AI coding tools through a Python CLI."
 readme = "README.md"
 authors = [{ name = "Deuri Vasquez", email = "deuriib@gmail.com" }]
