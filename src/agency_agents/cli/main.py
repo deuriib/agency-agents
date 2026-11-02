@@ -37,12 +37,12 @@ def lint():
     """
     root_dir = Path(".").absolute()
     engine = LintEngine(root_dir)
-    
+
     console.print(Panel("[bold blue]Running Project Linting...[/bold blue]"))
 
     with console.status("[bold yellow]Checking tools.json..."):
         tool_errors = engine.check_tools_consistency()
-    
+
     if tool_errors:
         console.print("[bold red]❌ Tools Consistency Errors:[/bold red]")
         for err in tool_errors:
@@ -52,7 +52,7 @@ def lint():
 
     with console.status("[bold yellow]Checking divisions..."):
         div_errors = engine.check_divisions_consistency()
-    
+
     if div_errors:
         console.print("[bold red]❌ Division Consistency Errors:[/bold red]")
         for err in div_errors:
@@ -63,7 +63,7 @@ def lint():
     console.print("\n[bold blue]Linting Agent Files...[/bold blue] ")
     all_agent_issues = []
     divisions = engine.catalog.load_divisions().divisions.keys()
-    
+
     for div in divisions:
         div_path = root_dir / div
         if div_path.exists() and div_path.is_dir():

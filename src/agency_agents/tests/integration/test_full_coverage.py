@@ -59,12 +59,12 @@ def test_tool_specific_formats(project_env):
     engine = ConverterEngine(root)
     fm = AgentFrontmatter(name="Tool Test", extra={"tools": "Read, Bash"})
     agent = Agent(slug="test", path="p", frontmatter=fm, body="Body")
-    
+
     # Test Qwen mapping specifically
     qwen_out = engine.convert_agent_for_tool(agent, "qwen")
     assert "ReadFile" in qwen_out[0][1]
     assert "Shell" in qwen_out[0][1]
-    
+
     # Test Vibe multi-file
     vibe_out = engine.convert_agent_for_tool(agent, "vibe")
     assert len(vibe_out) == 2
@@ -78,7 +78,7 @@ def test_roster_tools_consolidation(project_env):
         Agent(slug="a1", path="p1", frontmatter=AgentFrontmatter(name="Agent 1"), body="B1"),
         Agent(slug="a2", path="p2", frontmatter=AgentFrontmatter(name="Agent 2"), body="B2"),
     ]
-    
+
     # Aider is a roster tool
     installer.install_all_for_tool(agents, "aider", scope="project")
     assert (root / "CONVENTIONS.md").exists()

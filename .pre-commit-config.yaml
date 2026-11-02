@@ -5,8 +5,12 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
+      # Markdown is excluded from whitespace rewriting: two trailing spaces are a
+      # hard line break in Markdown, so stripping them changes rendered output.
       - id: trailing-whitespace
+        exclude: \.md$
       - id: end-of-file-fixer
+        exclude: \.md$
       - id: check-merge-conflict
       - id: check-added-large-files
         args: ["--maxkb=600"]

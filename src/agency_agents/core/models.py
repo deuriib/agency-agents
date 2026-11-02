@@ -48,7 +48,7 @@ class AgentFrontmatter(BaseModel):
                 else:
                     v_str = str(v).lower() if isinstance(v, bool) else str(v)
                 lines.append(f"{k}: {v_str}")
-        
+
         # Add extra fields
         for k, v in self.extra.items():
             if isinstance(v, bool):
@@ -58,9 +58,9 @@ class AgentFrontmatter(BaseModel):
             else:
                 v_str = str(v)
             lines.append(f"{k}: {v_str}")
-            
+
         return "\n".join(lines)
-    
+
 class Agent(BaseModel):
     """
     The complete Agent domain model.

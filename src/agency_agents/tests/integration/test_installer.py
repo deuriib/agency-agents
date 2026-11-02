@@ -21,7 +21,7 @@ def test_collision_detection(tmp_path):
     # Two agents that would result in the same slug
     agent1 = Agent(slug="collision", path="p1", frontmatter=fm, body="b1")
     agent2 = Agent(slug="collision", path="p2", frontmatter=fm, body="b2")
-    
+
     import json
     tools = {"tools": {"claude-code": {"id":"cc","label":"CC","short":"C","kebab":"claude-code","accent":"#000","icon":None,"order":1,"scope":{"user":True,"project":True},"detect":{"dirs":[],"agentsDir":None},"version":{"bin":"c","args":[]},"format":"identity","installKind":"per-agent","slugFrom":"source","dest":{"user":[".claude/agents/{slug}.md"],"project":[]}}}}
     with open(tmp_path / "tools.json", "w") as f:
@@ -36,7 +36,7 @@ def test_roster_installation(tmp_path):
     agent1 = Agent(slug="a1", path="p1", frontmatter=fm, body="b1")
     fm2 = AgentFrontmatter(name="A2")
     agent2 = Agent(slug="a2", path="p2", frontmatter=fm2, body="b2")
-    
+
     # Mock tool as roster
     import json
     tools = {"tools": {"aider": {"id":"a","label":"A","short":"S","kebab":"aider","accent":"#000","icon":None,"order":1,"scope":{"user":True,"project":True},"detect":{"dirs":[],"agentsDir":None},"version":{"bin":"a","args":[]},"format":"identity","installKind":"roster","slugFrom":None,"dest":{"user":[],"project":["CONVENTIONS.md"]}}}}
@@ -44,9 +44,9 @@ def test_roster_installation(tmp_path):
         json.dump(tools, f)
     installer.catalog.load_tools().tools["aider"].installKind = "roster"
     installer.catalog.load_tools().tools["aider"].dest = {"project": ["CONVENTIONS.md"]}
-    
+
     installer.install_roster([agent1, agent2], "aider", "project")
-    
+
     result_file = tmp_path / "CONVENTIONS.md"
     assert result_file.exists()
     content = result_file.read_text()

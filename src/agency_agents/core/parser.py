@@ -9,7 +9,7 @@ class MarkdownParser:
     Handles the extraction of frontmatter and body from markdown files.
     Replaces get_field, get_body, and is_agent_file from lib.sh.
     """
-    
+
     FRONTMATTER_PATTERN = re.compile(r'^---\s*\n(.*?)\n---\s*\n', re.DOTALL)
 
     @classmethod
@@ -24,8 +24,8 @@ class MarkdownParser:
 
         yaml_block = match.group(1)
         body = content[match.end():]
-        
-        # Simple YAML parsing for now to avoid heavy dependencies immediately, 
+
+        # Simple YAML parsing for now to avoid heavy dependencies immediately,
         # but structured for Pydantic validation.
         data = {}
         for line in yaml_block.splitlines():
@@ -46,7 +46,7 @@ class MarkdownParser:
         fm, body = cls.parse(path, content)
         if not fm:
             return None
-        
+
         return Agent(
             slug=slugify(fm.name),
             path=path,
