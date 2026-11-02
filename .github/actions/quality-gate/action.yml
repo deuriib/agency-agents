@@ -36,12 +36,12 @@ runs:
       shell: bash
       run: uv run ruff check .
 
-    - name: Type-check
-      # Non-blocking until Wave 3 of repo-standards-baseline (C19 wave plan).
-      # The [tool.mypy] strict config already exists; the codebase is not clean yet.
-      continue-on-error: true
+    - name: Type-check ratchet
+      # Same gate as ci.yml: fails when production type errors grow above
+      # .github/mypy-baseline. Both paths call the same script, which is what
+      # keeps the CI gate and the release gate from drifting apart.
       shell: bash
-      run: uv run mypy src/agency_agents
+      run: bash scripts/ci/mypy_ratchet.sh
 
     - name: Test
       if: inputs.coverage != 'true'
