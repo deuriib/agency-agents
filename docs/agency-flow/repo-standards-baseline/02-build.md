@@ -13,7 +13,7 @@
 - [x] C5 — runtime vs dev dependency separation → `pyproject.toml` (`[project].dependencies` holds 4 packages; `[dependency-groups].dev` holds 7 tools) + regenerated `uv.lock`.
 - [x] C6 — `# pragma: no cover` budget → `grep -rn "pragma: no cover" src/` returns 0 hits.
 - [x] C7 — pre-commit hooks → `.pre-commit-config.yaml` defines 10 hooks; `pre-commit run --all-files` exits 0.
-- [ ] C8 — `mise run check` parity with CI → pending Wave 2: `mise.toml` (P7).
+- [x] C8 — `mise run check` parity with CI → `mise.toml` `check` runs lint, coverage and verify in one command; `mise run check` exits 0 in 5.5s.
 - [x] C9 — release PR opened from Conventional Commits → PR #34 (`release-please--branches--main--components--agency-agents`); minor bump `1.3.0` → `1.4.0` computed with no manual edits.
 - [x] C10 — tag + GitHub Release with artifacts → tag `v1.4.1`, CHANGELOG entry, published release, and both assets attached by the `release-assets` job: `agency_agents-1.4.1-py3-none-any.whl` and `agency_agents-1.4.1.tar.gz`.
 - [x] C11 — version owned by the release process → release PR #34 wrote `pyproject.toml` and `src/agency_agents/__init__.py` to `1.4.0` and generated the CHANGELOG sections; 0 hand edits.
