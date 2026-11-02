@@ -1,0 +1,39 @@
+# Default owners for everything not covered by a more specific rule.
+* @deuriib
+
+# Automation and release surface.
+/.github/ @deuriib
+/release-please-config.json @deuriib
+/.release-please-manifest.json @deuriib
+/CHANGELOG.md @deuriib
+
+# Package source and tooling.
+/src/ @deuriib
+/scripts/ @deuriib
+/mise.toml @deuriib
+/pyproject.toml @deuriib
+/uv.lock @deuriib
+
+# Agent catalog: the product itself.
+/academic/ @deuriib
+/design/ @deuriib
+/engineering/ @deuriib
+/finance/ @deuriib
+/game-development/ @deuriib
+/gis/ @deuriib
+/healthcare/ @deuriib
+/marketing/ @deuriib
+/paid-media/ @deuriib
+/product/ @deuriib
+/project-management/ @deuriib
+/research/ @deuriib
+/sales/ @deuriib
+/security/ @deuriib
+/spatial-computing/ @deuriib
+/specialized/ @deuriib
+/strategy/ @deuriib
+/support/ @deuriib
+/testing/ @deuriib
+
+# Agency-Flow process artifacts.
+/docs/agency-flow/ @deuriib
