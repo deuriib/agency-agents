@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/deuriib/agency-agents/compare/v1.5.0...v1.6.0) (2026-11-02)
+
+
+### Added
+
+* **ci:** enforce branch protection and complete repository hardening ([#40](https://github.com/deuriib/agency-agents/issues/40)) ([b041a34](https://github.com/deuriib/agency-agents/commit/b041a34ccc23748ae23799293dcff071bf5471ac))
+
 ## [1.5.0](https://github.com/deuriib/agency-agents/compare/v1.4.1...v1.5.0) (2026-11-02)
 
 
