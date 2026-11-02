@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/deuriib/agency-agents/compare/v1.4.1...v1.5.0) (2026-11-02)
+
+
+### Added
+
+* **ci:** add aggregate quality gate, labels, templates and pre-commit ([#38](https://github.com/deuriib/agency-agents/issues/38)) ([2016f4b](https://github.com/deuriib/agency-agents/commit/2016f4b99439ec6b053e53590912d723fd35bd01))
+
 ## [1.4.1](https://github.com/deuriib/agency-agents/compare/v1.4.0...v1.4.1) (2026-11-02)
 
 
