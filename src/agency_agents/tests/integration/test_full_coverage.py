@@ -1,9 +1,12 @@
-import pytest
-from pathlib import Path
 import json
-from agency_agents.core.models import Agent, AgentFrontmatter
+from pathlib import Path
+
+import pytest
+
 from agency_agents.core.converter import ConverterEngine
+from agency_agents.core.models import Agent, AgentFrontmatter
 from agency_agents.infrastructure.installer import InstallationManager
+
 
 @pytest.fixture
 def project_env(tmp_path):

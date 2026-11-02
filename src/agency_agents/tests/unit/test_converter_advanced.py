@@ -1,8 +1,11 @@
-import pytest
 from pathlib import Path
+
+import pytest
+
 from agency_agents.core.converter import ConverterEngine, UnknownFormatError
 from agency_agents.core.models import Agent, AgentFrontmatter
 from agency_agents.infrastructure.catalog import CatalogManager
+
 
 def test_roster_content_generation(tmp_path):
     # Setup a roster tool in a dummy catalog

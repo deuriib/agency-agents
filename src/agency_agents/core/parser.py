@@ -1,6 +1,8 @@
 import re
-from typing import Tuple, Optional
-from agency_agents.core.models import AgentFrontmatter, Agent, slugify
+from typing import Optional, Tuple
+
+from agency_agents.core.models import Agent, AgentFrontmatter, slugify
+
 
 class MarkdownParser:
     """

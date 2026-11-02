@@ -1,8 +1,9 @@
 import hashlib
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
-from agency_agents.core.models import Agent
+
 from agency_agents.core.converter import ConverterEngine
+from agency_agents.core.models import Agent
 
 MANIFEST_VERSION = 3
 

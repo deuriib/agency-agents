@@ -1,9 +1,11 @@
-from typing import List, Tuple
 from pathlib import Path
-from agency_agents.infrastructure.catalog import CatalogManager
+from typing import List, Tuple
+
 from agency_agents.core.converter import NON_RENDERABLE_FORMATS, registered_formats
-from agency_agents.core.parser import MarkdownParser
 from agency_agents.core.models import Agent
+from agency_agents.core.parser import MarkdownParser
+from agency_agents.infrastructure.catalog import CatalogManager
+
 
 class LintEngine:
     """

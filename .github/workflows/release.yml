@@ -1,0 +1,101 @@
+name: Release
+
+# Release automation with the repository GITHUB_TOKEN.
+#
+# Known GitHub limitation (recorded override in 01-propose.md):
+# events triggered by GITHUB_TOKEN do not create new workflow runs. Therefore:
+#   1. the release PR will not run ci.yml, so this workflow gates it inline
+#      with the shared composite action;
+#   2. the merge commit will not trigger the tagging run, so `schedule` is the
+#      backstop that creates the tag and GitHub Release.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: release-please
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      prs_created: ${{ steps.release.outputs.prs_created }}
+      pr: ${{ steps.release.outputs.pr }}
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  release-gate:
+    name: release-gate
+    needs: release-please
+    if: needs.release-please.outputs.prs_created == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      # Write is required to push the refreshed uv.lock back to the release branch.
+      contents: write
+    steps:
+      - name: Check out the release branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ fromJSON(needs.release-please.outputs.pr).headBranchName }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Refresh the lockfile for the bumped version
+        # release-please has no Python lockfile updater, so uv.lock still records
+        # the previous version after the bump and `uv sync --frozen` would fail.
+        run: |
+          set -euo pipefail
+          uv lock
+          if git diff --quiet uv.lock; then
+            echo "uv.lock already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add uv.lock
+          git commit -m "chore(release): refresh uv.lock for the release version"
+          git push
+
+      - name: Run the shared quality gate
+        uses: ./.github/actions/quality-gate
+        with:
+          coverage: "true"
+
+      - name: Summarize the release PR
+        run: |
+          set -euo pipefail
+          {
+            echo "### Release PR ready"
+            echo ""
+            echo "- Branch: \`${{ fromJSON(needs.release-please.outputs.pr).headBranchName }}\`"
+            echo "- PR: #${{ fromJSON(needs.release-please.outputs.pr).number }}"
+            echo "- Coverage floor: 80% line / 75% branch"
+            echo ""
+            echo "Gate passed. Merge the release PR as a repository admin to cut the release."
+            echo "With GITHUB_TOKEN the merge does not trigger a new run; the tag and GitHub"
+            echo "Release are created by the 06:00 UTC scheduled run or by workflow_dispatch."
+          } >> "$GITHUB_STEP_SUMMARY"

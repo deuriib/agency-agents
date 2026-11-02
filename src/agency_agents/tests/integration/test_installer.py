@@ -1,7 +1,10 @@
-import pytest
 from pathlib import Path
-from agency_agents.infrastructure.installer import InstallationManager
+
+import pytest
+
 from agency_agents.core.models import Agent, AgentFrontmatter
+from agency_agents.infrastructure.installer import InstallationManager
+
 
 def test_path_resolution(tmp_path):
     installer = InstallationManager(tmp_path, tmp_path / "home")

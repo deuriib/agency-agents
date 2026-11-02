@@ -1,8 +1,9 @@
-from typing import Dict, Any, List, Optional, Tuple, Type
-from pathlib import Path
 import copy
 import re
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Type
+
 from agency_agents.core.models import Agent
 from agency_agents.infrastructure.catalog import CatalogManager, ToolDefinition
 
