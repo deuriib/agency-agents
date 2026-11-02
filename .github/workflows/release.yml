@@ -85,6 +85,8 @@ jobs:
     permissions:
       # Write is required to push the refreshed uv.lock back to the release branch.
       contents: write
+      # Write is required to publish the ci/required status on the release PR.
+      statuses: write
     steps:
       - name: Check out the release branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -117,6 +119,22 @@ jobs:
         uses: ./.github/actions/quality-gate
         with:
           coverage: "true"
+
+      - name: Publish ci/required on the release PR
+        # The release PR is created with GITHUB_TOKEN, so GitHub never runs the
+        # CI workflow on it. Publishing the status from the gate that actually
+        # ran keeps the ruleset honest: blocked when the gate fails, green when
+        # it passes, and no bypass actor required.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          sha="$(git rev-parse HEAD)"
+          gh api "repos/${GITHUB_REPOSITORY}/statuses/${sha}" \
+            -f state=success \
+            -f context=ci/required \
+            -f description="release-gate passed"
+          echo "published ci/required=success on ${sha}"
 
       - name: Summarize the release PR
         run: |
