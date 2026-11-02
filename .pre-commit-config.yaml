@@ -3,7 +3,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b  # v5.0.0
     hooks:
       # Markdown is excluded from whitespace rewriting: two trailing spaces are a
       # hard line break in Markdown, so stripping them changes rendered output.
@@ -19,13 +19,13 @@ repos:
       - id: check-json
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.4
+    rev: f0b5944bef86f50d875305821a0ab0d8c601e465  # v0.8.4
     hooks:
       - id: ruff
         args: ["--fix"]
 
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.35.1
+    rev: 81e9f98ffd059efe8aa9c1b1a42e5cce61b640c6  # v1.35.1
     hooks:
       - id: yamllint
         args: ["-d", "relaxed"]

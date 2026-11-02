@@ -15,8 +15,8 @@ run = [
 ]
 
 [tasks.types]
-description = "Type-check the package with mypy in strict mode"
-run = "uv run mypy src/agency_agents"
+description = "Type-check with mypy and fail if errors grow past the baseline"
+run = "bash scripts/ci/mypy_ratchet.sh"
 
 [tasks.test]
 description = "Run the test suite without coverage"
@@ -30,13 +30,21 @@ run = "uv run pytest -q --cov=agency_agents --cov-branch --cov-report=term-missi
 description = "Verify conversion outputs against the SHA256 manifest"
 run = "uv run python -m agency_agents verify --all"
 
+[tasks.security]
+description = "Audit runtime dependencies and lint workflow YAML"
+run = [
+    "uv export --format requirements-txt --no-dev --no-emit-project --no-hashes -o /tmp/agency-agents-requirements.txt",
+    "uv run pip-audit --strict -r /tmp/agency-agents-requirements.txt --progress-spinner off",
+    "uv run yamllint -d relaxed .github/",
+]
+
 [tasks.check]
-description = "Full local gate: lint, coverage and manifest verification"
-depends = ["lint", "coverage", "verify"]
+description = "Full local gate: lint, types, coverage, security and manifest verification"
+depends = ["lint", "types", "coverage", "security", "verify"]
 
 [tasks.ci]
-description = "Reproduce the GitHub Actions gate exactly"
-depends = ["lint", "types", "coverage", "verify"]
+description = "Alias of check: the local gate mirrors the GitHub Actions gate"
+depends = ["check"]
 
 # ---------------------------------------------------------------------------
 # Tooling

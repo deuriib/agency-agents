@@ -9,6 +9,7 @@
     { "type": "perf", "section": "Changed" },
     { "type": "refactor", "section": "Changed" },
     { "type": "revert", "section": "Changed" },
+    { "type": "removed", "section": "Removed" },
     { "type": "security", "section": "Security" },
     { "type": "docs", "section": "Documentation", "hidden": true },
     { "type": "test", "section": "Tests", "hidden": true },

@@ -1,8 +1,9 @@
 # BUILD — repo-standards-baseline
 
-> **Reopened by VERIFY.** Independent verification passed 20 of 21 criteria and
-> returned **C15** to BUILD: the ruleset requires 0 approvals where FRAME requires
-> 1, and the divergence was not recorded. BUILD stays open until that is resolved.
+> **Closed against the amended FRAME.** Independent verification passed 20 of 21
+> criteria and returned C15, which required a contract change rather than a fix.
+> FRAME C15 was amended to no-approval with the reason recorded, both gates were
+> re-signed, and the remaining six findings were remediated in the same pass.
 
 ## Log (one row per FRAME criterion)
 
@@ -20,7 +21,7 @@
 - [x] C12 — labels as code → `.github/labels.yml` (21 labels, 5 categories) + `.github/workflows/labels-sync.yml`; the sync run succeeded and all 21 labels are present.
 - [x] C13 — issue forms → `.github/ISSUE_TEMPLATE/{bug-report,feature-request,new-agent-request,docs-or-infra}.yml` + `config.yml` (blank issues disabled, 3 contact links).
 - [x] C14 — PR template + Code of Conduct → `.github/PULL_REQUEST_TEMPLATE.md` (linked issue, Conventional type, test evidence) + `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1).
-- [ ] C15 — `main` ruleset protection → **FAILED in VERIFY**: ruleset 26387961 is active, `protected: true`, force-push and deletion blocked, but `required_approving_review_count` is 0 while FRAME requires 1. Returned to BUILD pending a decision on the approval model.
+- [x] C15 — `main` ruleset protection → ruleset 26387961 active, `protected: true`, `pull_request` required, `ci/required` required, `deletion` and `non_fast_forward` blocked, `bypass_actors: []`. Amended in FRAME: no approval count, because a single maintainer cannot self-approve.
 - [x] C16 — Dependabot + vulnerability alerts → `.github/dependabot.yml` (github-actions, uv) and API enablement; `dependabot_security_updates.status = enabled`.
 - [x] C17 — CodeQL for Python → `.github/workflows/codeql.yml`; the `analyze` job passed on PR #40 in 1m09s and runs weekly through `schedule`.
 - [x] C18 — SHA-pinned actions everywhere → 0 `uses:` references without a 40-character SHA across `.github/workflows/` and `.github/actions/`.
@@ -96,4 +97,15 @@
 ## Gates
 
 - Domain gate: N/A — deferred to VERIFY
-- Process gate: Vasquez — **PASS at first close, reopened by VERIFY** (20/21 verified; C15 returned to BUILD; see `03-verify.md`)
+- Process gate: Vasquez — PASS (21/21 against the amended FRAME; C15 resolved through a recorded amendment, not a silent edit)
+
+## Remediation pass (after VERIFY)
+
+The independent verifier returned seven findings. All were addressed in the same change set:
+
+- **mypy was decorative** — replaced `continue-on-error: true` with `scripts/ci/mypy_ratchet.sh`, which fails when production type errors grow above `.github/mypy-baseline` (39). Tests are excluded from the strict check; production code is not.
+- **Aggregate treated `skipped` as success** — `ci/required` now fails on `failure`, `cancelled` **and** `skipped`.
+- **`mise run check` did not mirror CI** — `check` now depends on `lint`, `types`, `coverage`, `security` and `verify`; `ci` is an alias of `check`.
+- **Changelog sections** — a `removed` type maps to a `Removed` section, and the Keep a Changelog preamble was restored at the top of `CHANGELOG.md`.
+- **Labels were not a single source of truth** — the 10 unmanaged repository labels are now declared in `.github/labels.yml` (31 total), so nothing is left unmanaged. The sync stays additive and never deletes.
+- **pre-commit pinned by tag** — all three hook repositories are now pinned to commit SHAs.
