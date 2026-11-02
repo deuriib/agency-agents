@@ -35,6 +35,7 @@
 - `ruff check --fix` applied to 19 pre-existing `I001` import-order findings across `src/agency_agents/**` — required to make the P2/C7 baseline green; mechanical only, 99 tests still pass, and `ruff check .` is now clean.
 - `.gitignore` extended with `.coverage`, `.coverage.*`, `coverage.xml`, `cov_html/` — otherwise coverage tooling artifacts get committed and pollute the parity check.
 - `uv.lock` grew ~960 lines because the dev group now resolves ruff, mypy, pip-audit, pre-commit, and pytest-cov.
+- `.github/workflows/quality.yml` touched in Wave 1 instead of Wave 3 — CI failed with `Failed to spawn: pytest` because `astral-sh/setup-uv@v1` ships uv 0.4.4, which predates `[dependency-groups]` (PEP 735, uv 0.4.27) and therefore installed only runtime dependencies. Pinning uv to `0.12.12` fixes it; replacing the whole workflow is still Wave 2/3.
 
 ## Artifacts produced (grouped by domain)
 
@@ -46,6 +47,7 @@
   - `CHANGELOG.md` — Keep a Changelog header, generated entries owned by release-please.
   - `.github/workflows/release.yml` — release-please on push/schedule/dispatch, inline `release-gate`, lock refresh, GITHUB_TOKEN override documented in-file.
   - `.github/actions/quality-gate/action.yml` — shared composite action used by both gates so they cannot drift.
+  - `.github/workflows/quality.yml` — `setup-uv` pinned to uv `0.12.12` so `[dependency-groups]` is honoured.
   - `.gitignore` — coverage artifacts ignored.
   - `src/agency_agents/**` (19 files) — import ordering normalised by `ruff --fix`.
 
