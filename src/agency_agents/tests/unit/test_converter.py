@@ -1,8 +1,11 @@
-import pytest
 from pathlib import Path
+
+import pytest
+
 from agency_agents.core.converter import ConverterEngine, RenderContext
 from agency_agents.core.models import Agent, AgentFrontmatter
 from agency_agents.infrastructure.catalog import CatalogManager
+
 
 def test_identity_renderer():
     engine = ConverterEngine(Path("."))

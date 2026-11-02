@@ -1,6 +1,9 @@
-import pytest
 from pathlib import Path
+
+import pytest
+
 from agency_agents.core.models import Agent, AgentFrontmatter, slugify
+
 
 def test_slugify_basic():
     assert slugify("Frontend Developer") == "frontend-developer"

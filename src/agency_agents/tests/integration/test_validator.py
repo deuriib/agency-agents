@@ -1,7 +1,10 @@
-import pytest
 from pathlib import Path
-from agency_agents.infrastructure.catalog import CatalogManager
+
+import pytest
+
 from agency_agents.core.validator import LintEngine
+from agency_agents.infrastructure.catalog import CatalogManager
+
 
 def test_divisions_consistency(tmp_path):
     # Create a dummy divisions.json

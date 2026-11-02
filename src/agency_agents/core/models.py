@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field, field_validator
-from typing import Dict, Optional, List, Any
 import re
 import unicodedata
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field, field_validator
+
 
 class AgentFrontmatter(BaseModel):
     """

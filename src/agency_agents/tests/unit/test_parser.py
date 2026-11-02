@@ -1,6 +1,8 @@
 import pytest
-from agency_agents.core.parser import MarkdownParser
+
 from agency_agents.core.models import Agent
+from agency_agents.core.parser import MarkdownParser
+
 
 def test_parser_is_agent_file():
     parser = MarkdownParser()

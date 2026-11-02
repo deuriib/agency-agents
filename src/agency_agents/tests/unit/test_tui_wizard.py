@@ -16,7 +16,6 @@ from agency_agents.infrastructure.tui import (
     WizardCancelled,
 )
 
-
 TOOLS = {
     "tools": {
         "claude-code": {

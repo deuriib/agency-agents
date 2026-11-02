@@ -1,8 +1,7 @@
-from typing import Dict, List, Optional, Set, Tuple
 from pathlib import Path
+from typing import Dict, List, Optional, Set, Tuple
 
 from agency_agents.core.models import Agent, slugify
-
 
 # Per-tool soft capacity (opencode silently drops past ~119 — upstream bug #27988).
 AGENT_CAPS: Dict[str, int] = {

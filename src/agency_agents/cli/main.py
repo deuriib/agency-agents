@@ -1,23 +1,25 @@
-import typer
 import sys
-from rich.console import Console
-from rich.table import Table
-from rich.panel import Panel
 from pathlib import Path
-from typing import Optional, Dict, List
-from agency_agents.core.validator import LintEngine
+from typing import Dict, List, Optional
+
+import typer
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+
+from agency_agents.core.converter import ConverterEngine, UnknownFormatError
+from agency_agents.core.originality import run_originality_check
 from agency_agents.core.parser import MarkdownParser
 from agency_agents.core.selection import (
     SelectionError,
     agent_cap,
     select_agents,
 )
-from agency_agents.infrastructure.installer import InstallationManager
+from agency_agents.core.validator import LintEngine
 from agency_agents.infrastructure.catalog import CatalogManager
-from agency_agents.infrastructure.tui import TUIWizard, WizardCancelled
 from agency_agents.infrastructure.hash_manager import HashManager, ManifestError
-from agency_agents.core.converter import ConverterEngine, UnknownFormatError
-from agency_agents.core.originality import run_originality_check
+from agency_agents.infrastructure.installer import InstallationManager
+from agency_agents.infrastructure.tui import TUIWizard, WizardCancelled
 
 # Windows consoles default to cp1252 and crash on the / of status output.
 # Force UTF-8 before rich builds its console so the CLI is portable.
