@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import typer
 from typer.testing import CliRunner, Result
 
 from agency_agents.cli.main import app
@@ -154,30 +155,46 @@ def test_root_help_lists_every_command(repo: Path, monkeypatch: pytest.MonkeyPat
         assert command in result.output
 
 
+def _option_names(command_name: str) -> set[str]:
+    """Option strings registered on a command, independent of help rendering.
+
+    The help panel is rendered by Rich at a width derived from the terminal, so
+    asserting on substrings of the rendered text is not deterministic across
+    environments. The registered options are the contract that actually matters.
+    """
+    root = typer.main.get_command(app)
+    command = root.commands[command_name]
+    return {opt for param in command.params for opt in param.opts}
+
+
 def test_install_help_documents_flags(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     result = invoke(repo, ["install", "--help"], monkeypatch)
 
     assert result.exit_code == 0
+    options = _option_names("install")
     for flag in ("--interactive", "--scope", "--dry-run", "--list", "--agents-file"):
-        assert flag in result.output
+        assert flag in options
 
 
-def test_verify_and_manifest_help_document_manifest_path(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_verify_and_manifest_help_document_manifest_path(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     verify = invoke(repo, ["verify", "--help"], monkeypatch)
     update = invoke(repo, ["update-manifest", "--help"], monkeypatch)
 
     assert verify.exit_code == 0
-    assert "verify" in verify.output.lower()
-    assert "--manifest-path" in verify.output and "--all" in verify.output
     assert update.exit_code == 0
-    assert "--all" in update.output and "--manifest-path" in update.output
+    assert {"--manifest-path", "--all"} <= _option_names("verify")
+    assert {"--manifest-path", "--all"} <= _option_names("update-manifest")
 
 
-def test_originality_help_documents_thresholds(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_originality_help_documents_thresholds(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     result = invoke(repo, ["check-originality", "--help"], monkeypatch)
 
     assert result.exit_code == 0
-    assert "--fail" in result.output and "--warn" in result.output
+    assert {"--fail", "--warn"} <= _option_names("check-originality")
 
 
 # ------------------------------------------------------------------------- lint
