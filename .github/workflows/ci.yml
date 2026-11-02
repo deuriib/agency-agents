@@ -41,11 +41,9 @@ jobs:
           enable-cache: true
           cache-dependency-glob: uv.lock
       - run: uv sync --frozen
-      - name: mypy
-        # Non-blocking in Wave 2: the strict config exists but the codebase is not
-        # clean yet (190 errors at the time of writing). Becomes blocking in Wave 3.
-        continue-on-error: true
-        run: uv run mypy src/agency_agents
+      - name: mypy ratchet
+        # Fails when production type errors grow above .github/mypy-baseline.
+        run: bash scripts/ci/mypy_ratchet.sh
 
   test:
     name: test
@@ -118,7 +116,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "$NEEDS"
-          if echo "$NEEDS" | grep -Eq '"result": "(failure|cancelled)"'; then
+          if echo "$NEEDS" | grep -Eq '"result": "(failure|cancelled|skipped)"'; then
             echo "At least one required job failed"
             exit 1
           fi

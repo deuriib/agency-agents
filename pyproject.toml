@@ -59,5 +59,6 @@ select = ["E9", "F63", "F7", "F82", "I"]
 python_version = "3.13"
 strict = true
 files = ["src/agency_agents"]
+exclude = ["src/agency_agents/tests"]
 warn_unused_ignores = true
 warn_redundant_casts = true

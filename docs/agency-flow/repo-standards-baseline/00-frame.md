@@ -38,7 +38,7 @@ manual step.
 
 ### Repository hardening
 
-- [ ] C15. `main` is protected by a repository ruleset (not manual UI clicks): require a pull request, require `ci/required`, require 1 approval, block force-push and deletion, and disallow direct pushes. Verified with `gh api repos/deuriib/agency-agents/rulesets`.
+- [ ] C15. `main` is protected by a repository ruleset (not manual UI clicks): require a pull request, require `ci/required`, block force-push and deletion, and disallow direct pushes. Human approval is **not** required — see Amendments — because GitHub forbids self-approval and a single-maintainer repository would deadlock. Verified with `gh api repos/deuriib/agency-agents/rulesets`.
 - [ ] C16. Dependabot is configured for `github-actions` and `uv` ecosystems on a weekly schedule; vulnerability alerts and Dependabot security updates are enabled (`gh api` shows both `enabled`).
 - [ ] C17. CodeQL for Python runs on pull requests and on a weekly schedule, and the workflow file is committed in `.github/workflows/`.
 - [ ] C18. Every `uses:` reference in `.github/workflows/` is pinned to a full 40-character commit SHA — 0 tag or branch refs — and Dependabot keeps them updated.
@@ -77,6 +77,20 @@ engineering territory, not a PM deliverable.
 - No new runtime dependency may be introduced by this project. Dev dependencies only, via `[dependency-groups]`.
 - Coverage floors are floors, not targets to be met by excluding code; diminishing the gate to make CI green is a process-gate failure (DENY-04).
 
+## Amendments
+
+- **2026-11-02 — C15 approval count (FRAME reopened).** The original criterion
+  required 1 approving review. Independent VERIFY failed C15 because the applied
+  ruleset enforces 0. The maintainer explicitly chose to keep 0 approvals and
+  amend the criterion rather than add a reviewer or a bypass actor. Reason: this
+  is a single-maintainer repository and GitHub does not permit self-approval, so
+  a mandatory approval count would block every merge and force a standing bypass
+  actor — strictly worse than no approval requirement, because that bypass would
+  also disable the status-check rule. The controls that carry the actual risk
+  stay enforced and verified: pull request required, `ci/required` required,
+  force-push blocked, deletion blocked, and no bypass actors. Both gates are
+  re-signed after the amendment.
+
 ## Assigned team
 
 - Domain: **Platform Engineer** (`engineering-platform-engineer`) — owns CI/CD workflows, release-please, rulesets, Dependabot, CodeQL, SHA pinning, mise developer experience, and `.github/` contribution surface. Signs the domain gate for C1, C7–C21.
@@ -86,5 +100,5 @@ engineering territory, not a PM deliverable.
 
 ## Gates
 
-- Domain gate: Product Manager — PASS (goal single-intent; 21 criteria measurable from artifacts or metrics)
-- Process gate: Vasquez — PASS (path correct; producer domains only; deliverable type canonical; research/measure explicit; staffing feasible; checklist clean)
+- Domain gate: Product Manager — PASS (re-signed 2026-11-02 after the C15 amendment; C15 amended to no-approval, remaining controls enforced)
+- Process gate: Vasquez — PASS (amendment dated and reasoned; only C15 narrowed; C1/C18/C19/C20 untouched; all 21 criteria remain measurable)
