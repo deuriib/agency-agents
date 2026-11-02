@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/deuriib/agency-agents/compare/v1.4.0...v1.4.1) (2026-11-02)
+
+
+### Fixed
+
+* **release:** attach sdist and wheel to the GitHub release ([#35](https://github.com/deuriib/agency-agents/issues/35)) ([6e91f9d](https://github.com/deuriib/agency-agents/commit/6e91f9d350e18703c65bd1c29a12dfa5a5dd8ecd))
+
 ## [1.4.0](https://github.com/deuriib/agency-agents/compare/v1.3.0...v1.4.0) (2026-11-02)
 
 
