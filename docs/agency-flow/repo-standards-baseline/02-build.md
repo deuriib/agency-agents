@@ -76,6 +76,8 @@
   - `.github/workflows/quality.yml` — explicit read-only `permissions:` and SHA-pinned actions.
   - `SECURITY.md` — rewritten for the Python CLI, listing the controls that actually exist.
   - `tools.json`, `divisions.json`, `.github/FUNDING.yml` — drift repaired.
+  - `src/agency_agents/tests/{unit,integration}/` — 3 new files, 97 new test functions, 224 assertions; coverage 65.2% → 92.8%.
+  - `scripts/ci/mypy_ratchet.sh` + `.github/mypy-baseline` — type-check gate that fails when production errors grow past the recorded baseline of 39.
   - 15 code and config files — trailing whitespace and final newline normalisation.
 
 ## Cross-domain handoffs
