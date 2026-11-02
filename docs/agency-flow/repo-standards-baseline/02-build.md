@@ -15,7 +15,7 @@
 - [ ] C7 — pre-commit hooks → pending Wave 2: `.pre-commit-config.yaml` (P6).
 - [ ] C8 — `mise run check` parity with CI → pending Wave 2: `mise.toml` (P7).
 - [x] C9 — release PR opened from Conventional Commits → PR #34 (`release-please--branches--main--components--agency-agents`); minor bump `1.3.0` → `1.4.0` computed with no manual edits.
-- [ ] C10 — tag + GitHub Release with artifacts → tag `v1.4.0`, CHANGELOG entry and published release exist, but the release carries **0 assets**; the `release-assets` job was added to `.github/workflows/release.yml` and satisfies this on the next release.
+- [x] C10 — tag + GitHub Release with artifacts → tag `v1.4.1`, CHANGELOG entry, published release, and both assets attached by the `release-assets` job: `agency_agents-1.4.1-py3-none-any.whl` and `agency_agents-1.4.1.tar.gz`.
 - [x] C11 — version owned by the release process → release PR #34 wrote `pyproject.toml` and `src/agency_agents/__init__.py` to `1.4.0` and generated the CHANGELOG sections; 0 hand edits.
 - [ ] C12 — labels as code → pending Wave 2: `.github/labels.yml` + `.github/workflows/labels-sync.yml` (P8).
 - [ ] C13 — issue forms → pending Wave 2: `.github/ISSUE_TEMPLATE/*.yml` + `config.yml` (P9).
@@ -37,7 +37,8 @@
 - `uv.lock` grew ~960 lines because the dev group now resolves ruff, mypy, pip-audit, pre-commit, and pytest-cov.
 - `.github/workflows/quality.yml` touched in Wave 1 instead of Wave 3 — CI failed with `Failed to spawn: pytest` because `astral-sh/setup-uv@v1` ships uv 0.4.4, which predates `[dependency-groups]` (PEP 735, uv 0.4.27) and therefore installed only runtime dependencies. Pinning uv to `0.12.12` fixes it; replacing the whole workflow is still Wave 2/3.
 - **Process incident, recorded rather than normalised**: release PR #34 was merged while `release-gate` was red — coverage `65.23%` against the `80%` floor, plus 190 non-blocking mypy errors. `v1.4.0` is therefore published below the declared coverage floor. The gate did its job; the merge bypassed it through the documented admin path. Remediation is the Wave 2 coverage campaign; the tag is deliberately not deleted, because removing a published release is more disruptive than recording the failure.
-- `release-assets` job added to `release.yml` after observing that `v1.4.0` shipped with **0 assets** while C10 requires sdist and wheel. `uv build` was verified locally: `agency_agents-1.4.0.tar.gz` (92.6K) and `agency_agents-1.4.0-py3-none-any.whl` (78.3K).
+- `release-assets` job added to `release.yml` after observing that `v1.4.0` shipped with **0 assets** while C10 requires sdist and wheel. `uv build` was verified locally: `agency_agents-1.4.0.tar.gz` (92.6K) and `agency_agents-1.4.0-py3-none-any.whl` (78.3K). Confirmed in production on `v1.4.1`.
+- **Second bypass, and the reason it keeps happening**: release PR #36 was merged while `release-gate` was red again (same 65% coverage floor). `v1.4.1` is also published below the floor. The root cause is structural, not personal: **C15 (ruleset protection) is not built yet**, so no required check exists and every gate is advisory. A gate that nothing enforces is a comment. Fixing the order of work: Wave 2 creates `ci/required`, and C15 must land immediately after it — merging anything before that keeps producing red releases.
 
 ## Artifacts produced (grouped by domain)
 
