@@ -1,7 +1,8 @@
 # BUILD — repo-standards-baseline
 
-> **All 21 criteria checked.** BUILD ran in three waves: release integrity,
-> quality gate, and hardening. Domain quality is deferred to VERIFY by design.
+> **Reopened by VERIFY.** Independent verification passed 20 of 21 criteria and
+> returned **C15** to BUILD: the ruleset requires 0 approvals where FRAME requires
+> 1, and the divergence was not recorded. BUILD stays open until that is resolved.
 
 ## Log (one row per FRAME criterion)
 
@@ -19,7 +20,7 @@
 - [x] C12 — labels as code → `.github/labels.yml` (21 labels, 5 categories) + `.github/workflows/labels-sync.yml`; the sync run succeeded and all 21 labels are present.
 - [x] C13 — issue forms → `.github/ISSUE_TEMPLATE/{bug-report,feature-request,new-agent-request,docs-or-infra}.yml` + `config.yml` (blank issues disabled, 3 contact links).
 - [x] C14 — PR template + Code of Conduct → `.github/PULL_REQUEST_TEMPLATE.md` (linked issue, Conventional type, test evidence) + `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1).
-- [x] C15 — `main` ruleset protection → `scripts/github/ruleset.json` applied through `scripts/github/apply-ruleset.sh`; ruleset id 26387961, `protected: true`, 0 bypass actors, force-push and deletion blocked.
+- [ ] C15 — `main` ruleset protection → **FAILED in VERIFY**: ruleset 26387961 is active, `protected: true`, force-push and deletion blocked, but `required_approving_review_count` is 0 while FRAME requires 1. Returned to BUILD pending a decision on the approval model.
 - [x] C16 — Dependabot + vulnerability alerts → `.github/dependabot.yml` (github-actions, uv) and API enablement; `dependabot_security_updates.status = enabled`.
 - [x] C17 — CodeQL for Python → `.github/workflows/codeql.yml`; the `analyze` job passed on PR #40 in 1m09s and runs weekly through `schedule`.
 - [x] C18 — SHA-pinned actions everywhere → 0 `uses:` references without a 40-character SHA across `.github/workflows/` and `.github/actions/`.
@@ -44,6 +45,7 @@
 - Label sync implemented as `scripts/github/sync_labels.py` calling `gh label create --force`, not `EndBug/label-sync` — idempotent by construction, no third-party action in the supply chain, and auditable in this repository.
 - Markdown excluded from `trailing-whitespace` and `end-of-file-fixer` — two trailing spaces are a hard line break in Markdown, so stripping them changes rendered output. Without the exclusion the hooks rewrote 66 agent files.
 - `pip-audit` audits the exported runtime requirements instead of the environment — the project is installed editable and is not on PyPI, so an environment-wide audit fails on its own distribution.
+- **Approval count set to 0 while FRAME C15 said 1, and not recorded here.** The reasoning was that GitHub forbids self-approval and a single maintainer would deadlock the repository. The reasoning may be sound but the omission is exactly the silent-partial pattern this process forbids: a criterion that is partly true, logged as done. Caught by independent VERIFY, and now returned to BUILD for an explicit decision.
 
 ## Artifacts produced (grouped by domain)
 
@@ -94,4 +96,4 @@
 ## Gates
 
 - Domain gate: N/A — deferred to VERIFY
-- Process gate: Vasquez — PASS (21/21 criteria logged with concrete artifacts; 12 deviations recorded; no PROPOSE deliverable dropped; remaining pending handoffs are cross-project and owned)
+- Process gate: Vasquez — **PASS at first close, reopened by VERIFY** (20/21 verified; C15 returned to BUILD; see `03-verify.md`)
