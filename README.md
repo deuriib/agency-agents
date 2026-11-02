@@ -198,6 +198,9 @@ Building the future, one commit at a time.
 | 📑 [Universal Document Compiler](engineering/engineering-universal-document-compiler.md) | Schema-agnostic document ASTs, data-shape layout inference, paged publishing | Compiling arbitrary YAML trees into proposals, technical specs, executive dossiers |
 | 🛠️ [ServiceNow Developer & Mentor](engineering/engineering-servicenow-developer-mentor.md) | Business Rules, Script Includes, GlideAjax, ACLs, Flow Designer | ServiceNow development and step-by-step instance troubleshooting |
 | 🧾 [DGII e-CF Expert](engineering/engineering-dgii-ecf-expert.md) | Dominican e-CF XML, XMLDSig/C14N signing, DGII web services, event handling | Implementing, certifying, and operating electronic invoicing under Law 32-23 and Decreto 587-24 |
+| 🏗️ [IDesign Software Architect](engineering/engineering-idesign-software-architect.md) | Volatility-based decomposition into Managers, Accessors, Engines and Utilities | System Design, change-resilient component maps, repairing feature-shaped architecture |
+| 📐 [IDesign Project Design Engineer](engineering/engineering-idesign-project-design-engineer.md) | CPM activity networks, cyclomatic complexity, efficiency and risk modeling | Turning a component map into duration, cost, and three-option executive matrices |
+| 🐍 [Python Automation Architect](engineering/engineering-python-automation-architect.md) | Excel-to-service automation, Pandas, FastAPI/HTMX, uv, Docker, micro-SaaS | Replacing manual spreadsheet workflows, resilient API ingestion, value-based pricing |
 
 ### 🎨 Design Division
 
@@ -290,6 +293,7 @@ Growing your audience, one authentic interaction at a time.
 | 📧 [Email Marketing Strategist](marketing/marketing-email-strategist.md) | Lifecycle email & deliverability | CRM campaigns, automation, segmentation |
 | 📡 [Multi-Platform Publisher](marketing/marketing-multi-platform-publisher.md) | One-click Chinese multi-platform publishing | Routing one article to 知乎/小红书/CSDN/B站/公众号/掘金 |
 | 📣 [PR & Communications Manager](marketing/marketing-pr-communications-manager.md) | PR, media relations & crisis comms | Press releases, thought leadership, reputation |
+| 📈 [Romuald Fons Growth & SEO Strategist](marketing/marketing-romuald-fons-growth-seo-strategist.md) | Fleet SEO, search-intent on-page, CreceTube, ROI-gated growth | Scaling site portfolios, YouTube growth, commercial-intent content that converts |
 
 ### 📊 Product Division
 
@@ -445,6 +449,7 @@ The unique specialists who don't fit in a box.
 | 🏛️ [Master Plan Architect](specialized/specialized-master-plan-architect.md) | Architectural teaching, red-team plan critique | Deep architecture teaching, risk critique, comprehensive Markdown implementation plans (no code execution) |
 | 🎧 [Focus Music Architect](specialized/specialized-focus-music-architect.md) | Instrumental focus-music prompt engineering, neuroacoustics | Soundscape architecture, BPM curves, binaural layers for generative audio models |
 |   [Vasquez](specialized/vasquez.md) | Agency-Flow process steward | Agency-Flow process gate for methodology compliance |
+| 🏋️‍♂️ [Personal Trainer Specialist](specialized/specialized-personal-trainer-specialist.md) | FMS screening, joint-by-joint programming, periodized strength and conditioning | Individualized programs, injury-resilient progression, referral boundaries |
 
 ### 💵 Finance Division
 
@@ -458,6 +463,7 @@ Accounting, financial analysis, tax strategy, and investment research specialist
 | 🔍 [Investment Researcher](finance/finance-investment-researcher.md) | Due diligence, portfolio analysis, asset valuation, equity research | Investment thesis development, risk assessment, market research |
 | 🏛️ [Tax Strategist](finance/finance-tax-strategist.md) | Tax optimization, multi-jurisdictional compliance, transfer pricing | Entity structuring, ETR analysis, audit defense, strategic tax planning |
 | 💼 [DGII 606 Tax Compliance Specialist](finance/finance-dgii-606-tax-compliance-specialist.md) | Formato 606 filing, NCF/RNC validation, ITBIS/ISR retention auditing | Monthly purchase reporting, pre-validation, retention reconciliation, zero-activity filings |
+| 💰 [Profit First Strategist](finance/finance-profit-first-strategist.md) | Profit First accounts, CAPs vs TAPs, 1% transition, 10/25 rhythm | Installing behavioral cash discipline, owner pay, tax reserves, profit distribution |
 
 ### 🎮 Game Development Division
 
