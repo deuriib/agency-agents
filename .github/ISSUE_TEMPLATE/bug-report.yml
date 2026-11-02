@@ -1,27 +1,79 @@
-name: Bug Report
-description: Report an issue with an agent file (formatting, broken examples, etc.)
-labels: ["bug"]
+name: Bug report
+description: Report a defect in the CLI, a renderer, the installer, or an agent file.
+title: "fix: "
+labels: ["type: bug", "status: needs-triage"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. Please do not include secrets,
+        tokens, or personal data in this report.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - CLI
+        - Converter / renderer
+        - Installer
+        - Agent file content
+        - CI / release automation
+        - Documentation
+    validations:
+      required: true
+
   - type: input
-    id: agent-file
+    id: version
     attributes:
-      label: Agent file
-      placeholder: e.g. engineering/engineering-frontend-developer.md
+      label: Version
+      description: Output of `agency-agents --version`, or the git tag you are on.
+      placeholder: "1.4.1"
+    validations:
+      required: true
+
+  - type: input
+    id: tool
+    attributes:
+      label: Affected tool target
+      description: Only if the defect is specific to one integration.
+      placeholder: "claude-code, cursor, antigravity, …"
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `agency-agents install --tool ...`
+        2. Observe ...
     validations:
       required: true
 
   - type: textarea
-    id: description
+    id: expected
     attributes:
-      label: What's wrong?
-      placeholder: Describe the issue — broken formatting, incorrect examples, outdated info, etc.
+      label: Expected behaviour
     validations:
       required: true
 
   - type: textarea
-    id: suggestion
+    id: actual
     attributes:
-      label: Suggested fix
-      placeholder: If you have a fix in mind, describe it here.
+      label: Actual behaviour
+      description: Paste the error output. Redact paths that reveal personal information.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: |
+        OS:
+        Python:
+        uv:
+        Install method:
     validations:
       required: false

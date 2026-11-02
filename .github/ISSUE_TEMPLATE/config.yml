@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contributing guide
+    url: https://github.com/deuriib/agency-agents/blob/main/CONTRIBUTING.md
+    about: Read this before opening an issue or a pull request.
+  - name: Report a security vulnerability
+    url: https://github.com/deuriib/agency-agents/security/advisories/new
+    about: Report privately. Do not open a public issue for security problems.
+  - name: Agent catalog
+    url: https://github.com/deuriib/agency-agents#readme
+    about: Browse the available agents before requesting a new one.
