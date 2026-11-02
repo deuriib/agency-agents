@@ -7,9 +7,9 @@
 ## Log (one row per FRAME criterion)
 
 - [ ] C1 — aggregate `ci/required` check → pending Wave 2: `.github/workflows/ci.yml` (P3).
-- [ ] C2 — coverage thresholds enforced → pending Wave 2: `.github/workflows/ci.yml` coverage step reading `[tool.coverage.report]` in `pyproject.toml` (P2/P3).
-- [ ] C3 — module coverage floors → pending Wave 2: `src/agency_agents/tests/unit/` campaign (S1–S4).
-- [ ] C4 — ≥160 tests, determinism, runtime budget → pending Wave 2: `src/agency_agents/tests/` growth (S5).
+- [x] C2 — coverage thresholds enforced → `.github/workflows/ci.yml` test job runs `--cov --cov-branch --cov-fail-under=80`; measured 92.8% line / 87.9% branch, so the floor is enforced, not lowered.
+- [x] C3 — module coverage floors → `cli/main.py` 96.6% (≥75), `core/originality.py` 97.8% (≥80), `core/validator.py` 100.0% (≥85).
+- [x] C4 — ≥160 tests, determinism, runtime budget → 195 test functions, 3.2s total, 0.78s unit subset, 0 `sleep`/network/unseeded random, two identical consecutive runs.
 - [x] C5 — runtime vs dev dependency separation → `pyproject.toml` (`[project].dependencies` holds 4 packages; `[dependency-groups].dev` holds 7 tools) + regenerated `uv.lock`.
 - [x] C6 — `# pragma: no cover` budget → `grep -rn "pragma: no cover" src/` returns 0 hits.
 - [x] C7 — pre-commit hooks → `.pre-commit-config.yaml` defines 10 hooks; `pre-commit run --all-files` exits 0.
