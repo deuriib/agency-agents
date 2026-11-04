@@ -60,6 +60,16 @@ def lint():
     else:
         console.print("[bold green]✓ Divisions are consistent.[/bold green]")
 
+    with console.status("[bold yellow]Checking runbooks..."):
+        runbook_errors = engine.check_runbooks_consistency()
+
+    if runbook_errors:
+        console.print("[bold red]❌ Runbook Consistency Errors:[/bold red]")
+        for err in runbook_errors:
+            console.print(f"  - {err}")
+    else:
+        console.print("[bold green]✓ Runbooks are consistent.[/bold green]")
+
     console.print("\n[bold blue]Linting Agent Files...[/bold blue] ")
     all_agent_issues = []
     divisions = engine.catalog.load_divisions().divisions.keys()
@@ -77,9 +87,14 @@ def lint():
         for file, issue in all_agent_issues:
             table.add_row(str(file.relative_to(root_dir)), issue)
         console.print(table)
+        # Unparseable frontmatter cannot be shipped; runbook errors are equally fatal
+        # because a broken roster installs partially from the app.
         raise typer.Exit(code=1)
-    else:
-        console.print("[bold green]✓ All agents passed linting.[/bold green]")
+
+    console.print("[bold green]✓ All agents passed linting.[/bold green]")
+
+    if runbook_errors:
+        raise typer.Exit(code=1)
 
 def _collect_by_division(root_dir: Path, divisions) -> Dict[str, List]:
     """Scan every division dir once; returns division name -> parsed agents.
