@@ -164,12 +164,13 @@ Sprint 3-4 (Month 4):
 | Unit economics documented | CAC, LTV, payback in launch report |
 | Quality gates passed without waiver | 100% |
 
-## Common Pitfalls & Mitigations
+## Common Pitfalls
 
 | Pitfall | Mitigation |
 | --- | --- |
-| Building before validating | Phase 1 gate requires demand evidence, not opinion |
-| Prototype becomes the product | Rapid Prototyper hands off to Backend Architect at Phase 3 |
-| GTM starts after launch | Growth Hacker and Content Creator begin in Phase 2 |
-| Economics ignored until fundraising | Finance Tracker models unit economics in Month 1 |
-| Brand treated as logo | Brand Guardian owns voice and experience, not just visuals |
+| Demand evidence is a competitor's fundraising announcement | The Month 1 problem-solution fit gate needs UX Researcher's 15-20 discovery interviews plus Growth Hacker's demand-test landing page with an Analytics Reporter funnel baseline; Trend Researcher's competitive scan is timing input, never demand proof |
+| Unit economics modelled before the price was ever tested | Experiment Tracker's pricing and willingness-to-pay test runs in Month 1 Week 3-4 as input to the Finance Tracker model, so CAC, LTV, and payback rest on a tested price instead of an assumed one |
+| An internal sponsor who cannot commit budget or sign the Go decision | Project Shepherd owns the sponsor decision memo and the documented Go decision gate; if the sponsor cannot commit, the Sprint Prioritizer plus Finance Tracker build-no-build call closes as stop and no gate is waived |
+| Spin-out and org structure decided before the revenue model exists | Structure work sits with Legal Compliance Checker in Phase 4, after the Phase 1 Go decision that carries Finance Tracker's economics, so the entity question waits for the business model it has to fit |
+| One friendly pilot customer treated as proof of market | The Month 2 demand threshold is pre-agreed by Experiment Tracker and judged on Growth Hacker's waitlist and referral test plus Analytics Reporter cohort data, so a single pilot cannot satisfy it |
+| Venture progress tracked by headcount instead of retained revenue | Phase 5 reports Analytics Reporter retention cohorts and Finance Tracker CAC, LTV, and payback in the Executive Summary Generator launch report, and Sponsor plus Finance Tracker gate scale investment on those numbers |

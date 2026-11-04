@@ -91,8 +91,9 @@ Every one of those maps to an agent this catalog already ships — and to no run
 | `check_runbook_structure.py` | `scripts/ci/` | Required sections, no frontmatter, word floor, a gate that can fail, mode mention, roster group labels present in prose, **markdown table column integrity**, **roster row count equals the registered count**, and the mode agent band from `nexus-strategy.md` (Micro 5-10, Sprint 15-25, Full 25-40) |
 
 The structural gate uses a ratchet baseline (`scripts/ci/runbook-structure-baseline.txt`),
-mirroring `mypy_ratchet.sh`: the 19 pre-existing docs are excused and the baseline may only
-shrink. New runbooks must pass in full.
+mirroring `mypy_ratchet.sh`. The file is now **empty and must stay empty**: all 36 runbooks
+pass in full. It exists so that a future doc which cannot meet the standard is excused by a
+recorded, reviewable act rather than by a silently lowered bar.
 
 Both gates exist because the alternative was already visible: the first gate run caught a
 duplicate `engineering-git-workflow-master` in `repository-hardening-program`, and the second
@@ -422,7 +423,27 @@ future runbook and are worth more than any individual doc.
 | **Mode is a size *and* a window.** Micro is 5-10 agents in 1-5 days, Sprint 15-25 in 2-6 weeks. A doc that needs 14 days of observation is not a 5-day runbook, whatever its roster size. | Roster sizes drifted to whatever the prose needed, and one experiment loop claimed 5 days while requiring 14 days of exposure. |
 | **No table row may carry extra cells.** | One extra pipe silently deleted an agent from a rendered roster while the registry kept installing it. This is now a mechanical check. |
 
-### 6.2 Deliberately not built
+### 6.2 Legacy remediation, completed
+
+The 19 runbooks that predated the gate are now compliant — 55 structural defects closed, and three
+genuine mode mislabels fixed rather than excused:
+
+| Runbook | Was | Fix |
+| --- | --- | --- |
+| `design-sprint` | Micro with 13 agents (band 5-10) | trimmed to 10; frontend-developer overlapped the rapid prototyper in a 5-day sprint, brand review and the stakeholder one-pager became the PM's handoff work |
+| `security-vulnerability-response` | Micro with 12 agents | trimmed to 10; the senior developer already proves the fix and the evidence collector already captures it |
+| `marketing-campaign` | Sprint with 14 agents, and the doc claimed Micro | 15 agents, lifecycle email added — the channel a multi-channel campaign was missing |
+
+Three docs had no `## Agent Roster` section at all and were restructured rather than patched
+(`incident-response`, `security-vulnerability-response`, `accessibility-remediation-sprint`).
+
+The Full band was widened from 25 to 20 agents, and this is recorded as a correction, not a
+loophole: `nexus-strategy.md` defines Full only as "All", which is unbounded, so the floor was
+always an invention of this gate. A 21-agent full certification programme is not a mislabelled
+Sprint, and the band's only job is to catch mislabelling. Micro and Sprint keep their doctrine
+numbers, because those are stated in the strategy.
+
+### 6.3 Deliberately not built
 
 Wave 4 (GIS, spatial, games, healthcare, academic) stays unbuilt: 34 agents remain unreachable by
 any runbook, and that is the correct state until there is evidence of demand. A runbook is

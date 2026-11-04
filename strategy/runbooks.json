@@ -113,7 +113,8 @@
             "marketing-content-creator",
             "marketing-growth-hacker",
             "design-brand-guardian",
-            "support-analytics-reporter"
+            "support-analytics-reporter",
+            "marketing-email-strategist"
           ]
         },
         {
@@ -934,9 +935,7 @@
           "activation": "post-triage",
           "agents": [
             "engineering-senior-developer",
-            "engineering-frontend-developer",
             "testing-evidence-collector",
-            "testing-api-tester",
             "support-legal-compliance-checker",
             "support-executive-summary-generator",
             "support-support-responder"
@@ -968,7 +967,6 @@
           "activation": "day 3+",
           "agents": [
             "engineering-rapid-prototyper",
-            "engineering-frontend-developer",
             "testing-reality-checker",
             "design-inclusive-visuals-specialist",
             "support-analytics-reporter"
@@ -978,9 +976,7 @@
           "group": "Handoff",
           "activation": "day 5",
           "agents": [
-            "project-manager-senior",
-            "design-brand-guardian",
-            "support-executive-summary-generator"
+            "project-manager-senior"
           ]
         }
       ]

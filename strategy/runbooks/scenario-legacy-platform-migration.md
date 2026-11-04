@@ -158,12 +158,13 @@ Week 3-4: Final Hardening
 | Rollback rehearsal | Completed with verified recovery |
 | Downtime during cutover | Zero or within approved window |
 
-## Common Pitfalls & Mitigations
+## Common Pitfalls
 
 | Pitfall | Mitigation |
 | --- | --- |
-| Big-bang cutover | Strangler-fig migration with dual-run from Month 2 |
-| Data reconciliation deferred | Data Engineer reconciles continuously, not at the end |
-| Rollback plan untested | DevOps Automator rehearses rollback in Month 5 |
-| Hidden dependencies discovered late | API Tester and SRE inventory in Month 1 |
-| Customer communications after the fact | Content Creator prepares cutover comms in Month 5 |
+| A cutover plan whose rollback was never rehearsed — the document exists, the timer never ran | The DevOps Automator runs the full cutover and rollback in Phase 4 Week 1-2 under SRE failure injection, rollback criteria are set by the Risk Reviewer in Month 1, and the Month 5 Week 2 go/no-go reads a rehearsal verdict of verified recovery rather than a plan |
+| Data integrity asserted from row counts while transformed values diverge | The Data Engineer runs the replication and reconciliation pipeline from Phase 2 and reconciles continuously in Phase 3, the Database Optimizer verifies integrity in the Phase 4 rehearsal, the AI Data Remediation Engineer's anomaly rules and the Data Visualization Engineer's reconciliation views cover what a count cannot, and the Phase 4 gate reads zero data loss |
+| Dual-run windows closed before the divergence is explained — equal counts, unexplained deltas | Every divergence is a defect in the Test Results Analyzer trend with an owner, coverage gates at ≥60% in Month 4 and ≥90% before cutover, and the SRE's rollback authority stops the ramp at 5% while a delta is still open |
+| Hidden dependencies discovered at cutover — a batch job, a report, or a vendor feed nobody inventoried | Phase 1 is a gate, not a survey: the SRE runtime and traffic map, the API Tester contract inventory, the Database Optimizer lineage map, and the 100% inventory coverage metric are what admit a component to Phase 3, and anything found in Month 6 reopens that map before traffic moves |
+| Cutover scheduled in a window that ignores peak traffic | The Phase 4 Week 3-4 peak-load parity test runs against the Analytics Reporter usage baseline, and Phase 5 ramps 5% → 25% → 100% under SRE monitoring with P95 within 10% of baseline, so a peak-hour regression pauses the ramp instead of riding it to 100% |
+| The old platform decommissioned while one report still reads it | Retirement is a Key Decision for the Platform Engineer and Project Shepherd at the end of Month 6, backed by the decommission plan and a Phase 1 dependency map with no remaining reader; a live reader keeps that component in the inventory and blocks the Phase 5 gate |

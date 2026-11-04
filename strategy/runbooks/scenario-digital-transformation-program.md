@@ -175,12 +175,13 @@ Week 3-4: Adoption
 | Adoption of migrated workflows | ≥ 70% of target users by Month 6 |
 | Benefits realized against business case | ≥ 80% of committed value |
 
-## Common Pitfalls & Mitigations
+## Common Pitfalls
 
 | Pitfall | Mitigation |
 | --- | --- |
-| Transformation stalls after discovery | Fund Phase 2 before Phase 1 closes; Project Shepherd owns the gate |
-| Architecture designed in isolation | Risk Reviewer signs off every architecture decision |
-| Change management treated as comms | Content Creator and Workflow Optimizer are staffed from Phase 1 |
-| Quality deferred to the end | Evidence Collector runs on every task from Sprint 1 |
-| Benefits never measured | Analytics Reporter establishes baseline in Week 1 |
+| Transformation scoped as a technology deployment — architecture target approved, process and experience work left implicit | The Month 1 target gate approves architecture principles, experience principles, and the RICE-scored portfolio in one package, so process and experience work enter the portfolio in Month 1 rather than arriving as Phase 3 cleanup |
+| Middle management never enrolled — division leads meet the program at the rollout they were supposed to sponsor | The Project Shepherd's stakeholder map and change plan are a Week 3-4 deliverable inside the approved baseline package, and a division missing from that map has no owner for the Phase 3 support-readiness gate and no row in the adoption dashboard |
+| A pilot that never becomes a production path — measured once by the Experiment Tracker, then parked | Phase 2 pilot measurement graduates into the Phase 4 adoption experiments, the "first migrated workflow live by end of Month 3" criterion fixes a production date, and the program closes only on handover accepted by the owning engineering leads |
+| KPI definitions quietly changed mid-program so the trend line always looks positive | The baseline KPI dashboard and the Finance Tracker benefits model are approved as one baseline package, and the Month 6 target of ≥80% of committed value is measured against that model; a redefinition is a re-approval of the same package, not a fresh measurement |
+| Change management funded after delivery — comms and training billed in Phase 4 against a budget set in Month 1 | The change plan is authored by the Project Shepherd in Phase 1 Week 3-4, so its cost enters the Finance Tracker run-rate and benefits model before the baseline package is signed; a change plan with no budget line is a Phase 1 gate failure, not a Phase 4 purchase order |
+| A roadmap measured by milestones shipped rather than outcomes — gates green, adoption flat | The Success Criteria table carries adoption of ≥70% of target users and benefits of ≥80% of committed value, the Phase 4 adoption threshold gate and Phase 5 benefits realization report are what the steering committee reads, and gates passed with no adoption row are not progress |

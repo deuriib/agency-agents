@@ -145,12 +145,15 @@ Week 3-4: Remediation
 | Audit completed | No material exceptions |
 | Evidence collected continuously | Automated, not manual end-of-program |
 
-## Common Pitfalls & Mitigations
+## Common Pitfalls
 
 | Pitfall | Mitigation |
 | --- | --- |
-| Evidence scrambled at audit time | Evidence Collector automates capture from Month 2 |
-| Controls documented but not operated | Reality Checker tests effectiveness, not just existence |
-| Compliance treated as legal-only | Engineering control owners are staffed from Phase 2 |
-| Accessibility omitted from scope | Section 508 Specialist and Accessibility Auditor included from Month 1 |
-| Findings reopened late | Remediation gate requires re-test evidence before close |
+| Evidence scrambled at audit time from screenshots and inbox archaeology | Evidence Collector automates capture from Month 2, and the Phase 3 gate requires every control to produce its artefact without human assembly |
+| Controls documented but not operated, so the audit tests paperwork | Reality Checker tests effectiveness, not existence: each control must be observed doing its job, and the Phase 4 gate fails a control whose sample shows no operation |
+| The system boundary excludes the system that actually stores or processes the data | Phase 1 writes the boundary from data flow, not from the org chart, and a named human signs it before any control is designed |
+| Compliance treated as a legal-only programme | Engineering control owners are staffed from Phase 2 and each control has a named operational owner, not a legal reviewer |
+| The control narrative is written by the team that designed the controls, so the gap audits itself | The narrative is drafted from collected evidence and challenged in Phase 4 by an internal audit pass that was not involved in design |
+| Accessibility omitted from scope | Section 508 Specialist and Accessibility Auditor are in scope from Month 1, with conformance treated as a control |
+| Findings reopened late because closure was recorded without re-test | The remediation gate requires re-test evidence, dated and attributable, before a finding closes |
+| Certification treated as the finish line, so controls decay the quarter after the report | A continuing-evidence owner is named before Phase 5, and drift is reviewed on a stated cadence rather than at the next audit |

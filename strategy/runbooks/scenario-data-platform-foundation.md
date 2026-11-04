@@ -130,12 +130,13 @@ Sprint 2:
 | DSR drill | Completed with evidence |
 | Consuming teams onboarded | ≥ 2 without platform-team intervention |
 
-## Common Pitfalls & Mitigations
+## Common Pitfalls
 
 | Pitfall | Mitigation |
 | --- | --- |
-| Platform answers one question | Product Manager ranks and gates on top three |
-| Schema drift corrupts tables | API Tester writes drift tests per connector |
-| Two definitions of "active user" | Semantic layer owns definitions in Phase 3 |
-| Compliance addressed at the end | Legal Compliance Checker active from Week 1 |
-| Platform team is the only user | Analytics Reporter onboards consumers in Phase 5 |
+| A pipeline stops loading and nobody notices, because the only signal is that the tables still exist | SRE defines freshness SLAs and alerting in Sprint 1 and writes the four on-call runbooks (freshness, volume, drift, upstream outage) in Phase 4; AI Data Remediation Engineer adds anomaly detection on volume and distribution |
+| Dashboard numbers are computed ad hoc per query, so two analysts get two answers to the same question | Data Visualization Engineer owns the semantic layer of metrics, dimensions, and term definitions in Phase 3, and the Phase 3 gate requires the three priority questions to be answerable without bespoke queries, against a target of one definition per business metric |
+| A source changes schema and rows drop silently instead of failing the load | API Tester writes schema-drift tests per connector in Sprint 1, and the Sprint 2 gate requires those tests to fail correctly on a contract violation; Backend Architect records event contracts and downstream dependencies in Week 2 so the drift has a reference to violate |
+| There is no backfill or reprocessing path, so a bad load can only be repaired by hand | Data Engineer owns the reprocessing strategy in Sprint 2, and the gate requires historical window reprocessing to work without manual repair before transformation work is declared done |
+| Governance arrives at the end as a PII classification exercise over tables that already shipped | Legal Compliance Checker classifies fields in Week 1 and records retention and residency in Week 2, then runs the DSR drill end-to-end as the Phase 4 gate, with Evidence Collector holding the drill evidence |
+| Lineage is asserted on a slide but never verified against the actual graph | Evidence Collector produces lineage evidence for every gold table in Phase 3, against the 100% target, and owns platform go-live in Week 10 jointly with SRE, so an unverified lineage claim blocks the gate rather than the review |
