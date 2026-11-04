@@ -1,25 +1,7 @@
-# Runbook docs predating the structural gate. They are excused, not approved.
-# The list may only shrink: a doc that starts passing must be removed from this
-# file, and the gate fails the build until it is. New runbooks may never be added.
+# Runbook docs excused from the structural gate.
 #
-# Generated when the gate landed; see strategy/runbook-roadmap.md for the plan
-# that brings new scenarios up to the full structure.
-scenario-accessibility-remediation-sprint.md
-scenario-ai-feature-integration.md
-scenario-api-platform-launch.md
-scenario-codebase-modernization-program.md
-scenario-compliance-certification-program.md
-scenario-data-platform-foundation.md
-scenario-design-sprint.md
-scenario-digital-transformation-program.md
-scenario-ecommerce-storefront-launch.md
-scenario-enterprise-feature.md
-scenario-incident-response.md
-scenario-legacy-platform-migration.md
-scenario-marketing-campaign.md
-scenario-mobile-app-launch.md
-scenario-post-merger-integration.md
-scenario-repository-hardening-program.md
-scenario-security-vulnerability-response.md
-scenario-startup-mvp.md
-scenario-zero-to-one-venture.md
+# EMPTY, and it must stay that way. Every runbook in strategy/runbooks/ now passes
+# `scripts/ci/check_runbook_structure.py` in full. This file exists only for the
+# ratchet: if a future doc cannot meet the standard, adding it here is a recorded,
+# reviewable act rather than a silently lowered bar — and a doc that starts passing
+# must leave the file or the build fails.

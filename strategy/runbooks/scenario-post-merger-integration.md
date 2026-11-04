@@ -156,3 +156,14 @@ Week 3-4: Integration Plan
 | Synergy assumed rather than tracked | Finance Tracker establishes baseline and tracks monthly |
 | Brand transition rushed | Brand Guardian presents options in Month 1, rollout in Month 3 |
 | Redundant tooling left running | DevOps Automator owns decommission in Phase 5 |
+
+## Common Pitfalls
+
+| Pitfall | Mitigation |
+| --- | --- |
+| The two identity providers are merged before any account mapping is reconciled, leaving customers with duplicate or orphaned logins | Data Engineer consolidates customer data and Database Optimizer converges the schema in Phase 2, proven by API Tester integration contract tests and the core-systems-integrated-in-staging gate, before any customer touches a merged identity in Phase 3 |
+| Customer-facing terms change without notice, so the acquired side's customers meet new conditions mid-contract | Legal Compliance Checker inventories contract and regulatory constraints in Phase 1, the customer migration timing is a Month 3 decision owned by Support Responder and Brand Guardian, and Content Creator migration communications land ahead of the surface change |
+| Duplicated customer records survive consolidation and double-bill on the next cycle | Data Engineer customer consolidation and Database Optimizer schema convergence in Phase 2 are gated by API Tester contract tests and Evidence Collector QA on every integration change, and the Reality Checker integrated-system verdict precedes process unification acceptance |
+| Data residency assumptions are broken by consolidation, moving records across a boundary the acquired side's contracts forbid | Legal Compliance Checker constraints from Phase 1 scope the Phase 2 data consolidation, and the Phase 4 post-integration compliance check is what certifies zero critical findings before close-out |
+| One team's tooling is retired before the other team is trained on the replacement, and delivery stops | Workflow Optimizer harmonization map in Month 1 and harmonized processes in Phase 4 are measured by Experiment Tracker and Analytics Reporter adoption tracking; DevOps Automator decommission of redundant tooling is Phase 5, after process unification is accepted |
+| Synergy targets are reported as achieved while the systems that produce them are still unmerged | Finance Tracker sets the synergy baseline in Week 1 and owns the realization report in Phase 5, with Analytics Reporter tracking through Phase 4; the close-out gate is integration closed and synergies verified against the 80 percent committed-value target |

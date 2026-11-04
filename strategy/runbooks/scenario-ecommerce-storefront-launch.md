@@ -132,3 +132,14 @@ Sprint 2:
 | Placeholder content ships | Content Creator and CMS Developer load real catalog before launch |
 | Checkout friction found late | UX Researcher paper prototype in Week 1 |
 | Funnel blind at launch | Growth Hacker instruments before soft launch |
+
+## Common Pitfalls
+
+| Pitfall | Mitigation |
+| --- | --- |
+| The staging order passes but the real payment provider was never exercised: sandbox approvals diverge from live declines, 3-D Secure, and refund timing | Sprint 1 sandbox coverage of declines, 3-D Secure, and refunds is a prerequisite, not proof; acceptance evidence is the Week 5 Reality Checker real-device, real-card, unassisted purchase |
+| Tax and shipping rules differ from what the checkout summary and invoice display, so the charged total is disputed after the order | Payments & Billing Engineer owns the tax and refund design in Week 1 and Legal Compliance Checker owns tax display in Week 2; the invoice is reconciled against the configured rules before the Phase 3 gate and re-confirmed in the post-launch compliance confirmation |
+| Catalog seed fixtures hide a broken import, so the first real merchant load fails after launch | Content Creator and CMS Developer load the real catalog and merchandising content in Phase 3 against the Week 1 catalog model; the zero-placeholder-content gate in production paths is what fails a fixture-backed storefront |
+| Checkout abandonment is uninstrumented, so the funnel is blind between add-to-cart and purchase | Growth Hacker instruments PLP, PDP, ATC, checkout, and purchase before the DevOps Automator soft launch, and the Analytics Reporter daily conversion and abandonment report is only accepted with per-step counts, not purchase totals |
+| A discount rule that never stacked in staging stacks in production once combined carts and promotion codes meet | API Tester concurrent-purchase race tests and the Phase 3 Evidence Collector purchase regression across desktop, mobile, and tablet include combined-promotion carts; Reality Checker edge-case verification covers the resulting order and refund |
+| The migration breaks the SEO surface - redirects and canonicals - on the URLs that carried the old catalog | Frontend Developer owns catalog and content surfaces in Sprint 1 and Core Web Vitals on PDP and checkout in Phase 3; the redirect and canonical map is verified against those surfaces before the soft launch exposes it to a limited segment |

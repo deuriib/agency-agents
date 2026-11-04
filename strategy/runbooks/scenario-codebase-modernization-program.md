@@ -273,17 +273,13 @@ These five ADRs are the deterministic core of the program. Phase 2 does not open
 | Extraction template and per-context parity reports | API Tester + Workflow Optimizer | 4 |
 | Residual risk register and final verdict | Risk Reviewer + Reality Checker | 5 |
 
-## Common Pitfalls & Mitigations
+## Common Pitfalls
 
 | Pitfall | Mitigation |
 | --- | --- |
-| Caching before query consolidation → the cache hides an N+1 and makes invalidation impossible | Phase 3 gate requires the N+1 inventory at zero before any cache key is added |
-| Toolchain added but CI keeps its own bespoke setup → divergence returns within a month | CI consumes the same image and the same tasks; there is exactly one way to run things |
-| RLS enabled but never tested negatively → silent cross-tenant data leak | Denial tests are a hard gate, authored and signed by the Security Reviewer |
-| Managed backend adopted with no exit path → lock-in discovered after the migration | ADR-4 requires the exit path in writing before Phase 2 opens |
-| Cleanup turned into a rewrite → unbounded blast radius and unreleasable work | Minimal Change Engineer ranks deletion before refactor; one context at a time |
-| "Modernized" with no frozen baseline → success is unfalsifiable | Analytics Reporter freezes metrics in Week 1, before any change lands |
-| Big-bang extraction → merge conflicts and work that cannot ship | One bounded context per sprint, flag-gated, contract-parity tested |
-| Logic moved into the database because it is possible, not because it belongs there | ADR-3 must name each item and why it belongs; anything not listed stays in the application |
-| Repo cleanup mixed into feature PRs → review becomes unreviewable | Cleanup ships in standalone PRs, deletion-only where possible |
-| Phase 3 and 4 run simultaneously on the same context → blame is unattributable when latency moves | Caching lands before an extraction starts, never during one |
+| A big-bang rewrite in incremental clothing — the context is rebuilt on a branch while "modernization in place" stays on the slide | Phase 4 extracts exactly one bounded context per sprint and never two, each behind a feature flag with rollback by flag flip rather than redeploy, and caching lands before an extraction starts, never during one |
+| The frozen baseline quietly refrozen once it stops flattering the program | The baseline is a Phase 0 gate artifact signed off by the Reality Checker, and every Phase 3 and Phase 5 claim is measured against that artifact (P95 within 10% or better, error rate not worse), so moving a target is a change to the Success Criteria table and its owners, not a re-measurement |
+| Data-plane consolidation shipped without a rollback path | ADR-3 and ADR-4 are signed before any code moves, the Database Reliability Engineer owns reversible migrations, and the Phase 2 gate does not pass until reconciliation is zero-diff and the migration reverses cleanly |
+| Load reduction that relocates cost instead of removing it — cache hit ratio climbs while origin query count and write load climb with it | Phase 3 captures per-endpoint p50/p95/p99 and query count per request before a cache key exists, the Observability Reviewer makes hit ratio, miss reason, and invalidation events observable, and the gate re-measures against the frozen baseline with error rate not worse |
+| Service extraction driven by org fashion rather than measured coupling | Extraction order is a Week 9 Key Decision for the Project Shepherd and Software Architect, read off the Phase 1 dependency and data-flow map, and a bounded context with no named owner from Required Inputs never enters the queue |
+| A "modernized" module nobody load-tested — behavior parity green, flag on, no peak profile | Phase 5 parallel sign-off includes peak-load parity against the frozen baseline, and a component absent from that report is not modernized however many contract-parity runs passed in Phase 4 |

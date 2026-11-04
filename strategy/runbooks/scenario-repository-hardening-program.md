@@ -1,6 +1,6 @@
 # Runbook: Repository Modernization & Hardening
 
-Mode: NEXUS-Sprint | Duration: 2-4 weeks | Agents: 20-24
+Mode: NEXUS-Sprint | Duration: 2-4 weeks | Agents: 20
 
 ## Scenario
 
@@ -46,16 +46,15 @@ Scope is the repository surface and its enforcement — not product architecture
 
 | Agent | Role |
 | --- | --- |
-| Technical Writer | README, CONTRIBUTING, SUPPORT, CHANGELOG, governance docs |
+| Technical Writer | README, CONTRIBUTING, SUPPORT, CHANGELOG, governance docs, and the CI job that executes their commands so docs are tested, not trusted |
 | Legal Compliance Checker | License, third-party notices, DCO/CLA, export and terms review |
 | Developer Community Builder | Contribution path a newcomer can actually follow |
-| DevOps Automator | Workflow scaffolding, reusable actions, pinned SHAs |
+| DevOps Automator | Workflow scaffolding, reusable actions, pinned SHAs; from Phase 3 on, CI/CD pipelines with least-privilege permissions, concurrency, and caching |
 
 ### Governance & Automation (Phase 3)
 
 | Agent | Role |
 | --- | --- |
-| DevOps Automator | CI/CD pipelines, least-privilege permissions, concurrency, caching |
 | Developer Tooling Engineer | Composite actions, local parity with CI, pre-commit hooks |
 | Studio Operations | Triage process, label taxonomy, stale and escalation policy |
 
@@ -83,7 +82,6 @@ Scope is the repository surface and its enforcement — not product architecture
 | --- | --- |
 | DX Engineer | Time-to-first-green-CI for a new contributor |
 | Developer Advocate | Public-facing contribution and support narrative |
-| Technical Writer | Docs that are tested, not just written |
 
 ## Execution Plan
 
@@ -232,18 +230,18 @@ This table is the deterministic checklist. "Enforced by" is mandatory: an item w
 | Red-PR evidence pack, one per gate | Test Automation Engineer + Evidence Collector | 5 |
 | Final verdict and residual risk note | Reality Checker | 5 |
 
-## Common Pitfalls & Mitigations
+## Common Pitfalls
 
 | Pitfall | Mitigation |
 | --- | --- |
-| Policies written but never enforced → false confidence, worse than no policy | Every matrix row requires an "Enforced by" column entry and an observed failing gate |
-| Actions pinned to tags or branches → supply-chain compromise by tag move | Pin to full commit SHA; let Dependabot update the pins |
-| `permissions: write-all` copy-pasted into every workflow | Default to `contents: read`, elevate per job and per need |
-| CODEOWNERS naming departed users or nonexistent teams → reviews silently skipped | Validate entries against the live org in CI; broken entries fail the build |
-| CODE_OF_CONDUCT copy-pasted with no enforcement contact | Name a real, monitored channel and a response window, or do not ship the file |
-| CI that only runs on push → pull requests merge unverified | Required checks must be defined on `pull_request` |
-| Release or publish steps reachable from fork PRs → secret exposure | Gate publish and secret-consuming steps to base-repo refs |
-| Chasing an OpenSSF Scorecard number instead of the behavior it measures | Gate on the specific checks; treat the score as a trend, not a target |
-| Turning on strict protection on a busy branch in one step → contributor revolt | Staged rollout: warn-only, then enforce, with a documented exception path |
-| Docs that drift from reality → contributors follow broken instructions | Execute README and CONTRIBUTING commands in CI; a broken doc fails the build |
-| Hardening applied to one repo and never propagated | Ship the result as an organization-wide template or starter repository |
+| A policy file nobody monitors — `SECURITY.md` or `CODE_OF_CONDUCT.md` naming an inbox that no human reads. Written policy without enforcement is false confidence, which is worse than having no policy | No surface row ships without its "Enforced by" entry, Phase 2 requires a real monitored channel with a stated response window, and the disclosure SLA is measured (acknowledge in 2 business days, triage in 5) |
+| Actions re-pinned to floating tags after the hardening wave, because pinning was treated as a one-time sweep | Phase 4 gate holds at zero unpinned actions, `dependabot.yml` owns pin updates, and the result ships as an organization-wide template so new repositories inherit the pin instead of re-earning it |
+| `permissions: write-all` copy-pasted into every workflow | Default to `contents: read` and elevate per job, per need |
+| `CODEOWNERS` naming people who left, so required reviews are requested from nobody | Phase 3 validates every entry against live users and teams and the build fails on a dead entry; success requires 100% of entries to resolve |
+| CI that only runs on push, so pull requests merge unverified | Required checks must be defined on `pull_request` |
+| Release or publish steps reachable from fork pull requests — secret exposure | Gate publish and secret-consuming steps to base-repository refs |
+| Chasing an OpenSSF Scorecard number instead of the behaviour it measures | Gate on the specific checks and treat the score as a trend, never a target |
+| Turning on strict protection on a busy branch in one step — contributor revolt | Staged rollout: warn-only, then enforce, with a documented exception path |
+| Docs that drift from reality, so contributors follow broken instructions | Execute README and CONTRIBUTING commands in CI; a broken command fails the build |
+| A `CONTRIBUTING.md` no newcomer ever followed — plausible prose, an untested path | The Developer Community Builder walks the contribution path end to end, and the DX Engineer measures clean clone to first green CI under one hour |
+| The hardening wave decays after handoff because no owner was named | A named maintainer is a blocking Required Input before Phase 1, the exception policy names who grants and reviews exceptions, and the Reality Checker's residual risk note assigns an owner to every open item |

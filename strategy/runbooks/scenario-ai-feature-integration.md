@@ -131,12 +131,13 @@ Sprint 2:
 | Blocking security/compliance findings | Zero at gate |
 | Blind evaluation | Completed |
 
-## Common Pitfalls & Mitigations
+## Common Pitfalls
 
 | Pitfall | Mitigation |
 | --- | --- |
-| "Works in a demo" | Prompt Engineer builds eval set before tuning |
-| Prompt versions drift | Every prompt committed and scored |
-| No failure experience | Frontend Developer specifies degraded UX |
-| Injection via user content | Risk Reviewer includes injection in threat model |
-| Cost overruns after launch | Backend Architect enforces caps from Phase 1 |
+| The feature ships because it demos well, with quality judged by whoever last watched it | The Week 1 gate requires Prompt Engineer and AI Engineer to hold a version-controlled evaluation set of at least 100 labeled examples, and the Phase 2 gate requires scores to clear the numeric quality bar reproducibly across 3 runs before integration starts |
+| Evaluation scored on the same examples the prompt was tuned against, so the bar is met on memorized inputs | Prompt Engineer commits every prompt version against a fixed eval set and Evidence Collector keeps scores traceable per version; Reality Checker's Phase 4 blind evaluation strips the prompt version from outputs so reviewers cannot anchor on the tuning set |
+| No degraded path when the model degrades or the provider rate-limits, so a provider incident becomes a user-facing outage | Frontend Developer specifies streaming, loading, and error states in Phase 3, and API Tester exercises malformed input, upstream timeout, provider 5xx, and rate-limit responses before the Phase 3 gate; Infrastructure Maintainer holds the quota and provider-failover path |
+| Token cost is discovered on the invoice, after traffic has scaled | Backend Architect sets cost caps in Week 1 and enforces them through timeouts, retries with backoff, and a circuit breaker; the Phase 3 gate requires a deliberate over-limit test to prove the cap fires, and Analytics Reporter keeps cost on the Phase 5 dashboard |
+| A prompt or retrieval change ships with no regression run, and the drop surfaces as user complaints | Prompt Engineer reports a regression delta per prompt version and Evidence Collector records the matching scores, so a change without a measured delta is visible at the gate; DevOps Automator deploys prompt and config independently of code with rollback, which makes reverting the prompt the first response |
+| Guardrails and safety rules exist only as prose in the threat model, never as enforcement | Risk Reviewer builds the injection, exfiltration, and misuse threat model in Week 1, reviews adversarial cases in Sprint 1, and re-runs it against the integrated system in Phase 4, where the gate blocks on any security or compliance finding |

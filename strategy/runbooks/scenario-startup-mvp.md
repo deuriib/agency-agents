@@ -143,12 +143,13 @@ Week 6: Optimize
 | System uptime | > 99% in first week |
 | User feedback collected | ≥ 50 responses in first 2 weeks |
 
-## Common Pitfalls & Mitigations
+## Common Pitfalls
 
 | Pitfall | Mitigation |
 |---------|-----------|
-| Scope creep during build | Sprint Prioritizer enforces MoSCoW — "Won't" means won't |
-| Over-engineering for scale | Rapid Prototyper mindset — validate first, scale later |
-| Skipping QA for speed | Evidence Collector runs on EVERY task — no exceptions |
-| Launching without monitoring | Infrastructure Maintainer sets up monitoring in Week 1 |
-| No feedback mechanism | Analytics + feedback collection built into Sprint 1 |
+| Feature list written before a single user conversation | Day 1-2 compressed discovery runs the Trend Researcher competitive scan and UX Architect key-flow wireframes first; Sprint Prioritizer only RICE-scores what those flows and the existing spec actually justify |
+| Launch date fixed first, so the QA gate gets quietly shortened to protect it | Key Decisions places launch timing after the Reality Checker READY verdict; a NEEDS WORK verdict buys the prescribed 2-3 day fix cycle and Evidence Collector still QAs every task |
+| MVP scoped by build effort instead of by the riskiest assumption | Sprint Prioritizer scores by value and risk, not by hours, and Rapid Prototyper spends the early experiment on the assumption that invalidates the product if it is wrong |
+| Launch to nobody because distribution was never inside MVP scope | Growth Team activates Week 3, not Week 5 — Growth Hacker ships referral and viral mechanics in Sprint 2, Content Creator drafts launch content, Social Media Strategist owns the Week 5 campaign |
+| Onboarding that only works with a founder on the call | Success Criteria requires first users onboarded within 48 hours with Support Responder live in Week 5; any step that needs the founder is a defect the Dev-QA loop must fix before launch |
+| "Validated" declared from compliments rather than measurable behaviour | Analytics Reporter installs tracking and dashboards in Sprint 2 so the behaviour metric exists pre-launch, Experiment Tracker runs the A/B test in Week 6, and the 50-response feedback target is read against that data |

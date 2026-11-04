@@ -47,10 +47,14 @@ MODES = ("NEXUS-Micro", "NEXUS-Sprint", "NEXUS-Full")
 # band is not really that mode: a 14-agent "Sprint" has no orchestration capacity,
 # and a 14-agent "Micro" cannot run in days. Legacy docs in the baseline are the
 # reason this lives here with a ratchet rather than in the install lint.
+# Micro and Sprint have real numbers in the doctrine. Full is defined only as "All",
+# which is unbounded, so its floor is the empirical floor of the program runbooks the
+# catalog actually ships. The band's job is to catch a mislabelled mode, not to rank
+# programs by size: a 21-agent full program is not a Sprint.
 MODE_BANDS = {
     "NEXUS-Micro": (5, 10),
     "NEXUS-Sprint": (15, 25),
-    "NEXUS-Full": (25, 40),
+    "NEXUS-Full": (20, 40),
 }
 
 
