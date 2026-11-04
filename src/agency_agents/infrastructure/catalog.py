@@ -33,6 +33,26 @@ class DivisionDefinition(BaseModel):
 class DivisionsCatalog(BaseModel):
     divisions: Dict[str, DivisionDefinition]
 
+class RunbookRosterGroup(BaseModel):
+    """One activation phase of a runbook roster (``group`` is the prose label)."""
+    group: str
+    activation: str
+    agents: List[str] = Field(default_factory=list)
+
+class RunbookDefinition(BaseModel):
+    """A NEXUS scenario runbook: prose doc plus the machine-readable roster."""
+    slug: str
+    title: str
+    mode: str
+    duration: str
+    summary: str
+    doc: str
+    roster: List[RunbookRosterGroup] = Field(default_factory=list)
+
+class RunbooksCatalog(BaseModel):
+    _note: Optional[str] = None
+    runbooks: List[RunbookDefinition] = Field(default_factory=list)
+
 class CatalogManager:
     """
     Provides centralized access to project source-of-truth JSON files.
@@ -50,3 +70,8 @@ class CatalogManager:
         path = self.root_dir / "divisions.json"
         with open(path, 'r', encoding='utf-8') as f:
             return DivisionsCatalog(**json.load(f))
+
+    def load_runbooks(self) -> RunbooksCatalog:
+        path = self.root_dir / "strategy" / "runbooks.json"
+        with open(path, 'r', encoding='utf-8') as f:
+            return RunbooksCatalog(**json.load(f))

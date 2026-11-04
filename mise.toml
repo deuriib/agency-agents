@@ -7,11 +7,12 @@ uv = "0.12.12"
 # ---------------------------------------------------------------------------
 
 [tasks.lint]
-description = "Lint Python, workflow YAML and the agent catalog"
+description = "Lint Python, workflow YAML, the agent catalog and runbook doctrine"
 run = [
     "uv run ruff check .",
     "uv run yamllint -d relaxed .github/",
     "uv run python -m agency_agents lint",
+    "uv run python scripts/ci/check_runbook_structure.py",
 ]
 
 [tasks.types]

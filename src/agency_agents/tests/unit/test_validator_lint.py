@@ -208,3 +208,177 @@ def test_lint_on_empty_division_returns_nothing(tmp_path: Path) -> None:
     (tmp_path / "engineering").mkdir()
 
     assert LintEngine(tmp_path).lint_agents(tmp_path / "engineering") == []
+
+
+# ------------------------------------------------------------- runbooks
+
+
+def runbook_entry(**overrides: Any) -> dict[str, Any]:
+    entry: dict[str, Any] = {
+        "slug": "x",
+        "title": "X",
+        "mode": "NEXUS-Micro",
+        "duration": "1 week",
+        "summary": "Does one thing.",
+        "doc": "strategy/runbooks/scenario-x.md",
+        "roster": [
+            {"group": "Core", "activation": "always", "agents": ["engineering-alpha"]},
+        ],
+    }
+    entry.update(overrides)
+    return entry
+
+
+def seed_runbooks(
+    root: Path,
+    runbooks: list[dict[str, Any]],
+    docs: tuple[str, ...] = ("scenario-x.md",),
+) -> None:
+    """Seed a runbooks catalog plus the docs it points at."""
+    seed_divisions(root, ("engineering",))
+    # Slugs are the .md stem, and division prefixes are part of the stem.
+    write_markdown(
+        root, "engineering", "engineering-alpha.md", "---\nname: Alpha\ndescription: Works.\n---\nBody\n"
+    )
+    docs_dir = root / "strategy" / "runbooks"
+    docs_dir.mkdir(parents=True, exist_ok=True)
+    for doc in docs:
+        (docs_dir / doc).write_text("# Runbook\n", encoding="utf-8")
+    (root / "strategy" / "runbooks.json").write_text(
+        json.dumps({"runbooks": runbooks}), encoding="utf-8"
+    )
+
+
+def test_runbooks_accepts_a_consistent_catalog(tmp_path: Path) -> None:
+    seed_runbooks(tmp_path, [runbook_entry()])
+
+    assert LintEngine(tmp_path).check_runbooks_consistency() == []
+
+
+def test_runbooks_flags_unknown_agent_slug(tmp_path: Path) -> None:
+    seed_runbooks(
+        tmp_path,
+        [runbook_entry(roster=[{"group": "Core", "activation": "always", "agents": ["ghost-agent"]}])],
+    )
+
+    errors = LintEngine(tmp_path).check_runbooks_consistency()
+
+    assert errors == ["Runbook 'x' references unknown agent slug 'ghost-agent'."]
+
+
+def test_runbooks_flags_missing_doc(tmp_path: Path) -> None:
+    seed_runbooks(tmp_path, [runbook_entry(doc="strategy/runbooks/scenario-gone.md")], docs=())
+
+    errors = LintEngine(tmp_path).check_runbooks_consistency()
+
+    assert "Runbook 'x' doc 'strategy/runbooks/scenario-gone.md' does not exist." in errors
+
+
+def test_runbooks_flags_unregistered_doc(tmp_path: Path) -> None:
+    seed_runbooks(tmp_path, [runbook_entry()], docs=("scenario-x.md", "scenario-orphan.md"))
+
+    errors = LintEngine(tmp_path).check_runbooks_consistency()
+
+    assert errors == [
+        "Runbook doc 'strategy/runbooks/scenario-orphan.md' is not registered in strategy/runbooks.json."
+    ]
+
+
+def test_runbooks_flags_doc_outside_runbook_dir(tmp_path: Path) -> None:
+    write_markdown(tmp_path, "engineering", "notes.md", "Just notes.\n")
+    seed_runbooks(tmp_path, [runbook_entry(doc="engineering/notes.md")])
+
+    errors = LintEngine(tmp_path).check_runbooks_consistency()
+
+    assert "Runbook 'x' doc 'engineering/notes.md' must live under strategy/runbooks/." in errors
+
+
+def test_runbooks_flags_unknown_mode(tmp_path: Path) -> None:
+    seed_runbooks(tmp_path, [runbook_entry(mode="NEXUS-Fast")])
+
+    errors = LintEngine(tmp_path).check_runbooks_consistency()
+
+    assert errors == [
+        "Runbook 'x' declares mode 'NEXUS-Fast'; expected one of NEXUS-Micro | NEXUS-Sprint | NEXUS-Full."
+    ]
+
+
+def test_runbooks_flags_agent_listed_twice(tmp_path: Path) -> None:
+    seed_runbooks(
+        tmp_path,
+        [
+            runbook_entry(
+                roster=[
+                    {"group": "Core", "activation": "always", "agents": ["engineering-alpha"]},
+                    {"group": "Later", "activation": "week 2", "agents": ["engineering-alpha"]},
+                ]
+            )
+        ],
+    )
+
+    errors = LintEngine(tmp_path).check_runbooks_consistency()
+
+    assert errors == ["Runbook 'x' lists agent 'engineering-alpha' in more than one group."]
+
+
+def test_runbooks_flags_roster_over_mode_capacity(tmp_path: Path) -> None:
+    seed_runbooks(
+        tmp_path,
+        [
+            runbook_entry(
+                roster=[
+                    {
+                        "group": "Core",
+                        "activation": "always",
+                        "agents": [f"engineering-alpha-{i}" for i in range(17)],
+                    }
+                ]
+            )
+        ],
+    )
+
+    errors = LintEngine(tmp_path).check_runbooks_consistency()
+
+    assert "Runbook 'x' rosters 17 agents, over the NEXUS-Micro limit of 16." in errors
+
+
+def test_runbooks_flags_duplicate_and_non_kebab_slugs(tmp_path: Path) -> None:
+    seed_runbooks(
+        tmp_path,
+        [
+            runbook_entry(slug="Not_Kebab"),
+            runbook_entry(slug="dup"),
+            runbook_entry(slug="dup", doc="strategy/runbooks/scenario-x.md"),
+        ],
+    )
+
+    errors = LintEngine(tmp_path).check_runbooks_consistency()
+
+    assert "Runbook slug 'Not_Kebab' is not kebab-case." in errors
+    assert "Runbook slug 'dup' is registered more than once." in errors
+
+
+def test_runbooks_flags_empty_roster_and_empty_group(tmp_path: Path) -> None:
+    seed_runbooks(
+        tmp_path,
+        [
+            runbook_entry(slug="empty-roster", roster=[]),
+            runbook_entry(slug="empty-group", roster=[{"group": "Core", "activation": "always", "agents": []}]),
+        ],
+    )
+
+    errors = LintEngine(tmp_path).check_runbooks_consistency()
+
+    assert "Runbook 'empty-roster' has an empty roster." in errors
+    assert "Runbook 'empty-group' group 'Core' lists no agents." in errors
+
+
+def test_runbooks_reports_missing_catalog_file(tmp_path: Path) -> None:
+    (tmp_path / "strategy").mkdir()
+
+    assert LintEngine(tmp_path).check_runbooks_consistency() == ["strategy/runbooks.json is missing."]
+
+
+def test_runbooks_ignores_projects_without_doctrine(tmp_path: Path) -> None:
+    """strategy/ is optional; only a strategy/ without a registry is a defect."""
+    assert LintEngine(tmp_path).check_runbooks_consistency() == []
