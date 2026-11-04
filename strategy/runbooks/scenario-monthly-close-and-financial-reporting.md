@@ -54,6 +54,7 @@ This runbook does not assert an accounting treatment. Revenue recognition, accru
 
 | Agent | Role |
 | --- | --- |
+| Agents Orchestrator | Gate convocation, cycle calendaring, escalation when a gate cannot pass |
 | Bookkeeper & Controller | Period lock, trial balance export, tie-outs, break register |
 | Finance Tracker | Statements intake, cut-off tests, checklist, accrual re-derivation |
 | Accounts Payable Agent | Open bills, payment runs, accrual schedule from open POs |
@@ -74,7 +75,7 @@ This runbook does not assert an accounting treatment. Revenue recognition, accru
 | Executive Summary Generator | Board narrative, decisions requested |
 | Document Generator | Statements generated from the trial balance export |
 
-**Gate convocation.** This roster has no orchestrator. The Close Command owner — the Bookkeeper & Controller — convokes every gate that follows, including the Day 3-4 gate whose evidence Review & Variance produces and the Day 5 gate at which the Chief Financial Officer signs. Convoking means opening the gate session before the next phase starts, recording the observed value for each criterion on the close checklist, and declaring pass or fail. A gate with no convocation row, no recorded observation, or a late convocation fails.
+**Gate convocation.** The Agents Orchestrator convokes every gate that follows — the Day 1-2 gate, the Day 3-4 gate whose evidence Review & Variance produces, and the Day 5 gate at which the Chief Financial Officer signs. The Bookkeeper & Controller owns the content of the close; the orchestrator owns its cadence and refuses to advance a phase whose gate did not run. Convoking means opening the gate session before the next phase starts, recording the observed value for each criterion on the close checklist, and declaring pass or fail. A gate with no convocation row, no recorded observation, or a late convocation fails.
 
 ## Day 1-2: Reconcile
 

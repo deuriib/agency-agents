@@ -2,7 +2,8 @@
 
 > **Status**: Waves 1-3 **shipped** — 17 new runbooks registered in `strategy/runbooks.json`
 > (36 total), all passing the structural gate. The process guard in section 2 is built.
-> Wave 4 remains deliberately unbuilt.
+> Wave 4 is built (see §3, Wave 4) at the maintainer's explicit request, which overrides the
+> demand-evidence hold — recorded as a directed exception, not as market evidence.
 > **Scope**: Which NEXUS runbooks to add next, and why — grounded in the catalog's own
 > unused assets, the repository's own signals, and 2026 market demand for agent workflows.
 
@@ -87,7 +88,7 @@ Every one of those maps to an agent this catalog already ships — and to no run
 
 | Gate | Location | Enforces |
 | --- | --- | --- |
-| `LintEngine.check_runbooks_consistency` | `src/agency_agents/core/validator.py` | Roster slugs resolve to real agent files, `doc` paths exist and live under `strategy/runbooks/`, every doc is registered, slugs are unique kebab-case, no agent appears in two roster groups, roster fits its NEXUS mode ceiling |
+| `LintEngine.check_runbooks_consistency` | `src/agency_agents/core/validator.py` | Roster slugs resolve to real agent files, `doc` paths exist and live under `strategy/runbooks/`, every doc is registered, slugs are unique kebab-case, no agent appears in two roster groups, every roster contains `agents-orchestrator`, roster fits its NEXUS mode ceiling |
 | `check_runbook_structure.py` | `scripts/ci/` | Required sections, no frontmatter, word floor, a gate that can fail, mode mention, roster group labels present in prose, **markdown table column integrity**, **roster row count equals the registered count**, and the mode agent band from `nexus-strategy.md` (Micro 5-10, Sprint 15-25, Full 25-40) |
 
 The structural gate uses a ratchet baseline (`scripts/ci/runbook-structure-baseline.txt`),
@@ -356,7 +357,7 @@ plus an explicit out-of-scope list. No acceptance criteria, no build.
 | `sales-pipeline-engine` | Sprint · 4–6 wks | revenue | The whole 9-agent Sales division is unreachable. Lead-to-account enrichment and scoring is a top-demand workflow. | M |
 | `growth-experiment-loop` | Micro · 2–4 wks | marketing, product | `project-management-experiment-tracker` appears in 5 runbooks as a supporting role and never owns the loop. | S |
 
-### Wave 4 — verticals, only with demand evidence
+### Wave 4 — verticals (built on explicit request)
 
 `gis-program-launch` (13 unreachable agents), `spatial-app-launch` (6), `game-launch` (6),
 `clinical-evidence-review` (3), `academic-research-program` (6). Each is a complete roster with no
@@ -373,10 +374,11 @@ maintain as dead doctrine.
 | 1 | 5 | Paid media, AEO/SEO, UI quality, OSS ops, defect | **shipped** |
 | 2 | 5 | Finance, Legal, DevEx | **shipped** |
 | 3 | 7 | Support, Security, Sales, MCP/RAG, recovery, release | **shipped** |
-| 4 | 5 | GIS, spatial, games, healthcare, academic (34 agents) | **deliberately not built** |
+| 4 | 5 | GIS, spatial, games, healthcare, academic (34 agents) | **shipped, on explicit request** |
 
-Catalog reach after Wave 2: **~48%**. After Wave 3: **~62%**. Everything above 60% is a
-documentation problem, not a runbook problem.
+Catalog reach after Waves 1-3, measured: **135 of 283 agents (48%)**. After Wave 4:
+**169 of 283 (60%)**, with GIS, Spatial Computing, Game Development, Healthcare, Academic,
+Paid Media, Sales, Support, Testing and Research all at 100% of their division.
 
 ---
 
@@ -422,6 +424,8 @@ future runbook and are worth more than any individual doc.
 | **Each metric declares its population, its window and its exclusion rule.** | The most common defect was not a weak gate but a moveable denominator: a claim list that shrinks when you retire claims, a "top-20" over a set of five, a deflection rate measured before the instrument existed. |
 | **Mode is a size *and* a window.** Micro is 5-10 agents in 1-5 days, Sprint 15-25 in 2-6 weeks. A doc that needs 14 days of observation is not a 5-day runbook, whatever its roster size. | Roster sizes drifted to whatever the prose needed, and one experiment loop claimed 5 days while requiring 14 days of exposure. |
 | **No table row may carry extra cells.** | One extra pipe silently deleted an agent from a rendered roster while the registry kept installing it. This is now a mechanical check. |
+| **Every roster contains `agents-orchestrator`.** A runbook *is* a pipeline: phase gating, the dev-QA loop and escalation are the orchestrator's job. A roster without it is a list of agents, not a workflow — and it cannot run itself. | Now enforced by `check_runbooks_consistency`. Where the mode band was already full, the controller replaced the least load-bearing row rather than expanding the roster: Micro is 5-10 agents before it is anything else. |
+| **A doc may not abbreviate an agent's name.** The roster table is a mapping to a real file; `AppSec Engineer` and `Application Security Engineer` are the same person only to a human. | Comparing display names against frontmatter is mechanical, and it caught two docs whose table had drifted from the registry. |
 
 ### 6.2 Legacy remediation, completed
 
@@ -443,10 +447,20 @@ always an invention of this gate. A 21-agent full certification programme is not
 Sprint, and the band's only job is to catch mislabelling. Micro and Sprint keep their doctrine
 numbers, because those are stated in the strategy.
 
-### 6.3 Deliberately not built
+### 6.3 Wave 4 — a directed exception, on the record
 
-Wave 4 (GIS, spatial, games, healthcare, academic) stays unbuilt: 34 agents remain unreachable by
-any runbook, and that is the correct state until there is evidence of demand. A runbook is
+Waves 1-3 followed the rule that a vertical runbook waits for demand evidence. Wave 4 did not: it
+was built at the maintainer's explicit request. The demand criteria that would normally have gated
+it live in issue #55, alongside the instruction that a quarter passing with no matching request
+makes the corresponding runbook a candidate for removal rather than maintenance.
+
+This is written down because a rule that gets silently overridden the first time it is inconvenient
+is not a rule, it is decoration. The exception is visible, dated, and reversible.
+
+What remains unreachable is now **114 specialty agents** inside otherwise-covered divisions —
+China-market platforms, Drupal and WordPress performance, DGII compliance, embedded firmware,
+WebAssembly, USWDS, and similar. Those belong in vertical or client-specific programmes, not in
+general runbooks. A runbook is
 maintained doctrine, and unused doctrine decays into fiction that QA cannot catch.
 
 Catalog reach after Waves 1-3: **~62%**. Everything above that is a documentation problem, not a

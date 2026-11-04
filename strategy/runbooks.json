@@ -109,6 +109,7 @@
           "group": "Campaign Core",
           "activation": "always",
           "agents": [
+            "agents-orchestrator",
             "marketing-social-media-strategist",
             "marketing-content-creator",
             "marketing-growth-hacker",
@@ -152,10 +153,10 @@
           "group": "P0 Critical Response",
           "activation": "always",
           "agents": [
+            "agents-orchestrator",
             "support-infrastructure-maintainer",
             "engineering-devops-automator",
             "engineering-backend-architect",
-            "engineering-frontend-developer",
             "support-support-responder",
             "support-executive-summary-generator"
           ]
@@ -923,11 +924,11 @@
           "group": "Triage & Containment",
           "activation": "always",
           "agents": [
+            "agents-orchestrator",
             "engineering-review-risk",
             "engineering-sre",
             "engineering-devops-automator",
-            "engineering-backend-architect",
-            "support-infrastructure-maintainer"
+            "engineering-backend-architect"
           ]
         },
         {
@@ -1268,6 +1269,7 @@
           "group": "Close Command",
           "activation": "always",
           "agents": [
+            "agents-orchestrator",
             "finance-bookkeeper-controller",
             "support-finance-tracker",
             "accounts-payable-agent"
@@ -1848,6 +1850,273 @@
             "testing-evidence-collector",
             "testing-reality-checker",
             "marketing-content-creator"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "gis-program-launch",
+      "title": "GIS Program Launch",
+      "mode": "NEXUS-Sprint",
+      "duration": "6 weeks",
+      "summary": "Deliver a spatial product whose coordinate reference, geometry and topology are verified before it is styled.",
+      "doc": "strategy/runbooks/scenario-gis-program-launch.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "gis-technical-consultant",
+            "gis-solution-engineer"
+          ]
+        },
+        {
+          "group": "Spatial Foundation",
+          "activation": "week 1-2",
+          "agents": [
+            "gis-spatial-data-engineer",
+            "gis-geoprocessing-specialist",
+            "gis-bim-specialist",
+            "gis-drone-reality-mapping"
+          ]
+        },
+        {
+          "group": "Data & Analysis",
+          "activation": "week 3-4",
+          "agents": [
+            "gis-spatial-data-scientist",
+            "gis-geoai-ml-engineer",
+            "gis-analyst"
+          ]
+        },
+        {
+          "group": "Delivery",
+          "activation": "week 4-5",
+          "agents": [
+            "gis-web-gis-developer",
+            "gis-3d-scene-developer",
+            "gis-cartography-designer"
+          ]
+        },
+        {
+          "group": "Quality & Proof",
+          "activation": "week 4-6",
+          "agents": [
+            "gis-qa-engineer",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "spatial-app-launch",
+      "title": "Spatial App Launch",
+      "mode": "NEXUS-Sprint",
+      "duration": "6 weeks",
+      "summary": "Ship a spatial product whose comfort, latency and interaction budgets are release gates, verified in a real space by someone who did not build it.",
+      "doc": "strategy/runbooks/scenario-spatial-app-launch.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "xr-interface-architect"
+          ]
+        },
+        {
+          "group": "Spatial Build",
+          "activation": "week 2-4",
+          "agents": [
+            "visionos-spatial-engineer",
+            "xr-immersive-developer",
+            "macos-spatial-metal-engineer",
+            "terminal-integration-specialist"
+          ]
+        },
+        {
+          "group": "Interaction & Comfort",
+          "activation": "week 2-4",
+          "agents": [
+            "xr-cockpit-interaction-specialist",
+            "design-ux-researcher",
+            "testing-accessibility-auditor"
+          ]
+        },
+        {
+          "group": "Design",
+          "activation": "week 1-3",
+          "agents": [
+            "design-ui-designer",
+            "design-ui-finish-gate-reviewer"
+          ]
+        },
+        {
+          "group": "Quality & Proof",
+          "activation": "week 5-6",
+          "agents": [
+            "testing-performance-benchmarker",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "game-launch",
+      "title": "Game Launch",
+      "mode": "NEXUS-Sprint",
+      "duration": "6 weeks",
+      "summary": "Take a game to a store release with the content pipeline verified from a clean machine and certification treated as an input, not a surprise.",
+      "doc": "strategy/runbooks/scenario-game-launch.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "game-designer"
+          ]
+        },
+        {
+          "group": "Content & Systems",
+          "activation": "week 1-2",
+          "agents": [
+            "level-designer",
+            "narrative-designer",
+            "economy-designer"
+          ]
+        },
+        {
+          "group": "Build & Art",
+          "activation": "week 2-4",
+          "agents": [
+            "technical-artist",
+            "game-audio-engineer",
+            "engineering-backend-architect"
+          ]
+        },
+        {
+          "group": "Certification & Quality",
+          "activation": "week 4-6",
+          "agents": [
+            "testing-performance-benchmarker",
+            "testing-evidence-collector",
+            "testing-reality-checker",
+            "testing-accessibility-auditor"
+          ]
+        },
+        {
+          "group": "Launch",
+          "activation": "week 5-6",
+          "agents": [
+            "marketing-app-store-optimizer",
+            "engineering-devops-automator",
+            "engineering-mobile-release-engineer"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "academic-research-program",
+      "title": "Academic Research Program",
+      "mode": "NEXUS-Sprint",
+      "duration": "6 weeks",
+      "summary": "Deliver research output that survives scrutiny: every claim traceable to a source that was read, every figure regenerable, every method decision frozen before the result.",
+      "doc": "strategy/runbooks/scenario-academic-research-program.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "research-synthesist",
+            "project-manager-senior"
+          ]
+        },
+        {
+          "group": "Evidence & Method",
+          "activation": "week 1-2",
+          "agents": [
+            "academic-statistician",
+            "academic-psychologist",
+            "academic-anthropologist"
+          ]
+        },
+        {
+          "group": "Domain & Narrative",
+          "activation": "week 3-5",
+          "agents": [
+            "academic-historian",
+            "academic-geographer",
+            "academic-narratologist"
+          ]
+        },
+        {
+          "group": "Production",
+          "activation": "week 3-5",
+          "agents": [
+            "engineering-data-engineer",
+            "engineering-technical-writer",
+            "support-analytics-reporter"
+          ]
+        },
+        {
+          "group": "Proof",
+          "activation": "week 5-6",
+          "agents": [
+            "testing-evidence-collector",
+            "testing-reality-checker",
+            "support-legal-compliance-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "clinical-evidence-review",
+      "title": "Clinical Evidence Review",
+      "mode": "NEXUS-Micro",
+      "duration": "5 days per review batch, recurring",
+      "summary": "Assemble a cited evidence brief, state the strength of what it found, and route every clinical judgement to a named clinician - never issue a recommendation.",
+      "doc": "strategy/runbooks/scenario-clinical-evidence-review.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "healthcare-clinical-evidence-agent"
+          ]
+        },
+        {
+          "group": "Evidence & Appraisal",
+          "activation": "day 1-4",
+          "agents": [
+            "healthcare-innovation-strategist",
+            "research-synthesist",
+            "data-privacy-officer"
+          ]
+        },
+        {
+          "group": "Governance",
+          "activation": "day 2-5",
+          "agents": [
+            "support-legal-compliance-checker",
+            "healthcare-sovereign-health-systems-agent",
+            "engineering-privacy-engineer"
+          ]
+        },
+        {
+          "group": "Proof",
+          "activation": "day 5",
+          "agents": [
+            "testing-evidence-collector",
+            "testing-reality-checker"
           ]
         }
       ]

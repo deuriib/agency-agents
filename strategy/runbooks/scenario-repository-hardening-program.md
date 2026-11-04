@@ -63,8 +63,8 @@ Scope is the repository surface and its enforcement — not product architecture
 | Agent | Role |
 | --- | --- |
 | Security Reviewer | Workflow trust boundaries, fork-PR secret exposure, permissions audit |
-| AppSec Engineer | SAST/CodeQL configuration, dependency review, severity thresholds |
-| Secrets & Credential Engineer | Secret scanning, push protection, rotation guidance |
+| Application Security Engineer | SAST/CodeQL configuration, dependency review, severity thresholds |
+| Secrets & Credential Hygiene Engineer | Secret scanning, push protection, rotation guidance |
 | Compliance Auditor | Evidence collection, policy-to-gate traceability |
 
 ### Quality & Enforcement Proof (Phase 5)
@@ -134,9 +134,9 @@ Scope is the repository surface and its enforcement — not product architecture
 ├── DevOps Automator → every action pinned to a full commit SHA, not a tag
 ├── Developer Tooling Engineer → composite/reusable action so local and CI run
 │   the same commands (one way to do things)
-├── AppSec Engineer → CodeQL/SAST on a schedule and on PRs, dependency review,
+├── Application Security Engineer → CodeQL/SAST on a schedule and on PRs, dependency review,
 │   severity threshold that actually fails the build
-├── Secrets & Credential Engineer → secret scanning + push protection enabled,
+├── Secrets & Credential Hygiene Engineer → secret scanning + push protection enabled,
 │   rotation guidance documented
 ├── Security Reviewer → fork-PR trust boundary: publish and secret-consuming steps
 │   gated to base-repo refs only

@@ -18,6 +18,10 @@ RUNBOOK_MODE_CAPACITY = {
     "NEXUS-Full": 40,
 }
 RUNBOOK_DOC_DIR = "strategy/runbooks"
+# Every runbook is a pipeline, and a pipeline without a controller is a list of agents.
+# The orchestrator owns phase gating, the dev-QA loop and escalation, so its absence is
+# not a style choice — it is a roster that cannot run itself.
+RUNBOOK_REQUIRED_AGENT = "agents-orchestrator"
 RUNBOOK_SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -181,6 +185,12 @@ class LintEngine:
                         errors.append(
                             f"Runbook '{runbook.slug}' references unknown agent slug '{agent_slug}'."
                         )
+
+            if RUNBOOK_REQUIRED_AGENT not in roster_slugs:
+                errors.append(
+                    f"Runbook '{runbook.slug}' does not roster '{RUNBOOK_REQUIRED_AGENT}'. "
+                    f"Every runbook needs its pipeline controller."
+                )
 
             duplicates = sorted({s for s in roster_slugs if roster_slugs.count(s) > 1})
             for duplicate in duplicates:

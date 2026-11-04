@@ -27,7 +27,7 @@ You are driving an organization to audit-ready for SOC 2, ISO 27001, or an equiv
 | SRE | Monitoring, incident, and availability controls |
 | Backend Architect | Application security and data controls |
 | Platform Engineer | Infrastructure baselines and configuration controls |
-| Section 508 Specialist | Accessibility compliance controls |
+| Section 508 Accessibility Specialist | Accessibility compliance controls |
 | Infrastructure Maintainer | Asset inventory and environment controls |
 
 ### Evidence & Testing
@@ -65,7 +65,7 @@ Week 3-4: Gap Assessment
 ├── Backend Architect → Application control gaps
 ├── DevOps Automator → Change-management and CI/CD gaps
 ├── SRE → Monitoring and incident-response gaps
-├── Section 508 Specialist → Accessibility gaps
+├── Section 508 Accessibility Specialist → Accessibility gaps
 ├── Workflow Optimizer → Evidence-workflow gaps
 └── Quality Gate: Gap register approved
 ```
@@ -154,6 +154,6 @@ Week 3-4: Remediation
 | The system boundary excludes the system that actually stores or processes the data | Phase 1 writes the boundary from data flow, not from the org chart, and a named human signs it before any control is designed |
 | Compliance treated as a legal-only programme | Engineering control owners are staffed from Phase 2 and each control has a named operational owner, not a legal reviewer |
 | The control narrative is written by the team that designed the controls, so the gap audits itself | The narrative is drafted from collected evidence and challenged in Phase 4 by an internal audit pass that was not involved in design |
-| Accessibility omitted from scope | Section 508 Specialist and Accessibility Auditor are in scope from Month 1, with conformance treated as a control |
+| Accessibility omitted from scope | Section 508 Accessibility Specialist and Accessibility Auditor are in scope from Month 1, with conformance treated as a control |
 | Findings reopened late because closure was recorded without re-test | The remediation gate requires re-test evidence, dated and attributable, before a finding closes |
 | Certification treated as the finish line, so controls decay the quarter after the report | A continuing-evidence owner is named before Phase 5, and drift is reviewed on a stated cadence rather than at the next audit |
