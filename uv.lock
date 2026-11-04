@@ -8,7 +8,7 @@ resolution-markers = [
 
 [[package]]
 name = "agency-agents"
-version = "1.6.3"
+version = "1.7.0"
 source = { editable = "." }
 dependencies = [
     { name = "prompt-toolkit" },
