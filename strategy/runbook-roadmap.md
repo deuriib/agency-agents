@@ -366,13 +366,13 @@ maintain as dead doctrine.
 
 ## 4. Wave plan
 
-| Wave | Runbooks | Divisions unlocked | Net new reachable agents (approx.) |
+| Wave | Runbooks | Divisions unlocked | Status |
 | --- | --- | --- | --- |
-| Guard | lint check + skill fix | — | — |
-| 1 | 5 | Paid media, AEO/SEO, UI quality, OSS ops, defect | ~35 |
-| 2 | 5 | Finance, Legal, DevEx | ~30 |
-| 3 | 7 | Support, Security, Sales, MCP/RAG, recovery, release | ~40 |
-| 4 | 5 | GIS, spatial, games, healthcare, academic | ~34 |
+| Guard | 2 gates + ratchet baseline + skill fix | — | **shipped** |
+| 1 | 5 | Paid media, AEO/SEO, UI quality, OSS ops, defect | **shipped** |
+| 2 | 5 | Finance, Legal, DevEx | **shipped** |
+| 3 | 7 | Support, Security, Sales, MCP/RAG, recovery, release | **shipped** |
+| 4 | 5 | GIS, spatial, games, healthcare, academic (34 agents) | **deliberately not built** |
 
 Catalog reach after Wave 2: **~48%**. After Wave 3: **~62%**. Everything above 60% is a
 documentation problem, not a runbook problem.
