@@ -66,8 +66,8 @@ Everything else is an output: the severity record, the timeline, the status upda
 | --- | --- |
 | Infrastructure Maintainer | Incident commander: scope and impact, severity call against the severity table, coordination, and the 30-minute post-fix watch |
 | DevOps Automator | Deployment and rollback: recent deploy history, pipeline state, staged rollback candidate, executes the rollback on command |
+| Agents Orchestrator | Incident command: assigns cause-class owners, holds the 15-minute update cadence, runs the post-fix loop and escalation |
 | Backend Architect | Server-side cause: database health, API error rates, service-to-service calls, isolation of the failing component |
-| Frontend Developer | Client-side cause: client errors, asset and bundle delivery, degraded UI paths |
 | Support Responder | Customer-visible state: status page and user notifications every 15 minutes while the incident is open |
 | Executive Summary Generator | Stakeholder brief on P0: situation, cause, action, impact, next-update timestamp |
 
@@ -110,7 +110,8 @@ TRIGGER: monitoring alert / user report / agent detection
 │   │   recent deployments, external dependencies
 │   ├── Backend Architect (P0/P1) → database health, API error rates, service communication,
 │   │   failing component
-│   ├── Frontend Developer (P0/P1) → client errors, asset delivery, degraded UI paths
+│   ├── Agents Orchestrator → holds the observation set: every cause class above has an owner,
+│   │   and a client-side specialist is pulled in ad hoc when the client surface is implicated
 │   └── DevOps Automator → deployment history and pipeline state; rollback candidate identified
 │       and staged, not executed
 ├── Support Responder → first status page update, timestamped, with no cause claim before a

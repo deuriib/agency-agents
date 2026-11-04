@@ -47,6 +47,7 @@ Traceability: `G1`–`G3` are the gates closing the phase blocks, `S1`–`S6` th
 
 | Agent | Role |
 | --- | --- |
+| Agents Orchestrator | Pipeline control, phase gating, dev-QA loop, escalation |
 | Social Media Strategist | Campaign lead and cross-platform strategy: objective and the one KPI the campaign is judged on, audience definition, channel selection with a written reason per channel and per channel skipped, the four-week calendar, and the engagement protocol per platform. Takes the Go call and the stop call at G2 |
 | Content Creator | Source copy and long-form production — blog, articles, landing copy, video scripts — plus the master narrative every channel is authored from rather than resized from |
 | Growth Hacker | Acquisition path and budget split: landing page, conversion steps, referral and share mechanics, paid amplification inside the split caps, and the cost-per-acquisition target with its stop rule |

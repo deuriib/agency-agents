@@ -222,7 +222,7 @@ def runbook_entry(**overrides: Any) -> dict[str, Any]:
         "summary": "Does one thing.",
         "doc": "strategy/runbooks/scenario-x.md",
         "roster": [
-            {"group": "Core", "activation": "always", "agents": ["engineering-alpha"]},
+            {"group": "Core", "activation": "always", "agents": ["agents-orchestrator", "engineering-alpha"]},
         ],
     }
     entry.update(overrides)
@@ -235,10 +235,13 @@ def seed_runbooks(
     docs: tuple[str, ...] = ("scenario-x.md",),
 ) -> None:
     """Seed a runbooks catalog plus the docs it points at."""
-    seed_divisions(root, ("engineering",))
+    seed_divisions(root, ("engineering", "specialized"))
     # Slugs are the .md stem, and division prefixes are part of the stem.
     write_markdown(
         root, "engineering", "engineering-alpha.md", "---\nname: Alpha\ndescription: Works.\n---\nBody\n"
+    )
+    write_markdown(
+        root, "specialized", "agents-orchestrator.md", "---\nname: Orchestrator\ndescription: Runs it.\n---\nBody\n"
     )
     docs_dir = root / "strategy" / "runbooks"
     docs_dir.mkdir(parents=True, exist_ok=True)
@@ -255,10 +258,29 @@ def test_runbooks_accepts_a_consistent_catalog(tmp_path: Path) -> None:
     assert LintEngine(tmp_path).check_runbooks_consistency() == []
 
 
+def test_runbooks_requires_the_orchestrator(tmp_path: Path) -> None:
+    seed_runbooks(
+        tmp_path,
+        [runbook_entry(roster=[{"group": "Core", "activation": "always", "agents": ["engineering-alpha"]}])],
+    )
+
+    errors = LintEngine(tmp_path).check_runbooks_consistency()
+
+    assert errors == [
+        "Runbook 'x' does not roster 'agents-orchestrator'. Every runbook needs its pipeline controller."
+    ]
+
+
 def test_runbooks_flags_unknown_agent_slug(tmp_path: Path) -> None:
     seed_runbooks(
         tmp_path,
-        [runbook_entry(roster=[{"group": "Core", "activation": "always", "agents": ["ghost-agent"]}])],
+        [
+            runbook_entry(
+                roster=[
+                    {"group": "Core", "activation": "always", "agents": ["agents-orchestrator", "ghost-agent"]}
+                ]
+            )
+        ],
     )
 
     errors = LintEngine(tmp_path).check_runbooks_consistency()
@@ -309,7 +331,7 @@ def test_runbooks_flags_agent_listed_twice(tmp_path: Path) -> None:
         [
             runbook_entry(
                 roster=[
-                    {"group": "Core", "activation": "always", "agents": ["engineering-alpha"]},
+                    {"group": "Core", "activation": "always", "agents": ["agents-orchestrator", "engineering-alpha"]},
                     {"group": "Later", "activation": "week 2", "agents": ["engineering-alpha"]},
                 ]
             )

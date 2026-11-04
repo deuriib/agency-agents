@@ -99,6 +99,37 @@ def check_tables(name: str, text: str) -> list[str]:
     return errors
 
 
+def agent_display_names(roster: list[dict]) -> dict[str, str]:
+    """slug -> display name, taken from each agent file's frontmatter."""
+    names: dict[str, str] = {}
+    for group in roster:
+        for slug in group["agents"]:
+            for path in ROOT.glob(f"*/{slug}.md"):
+                match = re.search(r"^name:\s*(.+?)\s*$", path.read_text(encoding="utf-8"), re.MULTILINE)
+                names[slug] = match.group(1).strip() if match else slug
+                break
+            else:
+                names.setdefault(slug, slug)
+    return names
+
+
+def missing_from_doc(text: str, roster: list[dict]) -> list[str]:
+    """Agents the registry deploys but the doc never names.
+
+    Row counts can match while the sets differ — a swap of one agent for another keeps
+    the count and breaks the roster. Accept the slug or the frontmatter name (full, or
+    truncated at a parenthetical) so a doc may write "SRE" for
+    "SRE (Site Reliability Engineer)" without being accused of dropping it.
+    """
+    probe = text.lower()
+    absent: list[str] = []
+    for slug, name in agent_display_names(roster).items():
+        candidates = {slug.lower(), name.lower(), name.split("(")[0].strip().lower()}
+        if not any(candidate and candidate in probe for candidate in candidates):
+            absent.append(slug)
+    return sorted(absent)
+
+
 def roster_row_count(text: str) -> int:
     """Count agent rows inside the `## Agent Roster` section's tables."""
     lines = text.splitlines()
@@ -177,6 +208,10 @@ def check_doc(path: Path, entry: dict | None) -> list[str]:
             f"{name}: Agent Roster tables list {documented} agents, runbooks.json registers "
             f"{roster_size}."
         )
+
+    absent = missing_from_doc(text, entry["roster"])
+    if absent:
+        errors.append(f"{name}: registered agents never named in the doc: {', '.join(absent)}.")
 
     # Every roster group should surface in the doc as a heading or table, so a reader
     # can match the prose to what the installer will deploy.
