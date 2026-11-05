@@ -58,8 +58,10 @@ class IdentityRenderer(BaseRenderer):
 
 # Render-level policy: roster agents promoted to the top of the hierarchy.
 # This is a rendering decision, not agent content — it never touches the source
-# frontmatter. Only the orchestrator is a primary agent today.
-PRIMARY_AGENT_SLUGS = frozenset({"agents-orchestrator"})
+# frontmatter. Two agents carry it: the orchestrator, which runs the pipeline,
+# and Vasquez, the process steward, which has to convene the reviews and gates
+# that pipeline depends on (Agency-Flow's domain and process gates).
+PRIMARY_AGENT_SLUGS = frozenset({"agents-orchestrator", "vasquez"})
 
 
 def is_primary_agent(agent: Agent) -> bool:

@@ -12,9 +12,10 @@ User scope writes to `~/.gemini/config/agents/<slug>.md`. Project scope
 (`--scope project`) writes to `<project>/.agents/agents/<slug>.md`. Slugs come
 from the agent name, so `Agents Orchestrator` becomes `agents-orchestrator.md`.
 
-Every agent is rendered as a subagent (`subagent: true`) except
-`agents-orchestrator`, which the converter promotes to the main agent
-(`mainAgent: true`). That promotion is a render-level policy
+Every agent is rendered as a subagent (`subagent: true`) except the two the
+converter promotes to the main agent (`mainAgent: true`): `agents-orchestrator`,
+which runs the pipeline, and `vasquez`, the process steward that convenes its
+gates. That promotion is a render-level policy
 (`PRIMARY_AGENT_SLUGS` in `src/agency_agents/core/converter.py`), not a
 frontmatter field.
 
@@ -72,4 +73,5 @@ tools: [view_file, write_to_file, replace_file_content, grep_search, find_by_nam
 ```
 
 The main agent replaces `subagent: true` with `mainAgent: true` and adds the
-delegation tools to the same `tools` list.
+delegation tools to the same `tools` list. Both `agents-orchestrator` and
+`vasquez` are rendered this way.

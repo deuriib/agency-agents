@@ -73,6 +73,28 @@ def test_antigravity_primary_mode():
     assert "subagent: true" not in outputs[0][1]
 
 
+def test_primary_agents_are_promoted_in_every_primary_aware_format():
+    """One policy, every renderer that has a top-of-hierarchy slot.
+
+    The orchestrator runs the pipeline and Vasquez convenes its gates; both must
+    reach the same slot in a tool that distinguishes primary from subagent, or
+    the steward cannot dispatch the reviews it exists to call.
+    """
+    from agency_agents.core.converter import PRIMARY_AGENT_SLUGS
+
+    engine = ConverterEngine(Path("."))
+    for slug in PRIMARY_AGENT_SLUGS:
+        fm = AgentFrontmatter(name=slug)
+        agent = Agent(slug=slug, path="p", frontmatter=fm, body="Body")
+
+        opencode = engine.convert_agent_for_tool(agent, "opencode")[0][1]
+        assert "mode: primary" in opencode, slug
+
+        antigravity = engine.convert_agent_for_tool(agent, "antigravity")[0][1]
+        assert "mainAgent: true" in antigravity, slug
+        assert _antigravity_tools(antigravity), slug
+
+
 DELEGATION_TOOLS = frozenset(
     {"invoke_subagent", "manage_subagents", "send_message", "manage_task"}
 )
@@ -142,11 +164,15 @@ def test_antigravity_does_not_mutate_source_frontmatter():
     assert "subagent" not in agent.frontmatter.extra
 
 
-def test_render_policy_is_scoped_to_orchestrator():
-    """Primary status is a render-level policy, not agent content."""
+def test_render_policy_promotes_the_pipeline_and_the_steward():
+    """Primary status is a render-level policy, not agent content.
+
+    The orchestrator runs the pipeline; Vasquez convenes its gates and reviews.
+    Every other agent submits to both and delegates nothing.
+    """
     from agency_agents.core.converter import PRIMARY_AGENT_SLUGS
 
-    assert PRIMARY_AGENT_SLUGS == frozenset({"agents-orchestrator"})
+    assert PRIMARY_AGENT_SLUGS == frozenset({"agents-orchestrator", "vasquez"})
 
 def test_identity_has_no_mode():
     """mode/mainAgent are render directives; tool-agnostic output carries none."""

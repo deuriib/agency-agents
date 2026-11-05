@@ -94,6 +94,9 @@ jobs:
           grep -q "subagent: true" "$sub"
           ! grep -qE "invoke_subagent|manage_subagents|send_message|manage_task" "$sub"
 
+          # The render policy promotes two agents, not one.
+          grep -q "mainAgent: true" "$agents_dir/vasquez.md"
+
           # Every staged agent declares a tools list.
           for file in "$agents_dir"/*.md; do
             grep -q "^tools: \[" "$file"

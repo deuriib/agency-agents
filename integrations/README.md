@@ -72,9 +72,9 @@ Each agent is a markdown file in `~/.gemini/config/agents/` (user) or
 `.agents/agents/` (project). There is no `agency-` prefix. The renderer declares
 the tool surface per role:
 
-- `agents-orchestrator` is the main agent (`mainAgent: true`) and gets
-  `invoke_subagent`, `manage_subagents`, `send_message`, and `manage_task`
-  alongside the execution tools.
+- `agents-orchestrator` and `vasquez` are the main agents (`mainAgent: true`)
+  and get `invoke_subagent`, `manage_subagents`, `send_message`, and
+  `manage_task` alongside the execution tools.
 - Every other agent is a subagent (`subagent: true`) and receives execution
   tools only: `view_file`, `write_to_file`, `replace_file_content`,
   `grep_search`, `find_by_name`, `list_dir`, `run_command`.
