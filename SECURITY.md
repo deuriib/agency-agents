@@ -72,6 +72,11 @@ These are enforced today and verifiable in the repository:
   40-character commit SHA, kept current by Dependabot.
 - **Least privilege** — every workflow declares an explicit `permissions:`
   block.
+- **Trusted publishing** — PyPI releases use OpenID Connect through the `pypi`
+  environment, so no API token is stored in the repository or its secrets.
+- **Bundled catalog** — the published wheel carries a copy of the agent catalog
+  under `agency_agents/data/`, kept in sync with the repository root by the
+  CI-gated `scripts/sync_catalog_data.py`.
 
 ## Handling secrets
 

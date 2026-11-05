@@ -41,12 +41,14 @@ git clone https://github.com/msitarzewski/agency-agents.git && cd agency-agents
 ### Running the gate
 
 ```bash
-./scripts/gate.sh            # all 8 checks, cheapest first, stops at the first failure
+./scripts/gate.sh            # all 9 checks, cheapest first, stops at the first failure
 ./scripts/gate.sh --fast     # inner loop: no network audit, pytest without the coverage floor
 ./scripts/gate.sh --list     # print the checks and the CI job each one mirrors
 ```
 
 The gate is the exact command set `.github/workflows/ci.yml` runs, so a green gate means a green CI run, and its last line is `GATE RESULT: PASS|FAIL`. `--fast` says `NOT the full gate` and lists what it skipped, so it cannot pass for a full one. Run the full gate before pushing — `lint` on its own is one check, not the gate.
+
+**Keep the bundled catalog in sync.** The PyPI distribution ships a bundled copy of the catalog under `src/agency_agents/data/` so an installed CLI works without a clone. After adding, renaming, or deleting an agent — or editing `tools.json`, `divisions.json`, or `strategy/` — run `python scripts/sync_catalog_data.py` and commit the result. The `catalog-sync` gate check fails on drift.
 
 `uv run agency-agents <command>` runs the console script from the repo root; `source .venv/bin/activate` makes `agency-agents` available bare.
 
