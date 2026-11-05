@@ -242,7 +242,7 @@ Want agency-agents to install into a new tool (a CLI, editor, or agent runtime)?
 **The checklist:**
 
 1. **`tools.json`** — add an entry with `id`, `label`, `kebab`, `format`, `installKind`, `dest`, plus detect/version/scope and display fields. **Reuse an existing `format`** if your tool's rendered files are byte-identical to another's (e.g. tools that consume `SKILL.md` share `"format": "skill-md"` — no new renderer needed). Set `installKind` to `per-agent`, `roster`, or `plugin`. Set `icon` to `null` unless the [app](https://github.com/msitarzewski/agency-agents-app) ships a brand SVG for it.
-2. **`src/agency_agents/core/converter.py`** - add a renderer (or reuse a shared format renderer) and wire it into `_FORMAT_RENDERERS` / `_TOOL_RENDERER_OVERRIDES`.
+2. **`src/agency_agents/core/converter.py`** - add a renderer (or reuse a shared format renderer) and wire it into `_FORMAT_RENDERERS`.
 3. **`src/agency_agents/infrastructure/installer.py`** - add an install_kind handler and register it in `install_all_for_tool` + detection/labeling.
 4. **`.gitignore`** — add a rule for your tool's generated output under `integrations/<tool>/`. **This step is required and easy to miss.** Converted agent/skill files are generated locally by `convert.sh` and are **never committed** (see "Things we'll always close" below) — only `integrations/<tool>/README.md` is tracked. Match an existing per-tool entry.
 5. **`integrations/<tool>/README.md`** — a short doc for the integration (every tool has one; it's the only committed file in the tool's directory).

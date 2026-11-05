@@ -113,6 +113,98 @@ class AntigravityRenderer(IdentityRenderer):
             frontmatter.extra["tools"] = list(self.SUBAGENT_TOOLS)
 
 
+class OhMyPiRenderer(IdentityRenderer):
+    """oh-my-pi (``omp``) task agents read a fixed frontmatter contract, not the
+    source block.
+
+    omp resolves a subagent by its exact frontmatter ``name``, treats ``tools``
+    as an allowlist over its own builtin tool names, and only lets an agent
+    delegate when it holds the ``task`` tool and declares ``spawns``. The source
+    frontmatter (``color``, ``emoji``, ``vibe``, ``version``, ``tags``) carries
+    nothing omp reads, so the block is rewritten in full. Field order follows
+    the agents omp itself ships (``omp agents unpack``).
+    """
+    # Delegation surface: the agent's own work plus async fan-out. `todo` is a
+    # builtin too, but omp does not grant it to a subagent session (the main
+    # session keeps it), so declaring it here would name a tool that never arrives.
+    DELEGATION_TOOLS = ("task", "wait")
+    # Execution surface: read, write, search and run — no delegation. Safe for a
+    # subagent, so it doubles as the specialist set.
+    EXECUTION_TOOLS = (
+        "read",
+        "write",
+        "edit",
+        "grep",
+        "glob",
+        "find",
+        "bash",
+        "web_search",
+    )
+    # omp parses `autoloadSkills` as exact skill names, so this ships as the
+    # literal wildcard the catalog declares; nothing is injected unless omp
+    # gains glob support. Emitting the key keeps the contract visible per agent.
+    AUTOLOAD_SKILLS = '["*"]'
+
+    @staticmethod
+    def _quote(value: str) -> str:
+        """Double-quote a scalar: descriptions carry colons, dashes and quotes."""
+        escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+        return f'"{escaped}"'
+
+    @staticmethod
+    def _flow_list(values: tuple[str, ...]) -> str:
+        return "[" + ", ".join(values) + "]"
+
+    @staticmethod
+    def _unwrapped(value: str) -> str:
+        """Drop one redundant layer of quoting from a source description.
+
+        The repo parser keeps a frontmatter value verbatim, so an author who
+        wrote `description: "Ships the thing."` leaves those quote characters in
+        the text. omp would display them, so they go before the value is
+        requoted for the emitted scalar.
+        """
+        if len(value) > 2 and value.startswith('"') and value.endswith('"'):
+            return value[1:-1]
+        return value
+
+    def _document(self, agent: Agent) -> str:
+        primary = is_primary_agent(agent)
+        tools = (
+            self.DELEGATION_TOOLS + self.EXECUTION_TOOLS
+            if primary
+            else self.EXECUTION_TOOLS
+        )
+        # omp rejects an agent whose description is missing or empty, so an agent
+        # without one states its own name rather than inventing a claim.
+        description = (
+            self._unwrapped(agent.frontmatter.description or "").strip()
+            or agent.frontmatter.name
+        )
+
+        lines = [
+            "---",
+            f"name: {agent.slug}",
+            f"description: {self._quote(description)}",
+            f"tools: {self._flow_list(tools)}",
+        ]
+        # `spawns` is only reachable through the `task` tool, which only the
+        # primary agent carries.
+        if primary:
+            lines.append('spawns: "*"')
+        # The orchestrator must fan out without waiting; a specialist's result is
+        # what the caller gates on, so it blocks.
+        lines.append(f"blocking: {'false' if primary else 'true'}")
+        # No agent ships an `output` schema, so structured results stay off.
+        lines.append("structured: false")
+        lines.append(f"autoloadSkills: {self.AUTOLOAD_SKILLS}")
+        lines.append("---")
+        return "\n".join(lines) + "\n" + agent.body
+
+    def render(self, context: RenderContext) -> RenderOutput:
+        return [("agent.md", self._document(context.agent))]
+
+
 class OpencodeRenderer(IdentityRenderer):
     """opencode agents must declare their mode explicitly.
 
@@ -210,6 +302,7 @@ _FORMAT_RENDERERS: Dict[str, Type[BaseRenderer]] = {
     "skill-md": SkillMdRenderer,
     "openclaw-workspace": OpenClawWorkspaceRenderer,
     "antigravity-md": AntigravityRenderer,
+    "oh-my-pi-md": OhMyPiRenderer,
 }
 
 # Roster and plugin formats have no per-agent renderer: aider/windsurf install a

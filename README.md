@@ -779,7 +779,7 @@ The Agency works natively with Claude Code, and ships conversion + install scrip
 - **[Hermes](integrations/hermes/README.md)** -- lazy-router plugin -> `~/.hermes/plugins/`
 - **[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)** — `SKILL.md` skills → `~/.dsh/skills/` (user) or `.dsh/skills/` (project)
 - **Pi Agent** — `.md` agents → `~/.pi/agent/agents/` (user) or `.pi/agents/` (project)
-- **Oh My Pi** — `.md` agents → `~/.omp/agent/agents/` (user) or `.omp/agents/` (project)
+- **Oh My Pi** — `.md` agents with the OMP task-agent frontmatter (`name`, `tools`, `spawns`, `blocking`, `structured`) → `~/.omp/agent/agents/` (user) or `.omp/agents/` (project)
 - **ZCode** — `.md` agents → `~/.zcode/agents/` (user) or `.zcode/agents/` (project)
 
 ---
