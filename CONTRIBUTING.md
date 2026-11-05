@@ -5,6 +5,7 @@ First off, thank you for considering contributing to The Agency! It's people lik
 ## 📋 Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
+- [Development setup](#development-setup)
 - [How Can I Contribute?](#how-can-i-contribute)
 - [Agent Design Guidelines](#agent-design-guidelines)
 - [Pull Request Process](#pull-request-process)
@@ -24,6 +25,35 @@ This project and everyone participating in it is governed by our Code of Conduct
 
 ---
 
+## 🛠️ Development setup
+
+Work on the CLI the way CI does: one clone, one bootstrap, one gate.
+
+**Prerequisites: `git`.** Nothing else — you need no system Python, no `pyenv`, no `mise` and no `sudo`: `bootstrap.sh` installs `uv` and a managed Python 3.13 for you.
+
+```bash
+git clone https://github.com/msitarzewski/agency-agents.git && cd agency-agents
+./scripts/bootstrap.sh     # uv + Python 3.13 + uv sync --frozen + proves the console script answers
+```
+
+`bootstrap.sh` is safe to run twice (the second run is a no-op), refuses to run outside a git working tree, and prints the next command when it succeeds. Run everything **from the repository root**: the CLI resolves `tools.json`, `divisions.json` and the division directories from your working directory, so a run from `docs/` fails.
+
+### Running the gate
+
+```bash
+./scripts/gate.sh            # all 8 checks, cheapest first, stops at the first failure
+./scripts/gate.sh --fast     # inner loop: no network audit, pytest without the coverage floor
+./scripts/gate.sh --list     # print the checks and the CI job each one mirrors
+```
+
+The gate is the exact command set `.github/workflows/ci.yml` runs, so a green gate means a green CI run, and its last line is `GATE RESULT: PASS|FAIL`. `--fast` says `NOT the full gate` and lists what it skipped, so it cannot pass for a full one. Run the full gate before pushing — `lint` on its own is one check, not the gate.
+
+`uv run agency-agents <command>` runs the console script from the repo root; `source .venv/bin/activate` makes `agency-agents` available bare.
+
+The design behind these two commands — the five-step golden path, the gate's check order, and what each failure message means — lives in [`docs/dx/`](docs/dx/). Start with [golden-path.md](docs/dx/golden-path.md), then [bootstrap.md](docs/dx/bootstrap.md) and [gate.md](docs/dx/gate.md).
+
+---
+
 ## 🎯 How Can I Contribute?
 
 ### 1. Create a New Agent
@@ -38,11 +68,13 @@ Have an idea for a specialized agent? Great! Here's how to add one:
    root, so it's always current.
 
    > **Divisions are defined by `divisions.json`** (repo root) — the single source of
-   > truth for the division set, validated in CI by `python -m agency_agents lint`.
-   > **Proposing a new division** means: create the directory, add an entry to
-   > `divisions.json` (label/icon/color), and add it to `AGENT_DIRS` in both
-   > `python -m agency_agents lint` and the hash-manifest verify (`python -m agency_agents verify <tool>`). The check fails the build
-   > unless all of these agree and the directory contains at least one agent file.
+   > truth for the division set, validated in CI by `uv run python -m agency_agents lint`
+   > (`core/validator.py:check_divisions_consistency`, which compares the keys in
+   > `divisions.json` against the top-level directories and fails when the two lists
+   > disagree). **Proposing a new division** means: create the directory, add an entry to
+   > `divisions.json` (label/icon/color), and give the directory at least one agent file.
+   > The hash-manifest verify does not look at divisions at all — it walks the per-agent
+   > tools declared in `tools.json`.
    >
    > Note: `strategy/` (NEXUS playbooks/runbooks — no agent frontmatter) and
    > `integrations/` (generated per-tool output from `convert.sh`) are **not**
