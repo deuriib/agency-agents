@@ -1,0 +1,390 @@
+# Clean-room onboarding transcript
+harness_start_utc: 20261105T170007Z
+image: agency-agents-cleanroom:1
+commit_sha: 8f04ad7ae3d23eb68a68f379ad1147d4cbdeaeb2
+commit_subject: fix(dx): record provenance and stop reporting a retrofitted step count
+image_digest: agency-agents-cleanroom@sha256:571afe1764f45e64dea42b712b576e4222e29da3ccc858504bf38e6c58e73593
+image_id: sha256:571afe1764f45e64dea42b712b576e4222e29da3ccc858504bf38e6c58e73593
+invocation: scripts/ci/cleanroom_onboarding.sh --path golden-path.sh --ref feat/cli-runbooks-tui --image agency-agents-cleanroom:1
+clone_source: git bundle of ref feat/cli-runbooks-tui
+path_file: golden-path.sh
+executor: ENGINEER-EXECUTED (not a human subject)
+
+## Pre-run cleanliness check
+image: agency-agents-cleanroom:1
+workdir: /work
+workdir listing (expect empty):
+  [end of listing]
+which git: /usr/bin/git
+which curl: /usr/bin/curl
+which uv: <absent>
+which python3: <absent>
+which agency-agents: <absent>
+clean: true
+
+## Documented path
+--- step 1: get-the-code
+Cloning into 'agency-agents'...
+step_1_label: get-the-code
+step_1_exit: 0
+step_1_seconds: 3
+
+--- step 2: bootstrap
+
+=== [1/5] checking this is a git checkout
+    ok: git checkout: /work/agency-agents
+
+=== [2/5] acquiring uv
+    uv is absent; installing it (this is the step no document named)
+downloading uv 0.13.7 x86_64-unknown-linux-gnu
+installing to /root/.local/bin
+  uv
+  uvx
+everything's installed!
+    ok: uv: uv 0.13.7 (x86_64-unknown-linux-gnu) (/root/.local/bin/uv)
+
+=== [3/5] resolving Python 3.13+
+    no Python 3.13 yet; uv installs a managed interpreter (no sudo, no python.org trip)
+Downloading cpython-3.13.18-linux-x86_64-gnu (download) (33.8MiB)
+ Downloaded cpython-3.13.18-linux-x86_64-gnu (download)
+Installed Python 3.13.18 in 9.03s
+ + cpython-3.13.18-linux-x86_64-gnu (python3.13)
+    ok: python 3.13: /root/.local/share/uv/python/cpython-3.13-linux-x86_64-gnu/bin/python3.13
+
+=== [4/5] syncing dependencies
+    uv sync --frozen   (the exact command CI runs; the lockfile is never re-resolved)
+Using CPython 3.13.18
+Creating virtual environment at: .venv
+   Building agency-agents @ file:///work/agency-agents
+warning: `build_system.requires = ["uv-build>=0.12.12,<0.13.0"]` does not contain the current uv version 0.13.7
+      Built agency-agents @ file:///work/agency-agents
+Downloading pygments (1.2MiB)
+Downloading pydantic-core (2.1MiB)
+Downloading pip (1.7MiB)
+Downloading virtualenv (5.3MiB)
+Downloading mypy (14.8MiB)
+Downloading ruff (10.1MiB)
+Downloading ast-serialize (1.3MiB)
+ Downloaded pygments
+ Downloaded ast-serialize
+ Downloaded pip
+ Downloaded pydantic-core
+ Downloaded virtualenv
+ Downloaded ruff
+ Downloaded mypy
+Prepared 60 packages in 11.68s
+Installed 60 packages in 1.56s
+ + agency-agents==1.8.0 (from file:///work/agency-agents)
+ + annotated-doc==0.0.5
+ + annotated-types==0.8.0
+ + ast-serialize==0.13.1
+ + boolean-py==5.0
+ + cachecontrol==0.14.4
+ + certifi==2026.10.23
+ + cfgv==3.5.0
+ + charset-normalizer==3.5.2
+ + coverage==7.17.0
+ + cyclonedx-python-lib==11.12.0
+ + defusedxml==0.7.1
+ + distlib==0.4.4
+ + filelock==4.2.7
+ + identify==2.6.20
+ + idna==3.20
+ + iniconfig==2.3.1
+ + librt==0.16.0
+ + license-expression==30.4.4
+ + markdown-it-py==4.2.0
+ + mdurl==0.1.2
+ + msgpack==1.2.4
+ + mypy==2.4.1
+ + mypy-extensions==1.1.0
+ + nodeenv==1.12.0
+ + packageurl-python==0.17.6
+ + packaging==26.3
+ + pathspec==1.1.1
+ + pip==26.2.2
+ + pip-api==0.0.35
+ + pip-audit==2.10.1
+ + pip-requirements-parser==32.0.1
+ + platformdirs==4.14.3
+ + pluggy==1.7.0
+ + pre-commit==4.7.0
+ + prompt-toolkit==3.0.53
+ + py-serializable==2.1.0
+ + pydantic==2.14.1
+ + pydantic-core==2.50.1
+ + pygments==2.21.0
+ + pyparsing==3.3.3
+ + pytest==9.1.1
+ + pytest-asyncio==1.4.1
+ + pytest-cov==7.1.0
+ + python-discovery==1.9.1
+ + pyyaml==6.0.3
+ + requests==2.34.2
+ + rich==15.0.0
+ + ruff==0.17.3
+ + shellingham==1.5.4
+ + sortedcontainers==2.4.0
+ + tomli==2.5.0
+ + tomli-w==1.2.0
+ + typer==0.27.3
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.4
+ + urllib3==2.8.0
+ + virtualenv==21.15.2
+ + wcwidth==0.9.4
+ + yamllint==1.38.0
+    ok: environment synced from uv.lock
+
+=== [5/5] verifying the console script
+    agency-agents --help   (the installed console script)
+    |                                                                                 
+    |  Usage: agency-agents [OPTIONS] COMMAND [ARGS]...                               
+    ok: console script answered (exit 0)
+
+=== bootstrap complete in 40s
+    uv      : uv 0.13.7 (x86_64-unknown-linux-gnu)
+    python  : /root/.local/share/uv/python/cpython-3.13-linux-x86_64-gnu/bin/python3.13
+    venv    : /work/agency-agents/.venv
+
+    next command (golden-path step 3, the gate CI runs):
+
+        ./scripts/gate.sh
+
+step_2_label: bootstrap
+step_2_exit: 0
+step_2_seconds: 40
+
+--- step 3: gate
+scripts/gate.sh — local gate, mirrors .github/workflows/ci.yml
+  repo: /work/agency-agents
+  mode: full, fail-fast (stops at the first failing check)
+
+[1/8] ruff  [ci.yml:lint]
+All checks passed!
+  ✓ passed 0.6s
+
+[2/8] runbook-structure  [ci.yml:lint]
+
+42/42 runbook docs passed; 0 blocking failure(s).
+  ✓ passed 3.5s
+
+[3/8] yamllint  [ci.yml:security]
+.github/labels.yml
+  2:81      warning  line too long (85 > 80 characters)  (line-length)
+  3:81      warning  line too long (82 > 80 characters)  (line-length)
+
+.github/ISSUE_TEMPLATE/bug-report.yml
+  2:81      warning  line too long (85 > 80 characters)  (line-length)
+  9:81      warning  line too long (81 > 80 characters)  (line-length)
+  30:81     warning  line too long (82 > 80 characters)  (line-length)
+  65:81     warning  line too long (89 > 80 characters)  (line-length)
+
+.github/ISSUE_TEMPLATE/feature-request.yml
+  10:81     warning  line too long (116 > 80 characters)  (line-length)
+
+.github/ISSUE_TEMPLATE/docs-or-infra.yml
+  2:81      warning  line too long (89 > 80 characters)  (line-length)
+
+.github/workflows/quality.yml
+  64:81     warning  line too long (93 > 80 characters)  (line-length)
+  73:81     warning  line too long (95 > 80 characters)  (line-length)
+  95:81     warning  line too long (87 > 80 characters)  (line-length)
+  130:81    warning  line too long (85 > 80 characters)  (line-length)
+  142:81    warning  line too long (160 > 80 characters)  (line-length)
+  145:81    warning  line too long (83 > 80 characters)  (line-length)
+
+.github/workflows/codeql.yml
+  28:81     warning  line too long (85 > 80 characters)  (line-length)
+  34:81     warning  line too long (90 > 80 characters)  (line-length)
+  37:81     warning  line too long (88 > 80 characters)  (line-length)
+
+.github/workflows/release.yml
+  41:81     warning  line too long (92 > 80 characters)  (line-length)
+  74:81     warning  line too long (82 > 80 characters)  (line-length)
+  86:81     warning  line too long (83 > 80 characters)  (line-length)
+  103:81    warning  line too long (81 > 80 characters)  (line-length)
+  113:81    warning  line too long (87 > 80 characters)  (line-length)
+  115:81    warning  line too long (81 > 80 characters)  (line-length)
+  145:81    warning  line too long (96 > 80 characters)  (line-length)
+  146:81    warning  line too long (81 > 80 characters)  (line-length)
+  149:81    warning  line too long (94 > 80 characters)  (line-length)
+  150:81    warning  line too long (93 > 80 characters)  (line-length)
+  151:81    warning  line too long (94 > 80 characters)  (line-length)
+
+.github/workflows/ci.yml
+  110:81    warning  line too long (82 > 80 characters)  (line-length)
+  118:81    warning  line too long (81 > 80 characters)  (line-length)
+  158:81    warning  line too long (85 > 80 characters)  (line-length)
+
+.github/actions/quality-gate/action.yml
+  8:81      warning  line too long (84 > 80 characters)  (line-length)
+
+  ✓ passed 2.3s
+
+[4/8] catalog-lint  [ci.yml:lint]
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Running Project Linting...                                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+✓ Tools are consistent.
+✓ Divisions are consistent.
+✓ Runbooks are consistent.
+
+Linting Agent Files... 
+✓ All agents passed linting.
+  ✓ passed 1.6s
+
+[5/8] types  [ci.yml:types]
+mypy: current=39 baseline=39
+Type-check ratchet passed.
+  ✓ passed 22.2s
+
+[6/8] verify-manifest  [ci.yml:verify-manifest]
+✓ claude-code: all hashes match
+✓ codex: all hashes match
+✓ gemini-cli: all hashes match
+✓ copilot: all hashes match
+✓ qwen: all hashes match
+✓ cursor: all hashes match
+✓ opencode: all hashes match
+✓ osaurus: all hashes match
+✓ antigravity: all hashes match
+✓ kimi: all hashes match
+✓ openclaw: all hashes match
+✓ vibe: all hashes match
+✓ zcode: all hashes match
+✓ dsh: all hashes match
+✓ pi-agent: all hashes match
+✓ oh-my-pi: all hashes match
+  ✓ passed 6.2s
+
+[7/8] test  [ci.yml:test]
+........................................................................ [ 24%]
+........................................................................ [ 49%]
+........................................................................ [ 74%]
+........................................................................ [ 98%]
+...                                                                      [100%]
+=============================== warnings summary ===============================
+src/agency_agents/tests/integration/test_cli_commands.py::test_install_parallel_output_matches_sequential
+src/agency_agents/tests/integration/test_cli_commands.py::test_install_parallel_output_matches_sequential
+  /root/.local/share/uv/python/cpython-3.13.18-linux-x86_64-gnu/lib/python3.13/multiprocessing/popen_fork.py:73: DeprecationWarning: This process (pid=327) is multi-threaded, use of fork() may lead to deadlocks in the child.
+    self.pid = os.fork()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.13.18-final-0 _______________
+
+Name                                               Stmts   Miss Branch BrPart  Cover   Missing
+----------------------------------------------------------------------------------------------
+src/agency_agents/__init__.py                          1      0      0      0 100.0%
+src/agency_agents/__main__.py                          3      3      2      0   0.0%   1-4
+src/agency_agents/cli/main.py                        471     16    196     11  96.0%   31, 82->80, 155-156, 163, 415-416, 460-462, 474-478, 537->535, 544, 573, 750, 772, 784
+src/agency_agents/core/converter.py                  163     11     18      2  91.7%   35, 338-346, 367, 381
+src/agency_agents/core/models.py                      49      1     16      1  96.9%   47
+src/agency_agents/core/originality.py                129      3     50      1  97.8%   84-85, 189
+src/agency_agents/core/parser.py                      31      0      8      0 100.0%
+src/agency_agents/core/selection.py                   55      0     24      0 100.0%
+src/agency_agents/core/validator.py                  128      6     66      1  96.4%   105-106, 120-121, 146-147, 209->217
+src/agency_agents/infrastructure/browser.py          133      0     44      0 100.0%
+src/agency_agents/infrastructure/browser_app.py       63     18     16      1  70.9%   84, 125-153
+src/agency_agents/infrastructure/catalog.py           58      0      0      0 100.0%
+src/agency_agents/infrastructure/hash_manager.py     100     13     46      7  83.6%   41, 50-55, 71, 76-77, 81, 88, 103, 145->143, 164->162
+src/agency_agents/infrastructure/installer.py        121     18     66     17  81.3%   26, 28, 38->exit, 56->exit, 60, 71, 75-76, 84, 101, 105, 125, 136, 160, 162, 165-166, 172-173, 181
+src/agency_agents/infrastructure/tui.py              152      9     52      9  91.2%   55, 58, 66, 73, 77-80, 87->71, 143, 203, 209
+----------------------------------------------------------------------------------------------
+TOTAL                                               1657     98    604     50  92.9%
+Coverage XML written to file coverage.xml
+Required test coverage of 80% reached. Total coverage: 92.92%
+291 passed, 2 warnings in 26.60s
+  ✓ passed 30.8s
+
+[8/8] security-audit  [ci.yml:security]
+Resolved 61 packages# This file was autogenerated by uv via the following command:
+#    uv export --format requirements-txt --no-dev --no-emit-project --no-hashes -o /tmp/agency-agents-requirements.CFTm3S
+annotated-doc==0.0.5
+    # via typer
+annotated-types==0.8.0
+    # via pydantic
+colorama==0.4.6 ; sys_platform == 'win32'
+    # via typer
+markdown-it-py==4.2.0
+    # via rich
+mdurl==0.1.2
+    # via markdown-it-py
+prompt-toolkit==3.0.53
+    # via agency-agents
+pydantic==2.14.1
+    # via agency-agents
+pydantic-core==2.50.1
+    # via pydantic
+pygments==2.21.0
+    # via rich
+rich==15.0.0
+    # via
+    #   agency-agents
+    #   typer
+shellingham==1.5.4
+    # via typer
+typer==0.27.3
+    # via agency-agents
+typing-extensions==4.16.0
+    # via
+    #   pydantic
+    #   pydantic-core
+    #   typing-inspection
+typing-inspection==0.4.4
+    # via pydantic
+wcwidth==0.9.4
+    # via prompt-toolkit
+ in 12ms
+No known vulnerabilities found
+  ✓ passed 48.5s
+
+
+------------------------------------------------------------
+GATE RESULT: PASS — 8 checks, 116.1s
+step_3_label: gate
+step_3_exit: 0
+step_3_seconds: 116
+
+--- step 4: install-your-work
+✓ Installation process completed! 
+step_4_label: install-your-work
+step_4_exit: 0
+step_4_seconds: 4
+
+--- step 5: prove-it-landed
+✓ claude-code: all hashes match
+✓ codex: all hashes match
+✓ gemini-cli: all hashes match
+✓ copilot: all hashes match
+✓ qwen: all hashes match
+✓ cursor: all hashes match
+✓ opencode: all hashes match
+✓ osaurus: all hashes match
+✓ antigravity: all hashes match
+✓ kimi: all hashes match
+✓ openclaw: all hashes match
+✓ vibe: all hashes match
+✓ zcode: all hashes match
+✓ dsh: all hashes match
+✓ pi-agent: all hashes match
+✓ oh-my-pi: all hashes match
+step_5_label: prove-it-landed
+step_5_exit: 0
+step_5_seconds: 6
+
+--- step 6: observe-installed-agents
+installed agents: 298
+step_6_label: observe-installed-agents
+step_6_exit: 0
+step_6_seconds: 1
+
+## Result
+steps_total: 6
+steps_failed: 0
+totals_seconds: 170
+harness_end_utc: 20261105T170314Z
+
+transcript: /tmp/proof-run2.log
+harness_exit: 0

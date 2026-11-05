@@ -50,7 +50,7 @@ git clone https://github.com/msitarzewski/agency-agents.git && cd agency-agents
 uv run agency-agents install --tool claude-code
 ```
 
-`bootstrap.sh` is safe to run twice — the second run is a no-op — and needs no `sudo`, no system Python and no `mise`. `gate.sh` ends with a greppable `GATE RESULT: PASS|FAIL` line; `--fast` is the inner loop and `--list` prints the checks without running them. Every command below runs **from the repo root** as `uv run agency-agents <command>`; run `source .venv/bin/activate` first if you would rather type `agency-agents <command>` bare. The full route, each step with its owner and its failure modes, is [docs/dx/golden-path.md](docs/dx/golden-path.md).
+`bootstrap.sh` is safe to run twice — the second run is a no-op — and needs no `sudo`, no system Python and no `mise`. `gate.sh` ends with a greppable `GATE RESULT: PASS|FAIL` line; `--fast` is the inner loop and `--list` prints the checks without running them. Every command below runs **from the repo root** as `uv run agency-agents <command>`; run `source .venv/bin/activate` first if you would rather type `agency-agents <command>` bare. The full route, each step with its owner and its failure modes, is [docs/dx/golden-path.md](docs/dx/golden-path.md); the measured result and what is still owed is [docs/dx/scorecard.md](docs/dx/scorecard.md), and every developer-experience document is indexed in [docs/dx/](docs/dx/README.md).
 
 ### Option 2: Use with Claude Code
 
