@@ -29,7 +29,8 @@ would be the same mistake in prose.
 | 5 | `./scripts/bootstrap.sh` — one command, actionable failures, idempotent | `docs/dx/bootstrap.md`; CI runs it twice |
 | 6 | `./scripts/gate.sh` — one pre-push gate, cheapest first | `docs/dx/gate.md`; `--list` reproduced in CI |
 | 7 | Clean-room and CI-metrics instruments | `scripts/ci/*`; this scorecard's numbers |
-| 8 | Docs: baseline, golden path, M7 record, newcomer path, M9 audit, CLI FAQ, evidence pack | `docs/dx/` |
+| 8 | `TUIWizard` deleted; `install` with no flags opens the browser, and its tool picker survives as `choose_tools()` over prompt-toolkit's shipped `checkboxlist_dialog` | `git rm src/agency_agents/infrastructure/tui.py`; one interactive surface instead of two |
+| 9 | Docs: baseline, golden path, M7 record, newcomer path, M9 audit, CLI FAQ, evidence pack | `docs/dx/` |
 
 Full local gate: `GATE RESULT: PASS — 8 checks, 76.5s`. Test suite: **291 passed**,
 branch coverage **92.9%** (floor 80%). mypy ratchet: **39 errors, unchanged from
@@ -101,7 +102,7 @@ Nine clauses. **This gate is not claimable.**
 | Clause | Status | Why |
 | --- | --- | --- |
 | 3.1 M8 = 100%: every documented command exits 0 in CI | **PARTIAL** — every command CI executes exits 0; the set is not the whole documented surface | CI is green on `31b3047`'s successor commit: `documented-commands`, `lint`, `types`, `test`, `verify-manifest`, `security`, `ci/required` all pass (run `42072487592`). The job runs bootstrap twice, the console script, `install --list runbooks`, `install --runbook … --dry-run`, `gate.sh --list` and the lint-failure assertion. It does **not** cover `tui` (needs a TTY) or 16 of the 19 `install --tool` variants, so M8 is not 100% of the documented surface |
-| 3.2 Every deprecated-path entry has its removal commit **merged** | **UNMEASURED** | Nothing is merged. The README manual-copy path is deleted on this branch; `TUIWizard` is deliberately kept, with the deviation recorded in `m7-tool-decisions.md` |
+| 3.2 Every deprecated-path entry has its removal commit **merged** | **UNMEASURED** | The removals exist on this branch and are not merged. Four superseded paths are deleted rather than annotated: the README manual-copy instructions, `TUIWizard` (`infrastructure/tui.py` + its test), the broken `agency_agents:main` entry point, and "copy a category" as a substitute for `--division` |
 | 3.3 M7 = 100%: every tool decision carries a written evaluation against the criteria with an exit path | **PASS** | `m7-tool-decisions.md`: 2 decisions, weighted criteria written before scoring, arithmetic shown, exit paths named |
 | 3.4 M6 before/after for every touched step, total ≤6 | **PASS** | 5 documented commands; before/after table in `golden-path.md`. The harness measures 6 things — the 6th is the Evidence Collector's observation, not a developer command, and the two numbers are never merged |
 | 3.5 M9 = 0 stale samples | **UNMEASURED (empty population)** | `m9-stale-samples.md`: this repo ships no SDK, so no sample can pin a version that drifts. The null is reasoned, not silent — but it is not a measured zero |
@@ -209,7 +210,9 @@ Ranked, as the Reality Checker ordered them:
 
 The work genuinely removes friction a newcomer pays for: a broken binary that now
 answers, a gate that now fails when it reports a failure, two guessed steps that
-are now one owned command, and two entry points that did not exist. That is real.
+are now one owned command, two entry points that did not exist, and one of two
+competing interactive surfaces removed rather than kept alongside the better one.
+That is real.
 
 It is **not** a certified developer-experience platform. G1 and G2 hold. G3 is
 blocked on a merge and on 20 runs. G4 — the gate this runbook calls

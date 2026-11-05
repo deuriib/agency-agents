@@ -297,8 +297,9 @@ The division list is not just data for a UI. It is read by:
    `--list` — a division that is in `divisions.json` but missing on disk is
    skipped silently; a directory that exists but is not a division is never
    scanned, so its agents never install.
-4. `TUIWizard.select_divisions()` (`tui.py:181`) and `_count_agents()`
-   (line 206) — the interactive team list and the per-team agent counts.
+4. `_browse_and_install()` (`cli/main.py`) — the single interactive path behind
+   both `tui` and a bare `install`. It also shows how a missing destination is
+   asked for with `choose_tools()` rather than inferred.
 5. `LintEngine._agent_slug_index()` (`validator.py:109`) and
    `originality._agent_dirs()` (`originality.py:65`) — the runbook slug index and
    the similarity corpus are both built **only** from these directories.
@@ -453,7 +454,8 @@ follow the setup path:
 | `strategy/runbooks.json` | 42 runbooks → `slug`/`mode`/`doc`/`roster[].agents[]` | Only meaningful once `validator.check_runbooks_consistency()` and `catalog.RunbookDefinition` are known |
 | `core/selection.py` | `agent_aliases()`, `build_roster_index()`, `select_agents()`, `parse_agents_file()`, `AGENT_CAPS` | Pure filter layer; fails closed with `SelectionError` on unknown ids |
 | `infrastructure/hash_manager.py` | manifest v3 generation/verification | Only after you have run `converter` and `installer` and know what an "output" is |
-| `infrastructure/tui.py` | `TUIWizard`: tool/scope/team prompts, `InstallSelection`, `WizardCancelled` | Interactive front end for flags you already met in `install()` |
+| `infrastructure/browser.py` | `BrowserModel`, `BrowserRow`, `apply_key`: filter, cursor, multi-select, detail, keymap. Pure — no terminal | The interactive front end for the flags you already met in `install()`. `tui.py` and its `TUIWizard` were deleted; this replaced them |
+| `infrastructure/browser_app.py` | `render_screen`, `run_browser`, `choose_tools`: prompt-toolkit rendering and the tool dialog | The only untestable part is the terminal loop |
 | `core/originality.py` | entity-neutralized 8-word shingle Jaccard over the roster | Standalone command; touches no install path |
 
 ## Appendix B — not verified

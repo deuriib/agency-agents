@@ -15,6 +15,7 @@ from typer.testing import CliRunner, Result
 
 from agency_agents.cli.main import app
 from agency_agents.core.converter import ConverterEngine
+from agency_agents.infrastructure.browser_app import BrowserCancelled
 from agency_agents.infrastructure.hash_manager import MANIFEST_HEADER
 
 runner = CliRunner()
@@ -41,6 +42,7 @@ def tool(
     project: list[str] | None = None,
     order: int = 1,
     prefix: str | None = None,
+    dirs: list[str] | None = None,
 ) -> dict[str, Any]:
     return {
         "id": kebab,
@@ -51,7 +53,7 @@ def tool(
         "icon": None,
         "order": order,
         "scope": {"user": user is not None, "project": project is not None},
-        "detect": {"dirs": [], "agentsDir": None},
+        "detect": {"dirs": dirs or [], "agentsDir": None},
         "version": {"bin": kebab, "args": []},
         "format": fmt,
         "installKind": kind,
@@ -389,48 +391,76 @@ def test_install_all_tools_skipped_when_scope_has_nothing_applicable(repo: Path,
 # ------------------------------------------------------------------ interactive
 
 
-def script_prompts(monkeypatch: pytest.MonkeyPatch, answers: list[str]) -> None:
-    queue = list(answers)
+def script_browser(monkeypatch: pytest.MonkeyPatch, slugs: list[str]) -> None:
+    """Answer the browser with a fixed selection."""
 
-    def fake_prompt(*args: object, **kwargs: object) -> str:
-        if not queue:
-            raise AssertionError("wizard asked more questions than scripted")
-        return queue.pop(0)
+    def fake_browser(model: object, title: str = "") -> list[str]:
+        return list(slugs)
 
-    monkeypatch.setattr("agency_agents.infrastructure.tui.prompt", fake_prompt)
+    monkeypatch.setattr("agency_agents.cli.main.run_browser", fake_browser)
 
 
-def test_install_interactive_wizard_installs_confirmed_selection(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    script_prompts(monkeypatch, ["1", "project", "engineering", "y"])
+def test_install_without_flags_opens_the_browser(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A bare `install` is the browser now: TUIWizard was removed in its favour."""
+    # Declare a detection dir and create it, so the browser has a destination
+    # without asking: detection is the default, the dialog is the fallback.
+    tools = json.loads((repo / "tools.json").read_text(encoding="utf-8"))
+    tools["tools"]["claude-code"]["detect"]["dirs"] = [".claude"]
+    write_json(repo / "tools.json", tools)
+    (repo / "home" / ".claude").mkdir(parents=True)
+    script_browser(monkeypatch, ["code-reviewer", "devops-automator"])
 
     result = invoke(repo, ["install"], monkeypatch)
 
     assert result.exit_code == 0, result.output
-    installed = sorted(p.name for p in (repo / ".claude" / "agents").iterdir())
+    installed = sorted(p.name for p in (repo / "home" / ".claude" / "agents").iterdir())
     assert installed == ["code-reviewer.md", "devops-automator.md"]
-    assert "Ready to install" in result.output
+    assert "Installed 2 agent(s)." in result.output
 
 
 def test_install_interactive_cancel_writes_nothing(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    script_prompts(monkeypatch, ["1", "project", "engineering", "n"])
+    def cancel(model: object, title: str = "") -> list[str]:
+        raise BrowserCancelled("No agents selected — nothing installed.")
+
+    monkeypatch.setattr("agency_agents.cli.main.run_browser", cancel)
 
     result = invoke(repo, ["install"], monkeypatch)
 
     assert result.exit_code == 1
-    assert "Installation cancelled." in result.output
-    assert not (repo / ".claude").exists()
+    assert "nothing installed" in result.output
+    assert not (repo / "home" / ".claude").exists()
 
 
-def test_install_interactive_eof_is_reported_cleanly(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    def raise_eof(*args: object, **kwargs: object) -> str:
-        raise EOFError
+def test_install_without_flags_asks_for_a_tool_when_none_is_detected(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The wizard's tool picker is preserved as a dialog, not as a second wizard."""
+    script_browser(monkeypatch, ["code-reviewer"])
+    monkeypatch.setattr(
+        "agency_agents.cli.main.choose_tools", lambda catalog, detected=(): ["claude-code"]
+    )
 
-    monkeypatch.setattr("agency_agents.infrastructure.tui.prompt", raise_eof)
+    result = invoke(repo, ["install"], monkeypatch)
+
+    assert result.exit_code == 0, result.output
+    assert (repo / "home" / ".claude" / "agents" / "code-reviewer.md").exists()
+
+
+def test_install_interactive_reports_a_cancelled_tool_dialog(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    script_browser(monkeypatch, ["code-reviewer"])
+
+    def cancel(catalog: object, detected: object = ()) -> list[str]:
+        raise BrowserCancelled("No tool selected, so nothing was installed.")
+
+    monkeypatch.setattr("agency_agents.cli.main.choose_tools", cancel)
 
     result = invoke(repo, ["install"], monkeypatch)
 
     assert result.exit_code == 1
-    assert "Installation cancelled." in result.output
+    assert "No tool selected" in result.output
+    assert not (repo / "home" / ".claude").exists()
 
 
 # ------------------------------------------------------------------------- list

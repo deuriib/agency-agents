@@ -12,7 +12,8 @@ be asserted in tests by reading strings instead of driving a terminal.
 
 from __future__ import annotations
 
-from typing import Dict, List
+import sys
+from typing import Any, Dict, List, Mapping, Sequence
 
 from prompt_toolkit import Application
 from prompt_toolkit.formatted_text import FormattedText
@@ -58,6 +59,43 @@ _STYLE = Style.from_dict(
 
 class BrowserCancelled(Exception):
     """Raised when the user leaves the browser without installing."""
+
+
+def choose_tools(
+    tools_catalog: Mapping[str, Any], detected: Sequence[str] = ()
+) -> List[str]:
+    """Ask for the target tools with a shipped checkbox dialog.
+
+    `TUIWizard` used to collect this with a hand-rolled numbered list. The
+    dialog is part of prompt-toolkit, so removing the wizard keeps the
+    capability without keeping a second interactive surface: a machine with no
+    detected tool can still install, it just answers one question.
+    """
+    from prompt_toolkit.shortcuts import checkboxlist_dialog
+
+    ordered = sorted(tools_catalog.values(), key=lambda t: t.order)
+    values = [
+        (tool.kebab, f"{tool.label} ({tool.kebab})" + (" - detected" if tool.kebab in detected else ""))
+        for tool in ordered
+    ]
+    default = [value for value, _ in values if value in detected]
+    try:
+        chosen = checkboxlist_dialog(
+            title="Install into which tools?",
+            text="Space toggles, enter confirms.",
+            values=values,
+            default_values=default,
+        ).run()
+    except (EOFError, KeyboardInterrupt) as exc:
+        # No terminal to ask in (piped stdin, CI) or the user walked away. Either
+        # way the answer is a flag, so the message names it instead of leaving the
+        # caller to guess why nothing installed.
+        kebab_list = ", ".join(sorted(tools_catalog))
+        raise BrowserCancelled(
+            f"No tool selected, so nothing was installed. "
+            f"Pass --tool <kebab> to skip the question. Available: {kebab_list}"
+        ) from exc
+    return list(chosen or [])
 
 
 def _draw_window(model: BrowserModel) -> tuple[List[tuple[str, str]], int]:
@@ -118,10 +156,20 @@ def render_screen(model: BrowserModel, title: str = "Browse agents") -> Formatte
 def run_browser(model: BrowserModel, title: str = "Browse agents") -> List[str]:
     """Run the full-screen browser; returns the selected slugs.
 
-    Raises `BrowserCancelled` only when the user aborts with nothing selected.
-    Aborting with a selection returns it: the selection was deliberate work, and
-    discarding it silently would be hostile.
+    Raises `BrowserCancelled` when there is no terminal to draw in, and when the
+    user aborts with nothing selected. Aborting with a selection returns it: the
+    selection was deliberate work, and discarding it silently would be hostile.
     """
+    # A pipe is not a terminal. Without this guard the application draws into
+    # nothing, exits on EOF and reports "nothing selected" with status 0 — a
+    # silent no-op inside a script that believes it installed something.
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        raise BrowserCancelled(
+            "The browser needs a terminal, and this session has none. "
+            "Use the flags instead: "
+            "`agency-agents install --tool <kebab> --no-interactive`."
+        )
+
     bindings = KeyBindings()
     outcome: Dict[str, str] = {}
 

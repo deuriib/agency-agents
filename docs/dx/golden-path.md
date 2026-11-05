@@ -141,7 +141,7 @@ rather than on a delta that cannot exist.
 | --- | --- | --- |
 | `agency_agents:main` broken entry point | Phase 3 | Replaced by a real `main()`; the import no longer fails |
 | Manual copying of `strategy/runbooks/` | Phase 3 | Replaced by `install --runbook <slug>` / `install --list runbooks` (tool decision D-002) |
-| `TUIWizard` as the *only* interactive surface | Phase 3 | Superseded **as the only** interactive surface: `tui` now offers browse/search/detail/multi-select. `TUIWizard` itself is **kept**, because `install` with no flags is a documented behaviour (README) and issue #13's own non-goal forbids replacing existing commands. This deviates from D-001's removal line; the deviation and its reason are recorded in `m7-tool-decisions.md`. |
+| `TUIWizard` (`infrastructure/tui.py`) | Phase 3 | **Deleted.** `install` with no flags now opens the browser, and the wizard's tool picker survives as a shipped `checkboxlist_dialog`. One interactive surface, no second mental model. Its team list is superseded by the browser's filter, which is strictly better than picking divisions blind |
 | "Copy a category" manual `cp` instructions | Phase 3 | Replaced by `--division` / `--agent`, which already existed |
 
 ## G2 verdict

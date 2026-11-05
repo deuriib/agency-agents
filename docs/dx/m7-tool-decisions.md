@@ -208,8 +208,9 @@ Reasons, in the order the weights applied:
    dev-only into the audited runtime set — today `platformdirs` is reachable in
    `uv.lock` only through `pip-audit` and `virtualenv`, neither of which is
    exported by the `security` job. Adopting textual would also leave two UI
-   frameworks in the runtime set, because `TUIWizard` keeps using
-   `prompt-toolkit.prompt` unless the wizard is rewritten in the same change.
+   frameworks in the runtime set unless the wizard is removed in the same
+   change — which it was: `TUIWizard` is deleted and prompt-toolkit is the only
+   UI framework in the runtime set.
 2. **C2.** Headless testing is possible without a terminal
    (`create_pipe_input()` + `DummyOutput()`), which is what keeps C2 above the
    50-anchor "needs a pseudo-terminal". It is not textual's documented

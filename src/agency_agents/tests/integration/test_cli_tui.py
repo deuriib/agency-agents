@@ -261,18 +261,50 @@ def test_tui_defaults_to_detected_tools(
     assert not (repo / "home" / ".config" / "opencode").exists()
 
 
-def test_tui_errors_when_no_tool_is_detected(
+def test_tui_asks_for_a_tool_when_none_is_detected(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """No detected tool is a question, not an error: the dialog offers them all."""
+    monkeypatch.setattr(
+        "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
+    )
+    monkeypatch.setattr(
+        "agency_agents.cli.main.choose_tools", lambda catalog, detected=(): ["claude-code"]
+    )
+
+    result = invoke(repo, ["tui"], monkeypatch)
+
+    assert result.exit_code == 0, result.output
+    assert (repo / "home" / ".claude" / "agents" / "growth-hacker.md").exists()
+
+
+def test_tui_refuses_to_run_without_a_terminal(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A pipe is not a terminal: refuse loudly instead of installing nothing silently."""
+    result = invoke(repo, ["tui", "--tool", "claude-code"], monkeypatch)
+
+    assert result.exit_code == 1
+    assert "needs a terminal" in result.output
+    assert "--tool" in result.output
+    assert not (repo / "home" / ".claude").exists()
+
+
+def test_tui_reports_a_cancelled_tool_dialog(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
         "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
     )
 
+    def cancel(catalog: object, detected: object = ()) -> list[str]:
+        raise BrowserCancelled("No tool selected, so nothing was installed. Pass --tool")
+
+    monkeypatch.setattr("agency_agents.cli.main.choose_tools", cancel)
+
     result = invoke(repo, ["tui"], monkeypatch)
 
     assert result.exit_code == 1
-    assert "No supported tool detected" in result.output
-    assert "claude-code" in result.output
+    assert "No tool selected" in result.output
+    assert "--tool" in result.output
 
 
 def test_tui_rejects_an_unknown_tool(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:

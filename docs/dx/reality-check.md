@@ -30,6 +30,8 @@ this working tree during the review:
 | Local gate coverage | `./scripts/gate.sh --list` | **8 checks**, covering `lint`/`types`/`test`/`verify-manifest`/`security` — **not** `documented-commands` |
 | Lint gate actually fails now | read `cli/main.py`:99-110 + `scripts/ci/assert_lint_fails.sh` | `raise typer.Exit(code=1)` on every catalog error, with a regression guard wired into CI (`ci.yml`:117-120) |
 | Deprecation claim | `grep -rn TUIWizard` | **still present** at `infrastructure/tui.py`:33, imported `cli/main.py`:25, called `cli/main.py`:318 |
+
+> **Resolved after this verdict.** `infrastructure/tui.py` and its test are deleted. `install` with no flags now opens the browser, so the deprecation the documents claimed has actually happened. The finding stands as written because it was true when it was made.
 | Baseline tree validity | `git log --date=iso`, commit times vs transcript stamps | baseline ran 2026-11-05T14:57Z, i.e. **before** the 16:26Z commits; branch was still `main`@`1452c6d` — `baseline.md`:12 is truthful |
 
 **Integrity credit, stated plainly:** the two evidence transcripts are

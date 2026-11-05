@@ -18,11 +18,14 @@ from agency_agents.core.selection import (
 )
 from agency_agents.core.validator import LintEngine
 from agency_agents.infrastructure.browser import BrowserModel, build_rows
-from agency_agents.infrastructure.browser_app import BrowserCancelled, run_browser
+from agency_agents.infrastructure.browser_app import (
+    BrowserCancelled,
+    choose_tools,
+    run_browser,
+)
 from agency_agents.infrastructure.catalog import CatalogManager, RunbookDefinition, ToolDefinition
 from agency_agents.infrastructure.hash_manager import HashManager, ManifestError
 from agency_agents.infrastructure.installer import InstallationManager
-from agency_agents.infrastructure.tui import TUIWizard, WizardCancelled
 
 # Windows consoles default to cp1252 and crash on the / of status output.
 # Force UTF-8 before rich builds its console so the CLI is portable.
@@ -314,16 +317,22 @@ def install(
     )
 
     if interactive_run:
-        try:
-            selection = TUIWizard(root_dir, catalog).run(scope=scope)
-        except (WizardCancelled, KeyboardInterrupt, EOFError) as e:
-            message = str(e) or "Installation cancelled."
-            console.print(f"[bold yellow]{message}[/bold yellow]")
-            raise typer.Exit(code=1)
-
-        selected_tools = selection.tools
-        scope = selection.scope
-        all_agents = [a for d in selection.divisions for a in by_division[d]]
+        # One interactive surface. `TUIWizard` was removed in favour of the
+        # browser: two interactive paths meant two answers to "how do I pick
+        # what to install", and the wizard's numbered team list was strictly
+        # worse than filtering the roster. Bare `install` now opens the browser.
+        _browse_and_install(
+            console=console,
+            catalog=catalog,
+            installer=installer,
+            by_division=by_division,
+            tool=tool,
+            scope=scope,
+            dry_run=dry_run,
+            parallel=parallel,
+            jobs=jobs,
+        )
+        return
     else:
         scope = scope or "user"
         selected_tools = [tool] if tool else list(catalog.load_tools().tools.keys())
@@ -410,13 +419,41 @@ def tui(
     divisions = list(catalog.load_divisions().divisions.keys())
     by_division = _collect_roster(console, root_dir, divisions)
 
+    _browse_and_install(
+        console=console,
+        catalog=catalog,
+        installer=installer,
+        by_division=by_division,
+        tool=tool,
+        scope=scope,
+        dry_run=dry_run,
+    )
+
+
+def _browse_and_install(
+    *,
+    console: Console,
+    catalog: CatalogManager,
+    installer: InstallationManager,
+    by_division: Dict[str, List[Agent]],
+    tool: Optional[str],
+    scope: Optional[str],
+    dry_run: bool,
+    parallel: bool = False,
+    jobs: int = 4,
+) -> None:
+    """Browse for agents, resolve the destination, install.
+
+    The single interactive implementation behind both `tui` and a bare
+    `install`, so the two entry points can never drift.
+    """
     model = BrowserModel(rows=build_rows(by_division))
     if not model.rows:
         console.print("[bold red]❌ No agents found in the roster.[/bold red]")
         raise typer.Exit(code=1)
 
     try:
-        selected = run_browser(model, title="Agency Agents - browse and install")
+        selected = run_browser(model, title="Agency Agents - select agents")
     except BrowserCancelled as e:
         console.print(f"[bold yellow]{e}[/bold yellow]")
         raise typer.Exit(code=1)
@@ -431,26 +468,33 @@ def tui(
     else:
         selected_tools = _detected_tools(tools_catalog)
         if not selected_tools:
-            console.print(
-                "[bold red]❌ No supported tool detected in your home directory.[/bold red] "
-                "Pass --tool explicitly. Available: " + ", ".join(sorted(tools_catalog))
-            )
-            raise typer.Exit(code=1)
+            # The wizard used to ask this with a numbered list; the dialog keeps
+            # the capability without a second interactive surface.
+            try:
+                selected_tools = choose_tools(tools_catalog)
+            except BrowserCancelled as e:
+                console.print(f"[bold yellow]{e}[/bold yellow]")
+                raise typer.Exit(code=1)
+        if not selected_tools:
+            console.print("[bold yellow]No tool selected — nothing installed.[/bold yellow]")
+            return
 
     unknown = [t for t in selected_tools if t not in tools_catalog]
     if unknown:
         console.print(f"[bold red]❌ Unknown tool(s): {', '.join(unknown)}[/bold red]")
         raise typer.Exit(code=1)
-    if scope not in ("user", "project"):
-        console.print(f"[bold red]❌ Invalid scope '{scope}'. Use 'user' or 'project'.[/bold red]")
+
+    resolved_scope = scope or "user"
+    if resolved_scope not in ("user", "project"):
+        console.print(f"[bold red]❌ Invalid scope '{resolved_scope}'. Use 'user' or 'project'.[/bold red]")
         raise typer.Exit(code=1)
 
-    unsupported = [t for t in selected_tools if not tools_catalog[t].dest.get(scope)]
+    unsupported = [t for t in selected_tools if not tools_catalog[t].dest.get(resolved_scope)]
     if unsupported:
         for t in unsupported:
             supported = [s for s in ("user", "project") if tools_catalog[t].dest.get(s)]
             console.print(
-                f"[bold red]❌ {t} has no {scope} destination "
+                f"[bold red]❌ {t} has no {resolved_scope} destination "
                 f"(supported: {', '.join(supported) or 'none'})[/bold red]"
             )
         raise typer.Exit(code=1)
@@ -465,11 +509,13 @@ def tui(
         _warn_tool_capacity(console, tool_kebab, len(agents))
 
     if dry_run:
-        _print_plan(console, installer, agents, selected_tools, scope)
+        _print_plan(console, installer, agents, selected_tools, resolved_scope)
         console.print("[bold green]✓ Dry run complete — no files written.[/bold green]")
         return
 
-    failures = _install_agents(console, installer, agents, selected_tools, scope)
+    failures = _install_agents(
+        console, installer, agents, selected_tools, resolved_scope, parallel, jobs
+    )
     if failures:
         console.print(
             f"[bold red]❌ {len(failures)} tool(s) failed to install: "
@@ -477,7 +523,6 @@ def tui(
         )
         raise typer.Exit(code=1)
     console.print(f"[bold green]✓ Installed {len(agents)} agent(s).[/bold green]")
-
 
 def _detected_tools(tools_catalog: Mapping[str, ToolDefinition]) -> List[str]:
     """Tools whose detection directory exists under $HOME.

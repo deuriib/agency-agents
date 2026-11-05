@@ -78,7 +78,7 @@ Browse the agents below and copy/adapt the ones you need!
 ### Option 4: Use with Other Tools (GitHub Copilot, Antigravity, Gemini CLI, OpenCode, OpenClaw, Cursor, Aider, Windsurf, Kimi Code, Codex, Osaurus, Hermes, Mistral Vibe, DeepSeek Harness, Pi Agent, Oh My Pi)
 
 ```bash
-# Install interactively (auto-detects what you have installed; conversion happens inline)
+# Install interactively: opens a browser of the roster (auto-detects your tool; conversion happens inline)
 uv run agency-agents install
 
 # Or target a specific tool directly
@@ -104,7 +104,7 @@ uv run agency-agents install --tool oh-my-pi
 **Install only the teams you need** (not everyone wants every division):
 
 ```bash
-uv run agency-agents install                                    # interactive wizard: pick tools + teams
+uv run agency-agents install                                    # opens the browser: filter, select, install
 uv run agency-agents install --tool claude-code --division engineering,security
 uv run agency-agents install --tool cursor --scope project --agent frontend-developer,ui-designer
 uv run agency-agents install --list teams                       # see every team + agent count
@@ -844,7 +844,7 @@ python -m agency_agents install --no-interactive
 
 ```bash
 python -m agency_agents install --no-interactive --parallel   # install all detected tools in parallel
-python -m agency_agents install --interactive --parallel      # pick tools, then install in parallel
+python -m agency_agents install --interactive --parallel      # pick agents in the browser, install in parallel
 python -m agency_agents install --no-interactive --parallel --jobs 4
 ```
 
