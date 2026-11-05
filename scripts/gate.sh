@@ -40,6 +40,7 @@ CHECK_IDS=(
   types
   verify-manifest
   catalog-sync
+  version-sync
   test
   security-audit
 )
@@ -49,6 +50,7 @@ CHECK_JOBS=(
   "[ci.yml:security]"
   "[ci.yml:lint]"
   "[ci.yml:types]"
+  "[ci.yml:verify-manifest]"
   "[ci.yml:verify-manifest]"
   "[ci.yml:verify-manifest]"
   "[ci.yml:test]"
@@ -62,6 +64,7 @@ CHECK_COSTS=(
   "0.9s warm, 24s cold"
   "8-15s"
   "0.5-1.5s"
+  "0.1-0.5s"
   "14-27s"
   "50-57s, network"
 )
@@ -73,6 +76,7 @@ CHECK_RERUNS=(
   "bash scripts/ci/mypy_ratchet.sh"
   "uv run python -m agency_agents verify --all"
   "uv run python scripts/sync_catalog_data.py --check"
+  "uv run python scripts/ci/check_version_sync.py"
   "uv run pytest -q --cov=agency_agents --cov-branch --cov-report=term-missing --cov-report=xml --cov-fail-under=80"
   "uv export --format requirements-txt --no-dev --no-emit-project --no-hashes -o \${TMPDIR:-/tmp}/agency-agents-requirements.txt && uv run pip-audit --strict -r \${TMPDIR:-/tmp}/agency-agents-requirements.txt --progress-spinner off"
 )
@@ -205,6 +209,9 @@ run_check() {
       ;;
     catalog-sync)
       "$UV" run python scripts/sync_catalog_data.py --check
+      ;;
+    version-sync)
+      "$UV" run python scripts/ci/check_version_sync.py
       ;;
     test)
       if (( FAST )); then

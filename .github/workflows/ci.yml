@@ -87,6 +87,10 @@ jobs:
         # agency_agents/data/ so a PyPI install works without a clone. This
         # fails when that bundle drifts from the repository source of truth.
         run: uv run python scripts/sync_catalog_data.py --check
+      - name: Verify version sources agree
+        # release-please bumps pyproject.toml and __init__.py together; drift
+        # here would ship a wheel whose agency_agents.__version__ is stale.
+        run: uv run python scripts/ci/check_version_sync.py
 
   documented-commands:
     name: documented-commands

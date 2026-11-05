@@ -20,19 +20,20 @@ will. That job runs only in CI.
 | 5 | types | `[ci.yml:types]` | 0.9 s warm, 24 s cold | `bash scripts/ci/mypy_ratchet.sh` |
 | 6 | verify-manifest | `[ci.yml:verify-manifest]` | 8–15 s | `uv run python -m agency_agents verify --all` |
 | 7 | catalog-sync | `[ci.yml:verify-manifest]` | 0.5–1.5 s | `uv run python scripts/sync_catalog_data.py --check` |
-| 8 | test | `[ci.yml:test]` | 14–27 s | `uv run pytest -q --cov=… --cov-fail-under=80` |
-| 9 | security-audit | `[ci.yml:security]` | 50–57 s, network | `uv export … && uv run pip-audit …` |
+| 8 | version-sync | `[ci.yml:verify-manifest]` | 0.1–0.5 s | `uv run python scripts/ci/check_version_sync.py` |
+| 9 | test | `[ci.yml:test]` | 14–27 s | `uv run pytest -q --cov=… --cov-fail-under=80` |
+| 10 | security-audit | `[ci.yml:security]` | 50–57 s, network | `uv export … && uv run pip-audit …` |
 
-Cheapest first, so common failures cost seconds: four sub-2 s checks catch most
+Cheapest first, so common failures cost seconds: five sub-2 s checks catch most
 real breakage, and a ruff error never waits behind a 50 s network audit. `types`
 precedes the long tail (warm 0.9 s; 24 s is a one-off cold cache) and `test`
 precedes `security-audit`, the only networked check. Full ≈ 89 s, `--fast` ≈ 27–35 s.
 
 | Invocation | What it does | When |
 | --- | --- | --- |
-| `./scripts/gate.sh` | All 9 checks, stops at the first failure | Before pushing |
-| `./scripts/gate.sh --fast` | 8 checks: no `security-audit`, pytest without coverage | Inner loop |
-| `./scripts/gate.sh --keep-going` | All 9 even after a failure, then aggregates | Debugging a red branch |
+| `./scripts/gate.sh` | All 10 checks, stops at the first failure | Before pushing |
+| `./scripts/gate.sh --fast` | 9 checks: no `security-audit`, pytest without coverage | Inner loop |
+| `./scripts/gate.sh --keep-going` | All 10 even after a failure, then aggregates | Debugging a red branch |
 
 Fail-fast is the default: the first failure is what the golden path needs fastest,
 and the run prints its time to first failure — M2 measured locally. The last line is
