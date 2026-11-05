@@ -41,20 +41,28 @@ The fastest way in — no clone, no terminal. [**Agency Agents**](https://agency
 brew install --cask msitarzewski/agency-agents/agency-agents
 ```
 
-Prefer the command line? The Python CLI below installs the same agents (requires Python 3.13+ and [uv](https://docs.astral.sh/uv/); inside the repo run with `uv run python -m agency_agents`).
+Prefer the command line? The Python CLI below installs the same agents. **Git is the only prerequisite** — from a fresh clone, three commands take you from nothing to agents installed in your tool:
+
+```bash
+git clone https://github.com/msitarzewski/agency-agents.git && cd agency-agents
+./scripts/bootstrap.sh     # uv + a managed Python 3.13 + uv sync --frozen + proves the console script answers
+./scripts/gate.sh          # the same checks CI runs, cheapest first
+uv run agency-agents install --tool claude-code
+```
+
+`bootstrap.sh` is safe to run twice — the second run is a no-op — and needs no `sudo`, no system Python and no `mise`. `gate.sh` ends with a greppable `GATE RESULT: PASS|FAIL` line; `--fast` is the inner loop and `--list` prints the checks without running them. Every command below runs **from the repo root** as `uv run agency-agents <command>`; run `source .venv/bin/activate` first if you would rather type `agency-agents <command>` bare. The full route, each step with its owner and its failure modes, is [docs/dx/golden-path.md](docs/dx/golden-path.md); the measured result and what is still owed is [docs/dx/scorecard.md](docs/dx/scorecard.md), and every developer-experience document is indexed in [docs/dx/](docs/dx/README.md).
 
 ### Option 2: Use with Claude Code
 
 ```bash
 # Install all agents to your Claude Code directory
-python -m agency_agents install --tool claude-code
-
-# Or manually copy a category if you only want one division
-cp engineering/*.md ~/.claude/agents/
+uv run agency-agents install --tool claude-code
 
 # Then activate any agent in your Claude Code sessions:
 # "Hey Claude, activate Frontend Developer mode and help me build a React component"
 ```
+
+Only want some of them? `--division`, `--agent` and `tui` (below) install a subset instead of the whole roster.
 
 ### Option 3: Use as Reference
 
@@ -70,47 +78,66 @@ Browse the agents below and copy/adapt the ones you need!
 ### Option 4: Use with Other Tools (GitHub Copilot, Antigravity, Gemini CLI, OpenCode, OpenClaw, Cursor, Aider, Windsurf, Kimi Code, Codex, Osaurus, Hermes, Mistral Vibe, DeepSeek Harness, Pi Agent, Oh My Pi)
 
 ```bash
-# Install interactively (auto-detects what you have installed; conversion happens inline)
-python -m agency_agents install
+# Install interactively: opens a browser of the roster (auto-detects your tool; conversion happens inline)
+uv run agency-agents install
 
 # Or target a specific tool directly
-python -m agency_agents install --tool antigravity
-python -m agency_agents install --tool gemini-cli
-python -m agency_agents install --tool opencode
-python -m agency_agents install --tool copilot
-python -m agency_agents install --tool openclaw
-python -m agency_agents install --tool cursor --scope project
-python -m agency_agents install --tool aider --scope project
-python -m agency_agents install --tool windsurf --scope project
-python -m agency_agents install --tool kimi
-python -m agency_agents install --tool codex
-python -m agency_agents install --tool osaurus
-python -m agency_agents install --tool hermes
-python -m agency_agents install --tool vibe
-python -m agency_agents install --tool dsh
-python -m agency_agents install --tool zcode
-python -m agency_agents install --tool pi-agent
-python -m agency_agents install --tool oh-my-pi
+uv run agency-agents install --tool antigravity
+uv run agency-agents install --tool gemini-cli
+uv run agency-agents install --tool opencode
+uv run agency-agents install --tool copilot
+uv run agency-agents install --tool openclaw
+uv run agency-agents install --tool cursor --scope project
+uv run agency-agents install --tool aider --scope project
+uv run agency-agents install --tool windsurf --scope project
+uv run agency-agents install --tool kimi
+uv run agency-agents install --tool codex
+uv run agency-agents install --tool osaurus
+uv run agency-agents install --tool hermes
+uv run agency-agents install --tool vibe
+uv run agency-agents install --tool dsh
+uv run agency-agents install --tool zcode
+uv run agency-agents install --tool pi-agent
+uv run agency-agents install --tool oh-my-pi
 ```
 
 **Install only the teams you need** (not everyone wants every division):
 
 ```bash
-python -m agency_agents install                                    # interactive wizard: pick tools + teams
-python -m agency_agents install --tool claude-code --division engineering,security
-python -m agency_agents install --tool cursor --scope project --agent frontend-developer,ui-designer
-python -m agency_agents install --list teams                       # see every team + agent count
-python -m agency_agents install --tool opencode --division engineering --dry-run
+uv run agency-agents install                                    # opens the browser: filter, select, install
+uv run agency-agents install --tool claude-code --division engineering,security
+uv run agency-agents install --tool cursor --scope project --agent frontend-developer,ui-designer
+uv run agency-agents install --list teams                       # see every team + agent count
+uv run agency-agents install --tool opencode --division engineering --dry-run
 ```
 
-`--agent` and `--agents-file` take an agent's slug (as `--list agents` prints it), its display name, or its file name without `.md` — the id the [runbook rosters](strategy/runbooks.json) use — so a runbook's team installs as listed:
+**Or browse the roster and tick what you want.** `tui` opens the whole catalog as a filterable list and installs the selection — the same pipeline as `install`, driven by keys instead of flags:
 
 ```bash
-python -c 'import json, sys
-for r in json.load(open("strategy/runbooks.json"))["runbooks"]:
-    if r["slug"] == sys.argv[1]: [print(a) for g in r["roster"] for a in g["agents"]]' startup-mvp > team.txt
-python -m agency_agents install --tool claude-code --agents-file team.txt
+uv run agency-agents tui --tool claude-code              # browse, select, install
+uv run agency-agents tui --tool claude-code --dry-run    # print the plan, write nothing
 ```
+
+| Key | Action |
+| --- | --- |
+| `Ctrl-P` / `Ctrl-N` | Move the cursor one row (arrow keys are not bound yet) |
+| `Ctrl-B` / `Ctrl-F` | Move ten rows |
+| *typing* | Filter on slug, name, division or description |
+| `Tab` | Select / deselect the row under the cursor |
+| `Ctrl-A` / `Ctrl-X` | Select every visible row / clear the selection |
+| `Ctrl-U` | Clear the filter |
+| `Enter` / `Esc` | Install the selection / cancel |
+
+`tui` takes `--tool`, `--scope` (default `user`) and `--dry-run`. Without `--tool` it installs into every tool it detects under your home directory, and exits 1 listing the available tools when it detects none.
+
+**Install a runbook's roster.** A [runbook](strategy/runbooks.json) names the team for one job, and `--runbook` installs exactly that roster:
+
+```bash
+uv run agency-agents install --list runbooks                                          # 42 runbooks: slug, mode, duration, agent count
+uv run agency-agents install --runbook developer-experience-platform --tool claude-code
+```
+
+The runbook's roster installs as listed — `--runbook` resolves the agent ids from `strategy/runbooks.json`, the same ids `--agent` and `--agents-file` accept (an agent's slug as `--list agents` prints it, its display name, or its file name without `.md`). `--runbook` is a selector on its own: combining it with `--division`, `--agent` or `--agents-file` is rejected with `--runbook cannot be combined with --division. Pick one selector.`
 
 > **OpenCode note:** OpenCode's runtime currently registers only ~119 agents and silently drops the rest ([upstream bug](https://github.com/anomalyco/opencode/issues/27988)). Installing a subset with `--division` keeps you under that limit. The installer warns you when a selection would exceed it.
 
@@ -817,7 +844,7 @@ python -m agency_agents install --no-interactive
 
 ```bash
 python -m agency_agents install --no-interactive --parallel   # install all detected tools in parallel
-python -m agency_agents install --interactive --parallel      # pick tools, then install in parallel
+python -m agency_agents install --interactive --parallel      # pick agents in the browser, install in parallel
 python -m agency_agents install --no-interactive --parallel --jobs 4
 ```
 

@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Mapping, Optional
 
 import typer
 from rich.console import Console
@@ -8,6 +8,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from agency_agents.core.converter import ConverterEngine, UnknownFormatError
+from agency_agents.core.models import Agent
 from agency_agents.core.originality import run_originality_check
 from agency_agents.core.parser import MarkdownParser
 from agency_agents.core.selection import (
@@ -16,10 +17,15 @@ from agency_agents.core.selection import (
     select_agents,
 )
 from agency_agents.core.validator import LintEngine
-from agency_agents.infrastructure.catalog import CatalogManager
+from agency_agents.infrastructure.browser import BrowserModel, build_rows
+from agency_agents.infrastructure.browser_app import (
+    BrowserCancelled,
+    choose_tools,
+    run_browser,
+)
+from agency_agents.infrastructure.catalog import CatalogManager, RunbookDefinition, ToolDefinition
 from agency_agents.infrastructure.hash_manager import HashManager, ManifestError
 from agency_agents.infrastructure.installer import InstallationManager
-from agency_agents.infrastructure.tui import TUIWizard, WizardCancelled
 
 # Windows consoles default to cp1252 and crash on the / of status output.
 # Force UTF-8 before rich builds its console so the CLI is portable.
@@ -93,6 +99,14 @@ def lint():
 
     console.print("[bold green]✓ All agents passed linting.[/bold green]")
 
+    # Every catalog inconsistency is fatal. The report and the exit code must
+    # agree: printing a red error and then exiting 0 taught reviewers to ignore
+    # the failure, and CI (which gates on the exit code) never saw it. See
+    # docs/dx/baseline.md D2.
+    if tool_errors:
+        raise typer.Exit(code=1)
+    if div_errors:
+        raise typer.Exit(code=1)
     if runbook_errors:
         raise typer.Exit(code=1)
 
@@ -180,6 +194,18 @@ def _handle_list(console: Console, catalog, by_division, divisions, list_what: s
             for agent in by_division.get(d, []):
                 console.print(f"  {d:<20} {agent.slug}")
         return
+    if list_what == "runbooks":
+        # The roster is what gets installed; the doc markdown stays in the repo.
+        # All 42 runbooks print so the surface is discoverable without reading
+        # strategy/runbooks.json by hand (issue #14).
+        runbooks = sorted(catalog.load_runbooks().runbooks, key=lambda r: r.slug)
+        for runbook in runbooks:
+            agent_count = sum(len(g.agents) for g in runbook.roster)
+            console.print(
+                f"  {runbook.slug:<38} {runbook.mode:<13} {runbook.duration:<12} "
+                f"{agent_count:>3} agents  {runbook.doc}"
+            )
+        return
     if list_what == "all":
         console.print(f"Tools ({len(tool_keys)}):")
         for line in tool_keys:
@@ -188,8 +214,36 @@ def _handle_list(console: Console, catalog, by_division, divisions, list_what: s
         for line in team_lines:
             console.print(f"  {line}")
         return
-    console.print(f"[bold red]Unknown --list value '{list_what}'. Use: tools | teams | agents | all[/bold red]")
+    console.print(
+        f"[bold red]Unknown --list value '{list_what}'. "
+        f"Use: tools | teams | agents | runbooks | all[/bold red]"
+    )
     raise typer.Exit(code=1)
+
+
+def _resolve_runbook_roster(
+    catalog: CatalogManager, slug: str
+) -> "tuple[RunbookDefinition, List[str]]":
+    """Resolve a runbook slug to its roster groups and agent slugs.
+
+    Every roster group installs, including `week 3+` and `as needed`: the
+    `activation` field is a NEXUS scheduling concept, not an install filter. The
+    groups are returned so the caller can print the phases the user just
+    installed.
+    """
+    by_slug = {r.slug: r for r in catalog.load_runbooks().runbooks}
+    runbook = by_slug.get(slug)
+    if runbook is None:
+        console.print(
+            f"[bold red]\u274c Unknown runbook '{slug}'. "
+            f"Run `agency-agents install --list runbooks` to see all {len(by_slug)}.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    agent_ids = [agent for group in runbook.roster for agent in group.agents]
+    if not agent_ids:
+        console.print(f"[bold red]\u274c Runbook '{slug}' declares no agents.[/bold red]")
+        raise typer.Exit(code=1)
+    return runbook, agent_ids
 
 @app.command()
 def install(
@@ -200,9 +254,10 @@ def install(
     jobs: int = typer.Option(4, "--jobs", help="Number of parallel jobs"),
     division: Optional[str] = typer.Option(None, "--division", help="Only these teams/divisions (comma-separated)"),
     agent: Optional[str] = typer.Option(None, "--agent", help="Only these agents, by slug, display name or file name without .md (comma-separated)"),
+    runbook: Optional[str] = typer.Option(None, "--runbook", help="Install a runbook's roster, by slug (see --list runbooks)"),
     agents_file: Optional[Path] = typer.Option(None, "--agents-file", help="Agents listed in a file (one id per line, # comments ok)"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Print the plan and exit without writing anything"),
-    list_what: Optional[str] = typer.Option(None, "--list", help="List and exit: tools | teams | agents | all"),
+    list_what: Optional[str] = typer.Option(None, "--list", help="List and exit: tools | teams | agents | runbooks | all"),
 ):
     """
     Install agents for a specific tool or all tools.
@@ -222,21 +277,62 @@ def install(
     division_ids = [d.strip() for d in division.split(",") if d.strip()] if division else []
     agent_ids = [a.strip() for a in agent.split(",") if a.strip()] if agent else []
 
-    # Filters, --tool, --dry-run and --no-interactive all force a deterministic,
-    # non-interactive run. Only the bare wizard case is interactive.
-    interactive_run = interactive and not dry_run and not tool and not (division_ids or agent_ids or agents_file)
+    # --runbook is a selector, so it cannot be combined with another selector.
+    # Two selectors in one command is an error; quietly intersecting them would
+    # install a set nobody asked for.
+    other_selectors = [
+        name
+        for name, value in (
+            ("--division", division_ids),
+            ("--agent", agent_ids),
+            ("--agents-file", agents_file),
+        )
+        if value
+    ]
+    if runbook and other_selectors:
+        console.print(
+            f"[bold red]\u274c --runbook cannot be combined with "
+            f"{', '.join(other_selectors)}. Pick one selector.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+
+    runbook_title: Optional[str] = None
+    if runbook:
+        definition, roster_ids = _resolve_runbook_roster(catalog, runbook)
+        runbook_title = definition.title
+        agent_ids = roster_ids
+        console.print(
+            f"[bold]Runbook[/bold] {definition.slug} \u2014 {definition.title} "
+            f"({definition.mode}, {definition.duration})"
+        )
+        for group in definition.roster:
+            console.print(
+                f"  {group.group:<26} {group.activation:<12} {len(group.agents):>3} agents"
+            )
+
+    # Filters, --tool, --runbook, --dry-run and --no-interactive all force a
+    # deterministic, non-interactive run. Only the bare wizard case is interactive.
+    interactive_run = interactive and not dry_run and not tool and not runbook and not (
+        division_ids or agent_ids or agents_file
+    )
 
     if interactive_run:
-        try:
-            selection = TUIWizard(root_dir, catalog).run(scope=scope)
-        except (WizardCancelled, KeyboardInterrupt, EOFError) as e:
-            message = str(e) or "Installation cancelled."
-            console.print(f"[bold yellow]{message}[/bold yellow]")
-            raise typer.Exit(code=1)
-
-        selected_tools = selection.tools
-        scope = selection.scope
-        all_agents = [a for d in selection.divisions for a in by_division[d]]
+        # One interactive surface. `TUIWizard` was removed in favour of the
+        # browser: two interactive paths meant two answers to "how do I pick
+        # what to install", and the wizard's numbered team list was strictly
+        # worse than filtering the roster. Bare `install` now opens the browser.
+        _browse_and_install(
+            console=console,
+            catalog=catalog,
+            installer=installer,
+            by_division=by_division,
+            tool=tool,
+            scope=scope,
+            dry_run=dry_run,
+            parallel=parallel,
+            jobs=jobs,
+        )
+        return
     else:
         scope = scope or "user"
         selected_tools = [tool] if tool else list(catalog.load_tools().tools.keys())
@@ -296,20 +392,7 @@ def install(
         console.print("[bold green]✓ Dry run complete — no files written.[/bold green]")
         return
 
-    failures: List[str] = []
-    for t_kebab in selected_tools:
-        with console.status(f"[bold yellow]Installing for {t_kebab}..."):
-            try:
-                installer.install_all_for_tool(
-                    all_agents,
-                    t_kebab,
-                    scope=scope,
-                    parallel=parallel,
-                    jobs=jobs
-                )
-            except (RuntimeError, UnknownFormatError) as e:
-                failures.append(t_kebab)
-                console.print(f"[bold red]❌ Error installing {t_kebab}:[/bold red] {e}")
+    failures = _install_agents(console, installer, all_agents, selected_tools, scope, parallel, jobs)
 
     if failures:
         console.print(
@@ -319,6 +402,176 @@ def install(
         raise typer.Exit(code=1)
 
     console.print("[bold green]✓ Installation process completed![/bold green] ")
+
+
+@app.command("tui")
+def tui(
+    tool: Optional[str] = typer.Option(None, "--tool", help="Install into this tool (default: tools detected on this machine)"),
+    scope: str = typer.Option("user", "--scope", help="Installation scope: 'user' or 'project'"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Print the plan and exit without writing anything"),
+) -> None:
+    """
+    Browse the roster interactively and install what you select.
+    """
+    root_dir = Path(".").absolute()
+    catalog = CatalogManager(root_dir)
+    installer = InstallationManager(root_dir, Path.home())
+    divisions = list(catalog.load_divisions().divisions.keys())
+    by_division = _collect_roster(console, root_dir, divisions)
+
+    _browse_and_install(
+        console=console,
+        catalog=catalog,
+        installer=installer,
+        by_division=by_division,
+        tool=tool,
+        scope=scope,
+        dry_run=dry_run,
+    )
+
+
+def _browse_and_install(
+    *,
+    console: Console,
+    catalog: CatalogManager,
+    installer: InstallationManager,
+    by_division: Dict[str, List[Agent]],
+    tool: Optional[str],
+    scope: Optional[str],
+    dry_run: bool,
+    parallel: bool = False,
+    jobs: int = 4,
+) -> None:
+    """Browse for agents, resolve the destination, install.
+
+    The single interactive implementation behind both `tui` and a bare
+    `install`, so the two entry points can never drift.
+    """
+    model = BrowserModel(rows=build_rows(by_division))
+    if not model.rows:
+        console.print("[bold red]❌ No agents found in the roster.[/bold red]")
+        raise typer.Exit(code=1)
+
+    try:
+        selected = run_browser(model, title="Agency Agents - select agents")
+    except BrowserCancelled as e:
+        console.print(f"[bold yellow]{e}[/bold yellow]")
+        raise typer.Exit(code=1)
+
+    if not selected:
+        console.print("[bold yellow]Nothing selected — nothing installed.[/bold yellow]")
+        return
+
+    tools_catalog = catalog.load_tools().tools
+    if tool:
+        selected_tools = [tool]
+    else:
+        selected_tools = _detected_tools(tools_catalog)
+        if not selected_tools:
+            # The wizard used to ask this with a numbered list; the dialog keeps
+            # the capability without a second interactive surface.
+            try:
+                selected_tools = choose_tools(tools_catalog)
+            except BrowserCancelled as e:
+                console.print(f"[bold yellow]{e}[/bold yellow]")
+                raise typer.Exit(code=1)
+        if not selected_tools:
+            console.print("[bold yellow]No tool selected — nothing installed.[/bold yellow]")
+            return
+
+    unknown = [t for t in selected_tools if t not in tools_catalog]
+    if unknown:
+        console.print(f"[bold red]❌ Unknown tool(s): {', '.join(unknown)}[/bold red]")
+        raise typer.Exit(code=1)
+
+    resolved_scope = scope or "user"
+    if resolved_scope not in ("user", "project"):
+        console.print(f"[bold red]❌ Invalid scope '{resolved_scope}'. Use 'user' or 'project'.[/bold red]")
+        raise typer.Exit(code=1)
+
+    unsupported = [t for t in selected_tools if not tools_catalog[t].dest.get(resolved_scope)]
+    if unsupported:
+        for t in unsupported:
+            supported = [s for s in ("user", "project") if tools_catalog[t].dest.get(s)]
+            console.print(
+                f"[bold red]❌ {t} has no {resolved_scope} destination "
+                f"(supported: {', '.join(supported) or 'none'})[/bold red]"
+            )
+        raise typer.Exit(code=1)
+
+    try:
+        agents = select_agents(by_division, agent_ids=selected)
+    except SelectionError as e:
+        console.print(f"[bold red]❌ {e}[/bold red]")
+        raise typer.Exit(code=1)
+
+    for tool_kebab in selected_tools:
+        _warn_tool_capacity(console, tool_kebab, len(agents))
+
+    if dry_run:
+        _print_plan(console, installer, agents, selected_tools, resolved_scope)
+        console.print("[bold green]✓ Dry run complete — no files written.[/bold green]")
+        return
+
+    failures = _install_agents(
+        console, installer, agents, selected_tools, resolved_scope, parallel, jobs
+    )
+    if failures:
+        console.print(
+            f"[bold red]❌ {len(failures)} tool(s) failed to install: "
+            f"{', '.join(failures)}[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    console.print(f"[bold green]✓ Installed {len(agents)} agent(s).[/bold green]")
+
+def _detected_tools(tools_catalog: Mapping[str, ToolDefinition]) -> List[str]:
+    """Tools whose detection directory exists under $HOME.
+
+    A browser install with no `--tool` must not quietly target everything: the
+    user picked agents, not destinations, so detection is the only safe default
+    and an empty result is an error rather than a silent no-op.
+    """
+    detected: List[str] = []
+    home = Path.home()
+    for kebab, definition in tools_catalog.items():
+        # `detect` is a plain dict in the catalog model, not a sub-model.
+        dirs = definition.detect.get("dirs") or []
+        if any((home / d).exists() for d in dirs):
+            detected.append(kebab)
+    return sorted(detected)
+
+def _install_agents(
+    console: Console,
+    installer: InstallationManager,
+    agents: List[Agent],
+    tools: List[str],
+    scope: str,
+    parallel: bool = False,
+    jobs: int = 4,
+) -> List[str]:
+    """Install the same agent set into every tool; returns the tools that failed.
+
+    Shared by `install` and `tui` so a browser-driven install is the same
+    pipeline as a flag-driven one: the same rendering, the same scope handling
+    and the same aggregate failure exit. A second copy of this loop is where
+    `--dry-run` quietly stops being dry.
+    """
+    failures: List[str] = []
+    for t_kebab in tools:
+        with console.status(f"[bold yellow]Installing for {t_kebab}..."):
+            try:
+                installer.install_all_for_tool(
+                    agents,
+                    t_kebab,
+                    scope=scope,
+                    parallel=parallel,
+                    jobs=jobs,
+                )
+            except (RuntimeError, UnknownFormatError) as e:
+                failures.append(t_kebab)
+                console.print(f"[bold red]\u274c Error installing {t_kebab}:[/bold red] {e}")
+    return failures
+
 
 def _load_all_agents(root_dir: Path, engine: ConverterEngine) -> List:
     """Parse every agent in every division once; unparsable agents are fatal."""
@@ -561,4 +814,16 @@ def convert(
 
 
 if __name__ == "__main__":
+    app()
+
+
+def main() -> None:
+    """Console-script entry point (`agency-agents`).
+
+    `pyproject.toml` points `[project.scripts]` here. Before this existed the
+    script resolved `agency_agents:main`, which was never defined, so the
+    installed command raised ImportError while `python -m agency_agents` worked —
+    the failure mode no unit test caught because none exercised the installed
+    console script.
+    """
     app()

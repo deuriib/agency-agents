@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-agency-agents = "agency_agents:main"
+agency-agents = "agency_agents.cli.main:main"
 
 [build-system]
 requires = ["uv_build>=0.12.12,<0.13.0"]
