@@ -209,13 +209,21 @@ def test_lint_clean_project_passes(repo: Path, monkeypatch: pytest.MonkeyPatch) 
     assert "All agents passed linting." in result.output
 
 
-def test_lint_prints_catalog_errors_without_blocking(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_lint_reports_every_catalog_error_and_exits_1(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Catalog inconsistencies are fatal, and all of them are reported first.
+
+    This used to assert exit 0: `lint` printed the errors and reported success,
+    so the CI gate showed red text on a green run. The contract is the one
+    CONTRIBUTING.md documents — a disagreement anywhere fails the build — and the
+    report is still complete, so a fixer sees every problem in one pass.
+    See docs/dx/baseline.md D2.
+    """
     write_json(repo / "tools.json", {"tools": {"x": tool("x", fmt="no-renderer")}})
     (repo / "rogue-dir").mkdir()
 
     result = invoke(repo, ["lint"], monkeypatch)
 
-    assert result.exit_code == 0, result.output
+    assert result.exit_code == 1, result.output
     assert "Tools Consistency Errors" in result.output
     assert "no-renderer" in result.output
     assert "Division Consistency Errors" in result.output
