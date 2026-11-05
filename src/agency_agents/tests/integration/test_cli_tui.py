@@ -10,6 +10,7 @@ thin enough that the untestable part is the terminal loop and nothing else.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +25,19 @@ from agency_agents.infrastructure.browser_app import (
 )
 
 runner = CliRunner()
+
+_ANSI = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def plain(output: str) -> str:
+    """Output with ANSI styling removed.
+
+    Rich styles an option name character by character, so `--tool` is not a
+    contiguous substring of the raw output even though it renders as one. Reading
+    the styled string is how a help-surface assertion passes locally and fails in
+    CI, where a terminal is attached.
+    """
+    return _ANSI.sub("", output)
 
 
 def tool(kebab: str, user: list[str], dirs: list[str] | None = None, order: int = 1) -> dict[str, Any]:
@@ -300,5 +314,6 @@ def test_tui_help_documents_its_flags(repo: Path, monkeypatch: pytest.MonkeyPatc
     result = invoke(repo, ["tui", "--help"], monkeypatch)
 
     assert result.exit_code == 0
+    rendered = plain(result.output)
     for flag in ("--tool", "--scope", "--dry-run"):
-        assert flag in result.output
+        assert flag in rendered, rendered
