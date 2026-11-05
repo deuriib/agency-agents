@@ -31,9 +31,17 @@ would be the same mistake in prose.
 | 7 | Clean-room and CI-metrics instruments | `scripts/ci/*`; this scorecard's numbers |
 | 8 | Docs: baseline, golden path, M7 record, newcomer path, M9 audit, CLI FAQ, evidence pack | `docs/dx/` |
 
-Full local gate: `GATE RESULT: PASS — 8 checks, 89.5s`. Test suite: **291 passed**,
+Full local gate: `GATE RESULT: PASS — 8 checks, 76.5s`. Test suite: **291 passed**,
 branch coverage **92.9%** (floor 80%). mypy ratchet: **39 errors, unchanged from
 baseline** — no new type errors were introduced.
+
+**CI is green** on the pull request (`#62`), including the new
+`documented-commands` job: `ci/required`, `documented-commands`, `lint`, `types`,
+`test`, `verify-manifest`, `security`, the Project Quality Check and CodeQL all
+pass (run `42072487592`). Two failures were found and fixed on the way: a
+pre-existing test that asserted where the console wraps a path, and a help-surface
+assertion that read styled output and therefore behaved differently with a
+terminal attached.
 
 ## 2. The measured result, stated narrowly
 
@@ -92,7 +100,7 @@ Nine clauses. **This gate is not claimable.**
 
 | Clause | Status | Why |
 | --- | --- | --- |
-| 3.1 M8 = 100%: every documented command exits 0 in CI | **UNMEASURED** | The `documented-commands` job exists and asserts this, but **CI has not run on this branch**. Local evidence only: every documented command exits 0 in the clean room and in `gate.sh --list`. Also incomplete by construction: `tui` cannot run in a non-TTY job, and 16 of the 19 `install --tool` variants are never executed |
+| 3.1 M8 = 100%: every documented command exits 0 in CI | **PARTIAL** — every command CI executes exits 0; the set is not the whole documented surface | CI is green on `31b3047`'s successor commit: `documented-commands`, `lint`, `types`, `test`, `verify-manifest`, `security`, `ci/required` all pass (run `42072487592`). The job runs bootstrap twice, the console script, `install --list runbooks`, `install --runbook … --dry-run`, `gate.sh --list` and the lint-failure assertion. It does **not** cover `tui` (needs a TTY) or 16 of the 19 `install --tool` variants, so M8 is not 100% of the documented surface |
 | 3.2 Every deprecated-path entry has its removal commit **merged** | **UNMEASURED** | Nothing is merged. The README manual-copy path is deleted on this branch; `TUIWizard` is deliberately kept, with the deviation recorded in `m7-tool-decisions.md` |
 | 3.3 M7 = 100%: every tool decision carries a written evaluation against the criteria with an exit path | **PASS** | `m7-tool-decisions.md`: 2 decisions, weighted criteria written before scoring, arithmetic shown, exit paths named |
 | 3.4 M6 before/after for every touched step, total ≤6 | **PASS** | 5 documented commands; before/after table in `golden-path.md`. The harness measures 6 things — the 6th is the Evidence Collector's observation, not a developer command, and the two numbers are never merged |
@@ -102,9 +110,10 @@ Nine clauses. **This gate is not claimable.**
 | 3.8 M4 interim flake rate | **UNMEASURED** | Same reason |
 | 3.9 M5: ≥20 instrumented clean-machine bootstrap attempts, failure rate ≤5% | **UNMEASURED** | **3 attempts, 0 failures** — a 0% failure rate over n=3 is not the clause. It needs 20 |
 
-**G3: FAIL (3 PASS / 6 UNMEASURED).** Clauses 3.6–3.8 unlock automatically once the
-change is merged and 20 runs accumulate; 3.9 needs the bootstrap counter wired to
-real attempts; 3.1 and 3.2 need CI to run and the work to merge.
+**G3: FAIL (3 PASS / 1 PARTIAL / 5 UNMEASURED).** Clauses 3.6–3.8 unlock
+automatically once the change is merged and 20 runs accumulate; 3.9 needs the
+bootstrap counter wired to real attempts; 3.2 needs the work to merge; 3.1 has CI
+evidence but not over the whole documented surface.
 
 ### G4 — onboarding proof
 
