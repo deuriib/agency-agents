@@ -803,7 +803,7 @@ wheels = [
 
 [[package]]
 name = "py-agency-agents"
-version = "1.11.0"
+version = "1.11.1"
 source = { editable = "." }
 dependencies = [
     { name = "prompt-toolkit" },
