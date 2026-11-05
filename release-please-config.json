@@ -21,7 +21,13 @@
     ".": {
       "release-type": "python",
       "package-name": "agency-agents",
-      "changelog-path": "CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "src/agency_agents/__init__.py"
+        }
+      ]
     }
   }
 }
