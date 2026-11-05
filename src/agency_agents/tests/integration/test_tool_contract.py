@@ -38,7 +38,7 @@ def test_new_tools_are_part_of_the_contract():
     tools = _per_agent_tools()
     assert tools["antigravity"].format == "antigravity-md"
     assert tools["pi-agent"].format == "gemini-md"
-    assert tools["oh-my-pi"].format == "gemini-md"
+    assert tools["oh-my-pi"].format == "oh-my-pi-md"
 
 
 def _isolated_installer(tmp_path):

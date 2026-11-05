@@ -94,19 +94,52 @@ jobs:
           grep -q "subagent: true" "$sub"
           ! grep -qE "invoke_subagent|manage_subagents|send_message|manage_task" "$sub"
 
+          # The render policy promotes two agents, not one.
+          grep -q "mainAgent: true" "$agents_dir/vasquez.md"
+
           # Every staged agent declares a tools list.
           for file in "$agents_dir"/*.md; do
             grep -q "^tools: \[" "$file"
           done
 
-          # Pi Agent and Oh My Pi use the gemini-md renderer.
-          for path in "$HOME/.pi/agent/agents" "$HOME/.omp/agent/agents"; do
-            test -f "$path/agents-orchestrator.md"
-            test -f "$path/frontend-developer.md"
-            grep -q "^name: " "$path/frontend-developer.md"
+          # Pi Agent consumes the gemini-md renderer.
+          test -f "$HOME/.pi/agent/agents/agents-orchestrator.md"
+          test -f "$HOME/.pi/agent/agents/frontend-developer.md"
+          grep -q "^name: " "$HOME/.pi/agent/agents/frontend-developer.md"
+
+          # Oh My Pi reads its own contract: name is the slug omp dispatches by,
+          # tools/spawns gate delegation, and only the orchestrator may fan out.
+          omp_dir="$HOME/.omp/agent/agents"
+          omp_main="$omp_dir/agents-orchestrator.md"
+          omp_sub="$omp_dir/frontend-developer.md"
+
+          test -f "$omp_main"
+          test -f "$omp_sub"
+
+          grep -qx "name: agents-orchestrator" "$omp_main"
+          grep -qx "name: frontend-developer" "$omp_sub"
+
+          grep -q '^spawns: "\*"' "$omp_main"
+          grep -q '^tools: \[task, ' "$omp_main"
+          grep -q '^blocking: false' "$omp_main"
+
+          ! grep -q "^spawns:" "$omp_sub"
+          ! grep -qE '^tools:.*\btask\b' "$omp_sub"
+          grep -q '^blocking: true' "$omp_sub"
+
+          # Vasquez is the second delegating agent: same surface as the orchestrator.
+          grep -qx "name: vasquez" "$omp_dir/vasquez.md"
+          grep -q '^spawns: "\*"' "$omp_dir/vasquez.md"
+          grep -q '^tools: \[task, ' "$omp_dir/vasquez.md"
+          grep -q '^blocking: false' "$omp_dir/vasquez.md"
+
+          for file in "$omp_dir"/*.md; do
+            grep -q '^description: "' "$file"
+            grep -q '^structured: false' "$file"
+            grep -q '^autoloadSkills: \["\*"\]' "$file"
           done
 
-          echo "staged $(find "$agents_dir" -name '*.md' | wc -l) antigravity agents, plus pi-agent and oh-my-pi"
+          echo "staged $(find "$agents_dir" -name '*.md' | wc -l) antigravity agents, plus pi-agent and $(find "$omp_dir" -name '*.md' | wc -l) oh-my-pi agents"
 
       - name: Upload Staging Bundle
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

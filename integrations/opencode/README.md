@@ -22,11 +22,11 @@ OpenCode agents are `.md` files with YAML frontmatter stored in
 `mode: subagent` so agents are invoked on-demand via `@agent-name` rather
 than cluttering the primary agent picker.
 
-The one exception is `agents-orchestrator`: it is the top of the hierarchy, so
-the converter renders it with `mode: primary` and it appears in the primary
-agent picker. This is a render-level policy (see `PRIMARY_AGENT_SLUGS` in
-`src/agency_agents/core/converter.py`), not a frontmatter field — source agent
-files stay tool-agnostic.
+The exception is the two agents the render policy promotes — `agents-orchestrator`
+and `vasquez` — which the converter renders with `mode: primary` so they appear
+in the primary agent picker. This is a render-level policy (see
+`PRIMARY_AGENT_SLUGS` in `src/agency_agents/core/converter.py`), not a
+frontmatter field — source agent files stay tool-agnostic.
 
 ## Install
 
@@ -66,7 +66,7 @@ color: "#00FFFF"
 ```
 
 - **mode: subagent** — agent is available on-demand, not shown in the primary Tab-cycle list
-- **mode: primary** — only `agents-orchestrator`, so it is selectable as a primary agent
+- **mode: primary** — `agents-orchestrator` and `vasquez` only, so they are selectable as primary agents
 - **color** — hex code (named colors from source files are converted automatically)
 
 ## Project vs Global

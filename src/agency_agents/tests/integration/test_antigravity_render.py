@@ -5,7 +5,7 @@ HOME, so a regression in the tool declarations fails before it ships.
 """
 from pathlib import Path
 
-from agency_agents.core.converter import ConverterEngine, is_primary_agent
+from agency_agents.core.converter import PRIMARY_AGENT_SLUGS, ConverterEngine, is_primary_agent
 from agency_agents.core.parser import MarkdownParser
 from agency_agents.infrastructure.catalog import CatalogManager
 from agency_agents.infrastructure.installer import InstallationManager
@@ -66,7 +66,10 @@ def test_every_rendered_agent_declares_its_tools():
             assert tools == EXECUTION_TOOLS
             assert tools.isdisjoint(DELEGATION_TOOLS)
 
-    assert primaries == ["agents-orchestrator"]
+    # The policy promotes the pipeline runner and the process steward; anything
+    # else landing here means a slug was promoted by accident.
+    assert set(primaries) == PRIMARY_AGENT_SLUGS
+    assert len(primaries) == len(set(primaries))
 
 
 def test_installed_artifact_carries_tool_declarations(tmp_path):

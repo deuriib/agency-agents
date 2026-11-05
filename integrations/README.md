@@ -25,7 +25,7 @@ explains how to install and regenerate the artifacts.
 | `osaurus` | `skill-md` | `~/.osaurus/skills/agency-<slug>/SKILL.md` |
 | `dsh` | `skill-md` | `~/.dsh/skills/agency-<slug>/SKILL.md` |
 | `pi-agent` | `gemini-md` | `~/.pi/agent/agents/<slug>.md` (user), `.pi/agents/<slug>.md` (project) |
-| `oh-my-pi` | `gemini-md` | `~/.omp/agent/agents/<slug>.md` (user), `.omp/agents/<slug>.md` (project) |
+| `oh-my-pi` | `oh-my-pi-md` | `~/.omp/agent/agents/<slug>.md` (user), `.omp/agents/<slug>.md` (project) |
 | `hermes` | `hermes-router-plugin` | `~/.hermes/plugins/agency-agents-router` (built plugin) |
 
 ## Install
@@ -72,9 +72,9 @@ Each agent is a markdown file in `~/.gemini/config/agents/` (user) or
 `.agents/agents/` (project). There is no `agency-` prefix. The renderer declares
 the tool surface per role:
 
-- `agents-orchestrator` is the main agent (`mainAgent: true`) and gets
-  `invoke_subagent`, `manage_subagents`, `send_message`, and `manage_task`
-  alongside the execution tools.
+- `agents-orchestrator` and `vasquez` are the main agents (`mainAgent: true`)
+  and get `invoke_subagent`, `manage_subagents`, `send_message`, and
+  `manage_task` alongside the execution tools.
 - Every other agent is a subagent (`subagent: true`) and receives execution
   tools only: `view_file`, `write_to_file`, `replace_file_content`,
   `grep_search`, `find_by_name`, `list_dir`, `run_command`.
@@ -87,15 +87,17 @@ See [antigravity/README.md](antigravity/README.md) for details.
 
 ## Pi Agent and Oh My Pi
 
-Both use the `gemini-md` renderer, so the output is the same agent markdown
-shape as Gemini CLI, installed into their own directories:
+They consume different renderers and are not interchangeable. Pi Agent uses
+`gemini-md` — the same agent markdown shape as Gemini CLI. Oh My Pi uses
+`oh-my-pi-md`, its own task-agent contract.
 
 ```bash
 python -m agency_agents install --tool pi-agent
 python -m agency_agents install --tool oh-my-pi
 ```
 
-Project scope writes `.pi/agents/` and `.omp/agents/` respectively.
+Project scope writes `.pi/agents/` and `.omp/agents/` respectively. See
+[oh-my-pi/README.md](oh-my-pi/README.md) for the OMP frontmatter.
 
 ## OpenClaw
 
