@@ -19,19 +19,20 @@ will. That job runs only in CI.
 | 4 | catalog-lint | `[ci.yml:lint]` | 2–3.2 s | `uv run python -m agency_agents lint` |
 | 5 | types | `[ci.yml:types]` | 0.9 s warm, 24 s cold | `bash scripts/ci/mypy_ratchet.sh` |
 | 6 | verify-manifest | `[ci.yml:verify-manifest]` | 8–15 s | `uv run python -m agency_agents verify --all` |
-| 7 | test | `[ci.yml:test]` | 14–27 s | `uv run pytest -q --cov=… --cov-fail-under=80` |
-| 8 | security-audit | `[ci.yml:security]` | 50–57 s, network | `uv export … && uv run pip-audit …` |
+| 7 | catalog-sync | `[ci.yml:verify-manifest]` | 0.5–1.5 s | `uv run python scripts/sync_catalog_data.py --check` |
+| 8 | test | `[ci.yml:test]` | 14–27 s | `uv run pytest -q --cov=… --cov-fail-under=80` |
+| 9 | security-audit | `[ci.yml:security]` | 50–57 s, network | `uv export … && uv run pip-audit …` |
 
-Cheapest first, so common failures cost seconds: three sub-2 s checks catch most
+Cheapest first, so common failures cost seconds: four sub-2 s checks catch most
 real breakage, and a ruff error never waits behind a 50 s network audit. `types`
 precedes the long tail (warm 0.9 s; 24 s is a one-off cold cache) and `test`
-precedes `security-audit`, the only networked check. Full ≈ 88 s, `--fast` ≈ 26–34 s.
+precedes `security-audit`, the only networked check. Full ≈ 89 s, `--fast` ≈ 27–35 s.
 
 | Invocation | What it does | When |
 | --- | --- | --- |
-| `./scripts/gate.sh` | All 8 checks, stops at the first failure | Before pushing |
-| `./scripts/gate.sh --fast` | 7 checks: no `security-audit`, pytest without coverage | Inner loop |
-| `./scripts/gate.sh --keep-going` | All 8 even after a failure, then aggregates | Debugging a red branch |
+| `./scripts/gate.sh` | All 9 checks, stops at the first failure | Before pushing |
+| `./scripts/gate.sh --fast` | 8 checks: no `security-audit`, pytest without coverage | Inner loop |
+| `./scripts/gate.sh --keep-going` | All 9 even after a failure, then aggregates | Debugging a red branch |
 
 Fail-fast is the default: the first failure is what the golden path needs fastest,
 and the run prints its time to first failure — M2 measured locally. The last line is
