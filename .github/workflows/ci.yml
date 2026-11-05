@@ -82,6 +82,11 @@ jobs:
       - run: uv sync --frozen
       - name: Verify conversion outputs
         run: uv run python -m agency_agents verify --all
+      - name: Verify catalog bundle is in sync
+        # The wheel ships a bundled copy of the agent catalog under
+        # agency_agents/data/ so a PyPI install works without a clone. This
+        # fails when that bundle drifts from the repository source of truth.
+        run: uv run python scripts/sync_catalog_data.py --check
 
   documented-commands:
     name: documented-commands
@@ -134,8 +139,9 @@ jobs:
         run: |
           set -euo pipefail
           # Audit the exported runtime requirements, not the environment: the
-          # project itself is installed editable and is not on PyPI, which makes
-          # an environment-wide audit fail on its own distribution.
+          # project itself is installed editable (not the published PyPI
+          # distribution), which makes an environment-wide audit fail on its own
+          # distribution.
           uv export --format requirements-txt --no-dev --no-emit-project \
             --no-hashes -o "$RUNNER_TEMP/requirements.txt"
           uv run pip-audit --strict -r "$RUNNER_TEMP/requirements.txt" \

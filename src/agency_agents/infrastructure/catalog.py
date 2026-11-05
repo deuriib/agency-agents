@@ -75,3 +75,36 @@ class CatalogManager:
         path = self.root_dir / "strategy" / "runbooks.json"
         with open(path, 'r', encoding='utf-8') as f:
             return RunbooksCatalog(**json.load(f))
+
+
+def _is_catalog_root(path: Path) -> bool:
+    """True when ``path`` holds the two catalog anchor files."""
+    return (path / "tools.json").is_file() and (path / "divisions.json").is_file()
+
+
+def _bundled_catalog_root() -> Path:
+    """Return the catalog directory bundled inside the installed package."""
+    from importlib import resources
+
+    # Wheels are installed unpacked, so ``files()`` yields a real directory path
+    # rather than a location inside a zip archive.
+    return Path(str(resources.files("agency_agents.data")))
+
+
+def resolve_catalog_root() -> Path:
+    """Return the directory that holds the agent catalog.
+
+    A repository checkout wins when the process runs from one: the long-standing
+    development and CI workflow keeps ``tools.json``, ``divisions.json`` and the
+    division directories in the working directory. Otherwise the catalog bundled
+    into the installed wheel is used, so ``pip install py-agency-agents`` works
+    without a clone. ``Path.cwd()`` is the final fallback so the pre-existing
+    error surfaces are unchanged when neither location is a catalog.
+    """
+    cwd = Path.cwd()
+    if _is_catalog_root(cwd):
+        return cwd
+    bundled = _bundled_catalog_root()
+    if _is_catalog_root(bundled):
+        return bundled
+    return cwd

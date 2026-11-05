@@ -13,9 +13,15 @@ class InstallationManager:
     Handles the physical deployment of converted agents to target paths.
     Includes pruning, collision detection, and Roster accumulation.
     """
-    def __init__(self, root_dir: Path, user_home: Path):
+    def __init__(self, root_dir: Path, user_home: Path, project_root: Optional[Path] = None):
         self.root_dir = root_dir
         self.user_home = user_home
+        # ``root_dir`` is the catalog/converter source; ``project_root`` is where
+        # ``--scope project`` installs land and where repo build scripts live. It
+        # defaults to ``root_dir`` so existing repo-centric callers and tests are
+        # unchanged; the CLI passes ``cwd`` explicitly so a pip-installed run
+        # installs into the user's project instead of the installed package.
+        self.project_root = project_root or root_dir
         self.catalog = CatalogManager(root_dir)
         self.converter = ConverterEngine(root_dir)
 
@@ -31,7 +37,7 @@ class InstallationManager:
         full_path = Path(path_str)
         if scope == "user":
             return self.user_home / full_path
-        return self.root_dir / full_path
+        return self.project_root / full_path
 
     def check_collisions(self, agents: List[Agent], tool_kebab: str, scope: str = "user") -> List[str]:
         tool = self.catalog.load_tools().tools.get(tool_kebab)
@@ -126,7 +132,7 @@ class InstallationManager:
 
         # We call the existing build script to ensure 1:1 artifact generation
         # but manage it from the modular architecture.
-        build_script = self.root_dir / "scripts" / "build-hermes-plugin.py"
+        build_script = self.project_root / "scripts" / "build-hermes-plugin.py"
         if not build_script.exists():
             raise RuntimeError(f"Hermes build script not found at {build_script}")
 

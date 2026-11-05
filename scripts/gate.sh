@@ -39,6 +39,7 @@ CHECK_IDS=(
   catalog-lint
   types
   verify-manifest
+  catalog-sync
   test
   security-audit
 )
@@ -48,6 +49,7 @@ CHECK_JOBS=(
   "[ci.yml:security]"
   "[ci.yml:lint]"
   "[ci.yml:types]"
+  "[ci.yml:verify-manifest]"
   "[ci.yml:verify-manifest]"
   "[ci.yml:test]"
   "[ci.yml:security]"
@@ -59,6 +61,7 @@ CHECK_COSTS=(
   "2-3.2s"
   "0.9s warm, 24s cold"
   "8-15s"
+  "0.5-1.5s"
   "14-27s"
   "50-57s, network"
 )
@@ -69,6 +72,7 @@ CHECK_RERUNS=(
   "uv run python -m agency_agents lint"
   "bash scripts/ci/mypy_ratchet.sh"
   "uv run python -m agency_agents verify --all"
+  "uv run python scripts/sync_catalog_data.py --check"
   "uv run pytest -q --cov=agency_agents --cov-branch --cov-report=term-missing --cov-report=xml --cov-fail-under=80"
   "uv export --format requirements-txt --no-dev --no-emit-project --no-hashes -o \${TMPDIR:-/tmp}/agency-agents-requirements.txt && uv run pip-audit --strict -r \${TMPDIR:-/tmp}/agency-agents-requirements.txt --progress-spinner off"
 )
@@ -169,8 +173,9 @@ cleanup_audit_file() {
 # ---------------------------------------------------------------------------
 run_security_audit() {
   # Audit the exported runtime requirements, not the environment: the project is
-  # installed editable and is not on PyPI, which makes an env-wide audit fail on
-  # its own distribution. Same reasoning as the `security` job in ci.yml.
+  # installed editable (not the published PyPI distribution), which makes an
+  # env-wide audit fail on its own distribution. Same reasoning as the `security`
+  # job in ci.yml.
   AUDIT_REQ_FILE="$(mktemp "${TMPDIR:-/tmp}/agency-agents-requirements.XXXXXX")"
   "$UV" export --format requirements-txt --no-dev --no-emit-project \
     --no-hashes -o "$AUDIT_REQ_FILE"
@@ -197,6 +202,9 @@ run_check() {
       ;;
     verify-manifest)
       "$UV" run python -m agency_agents verify --all
+      ;;
+    catalog-sync)
+      "$UV" run python scripts/sync_catalog_data.py --check
       ;;
     test)
       if (( FAST )); then

@@ -4,6 +4,7 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/msitarzewski/agency-agents?style=social)](https://github.com/msitarzewski/agency-agents)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PyPI version](https://img.shields.io/pypi/v/py-agency-agents.svg)](https://pypi.org/project/py-agency-agents/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://makeapullrequest.com)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github)](https://github.com/sponsors/deuriib)
 [![Download the app](https://img.shields.io/github/v/release/msitarzewski/agency-agents-app?label=Download%20app&color=2563eb)](https://github.com/deuriib/agency-agents-app/releases/latest)
@@ -49,6 +50,16 @@ git clone https://github.com/msitarzewski/agency-agents.git && cd agency-agents
 ./scripts/gate.sh          # the same checks CI runs, cheapest first
 uv run agency-agents install --tool claude-code
 ```
+
+Prefer a published install, no clone? The CLI is on PyPI and bundles the full catalog, so it works from any directory:
+
+```bash
+pip install py-agency-agents
+# or run it once, without installing anything:
+uvx py-agency-agents --help
+```
+
+Then `agency-agents install --tool claude-code` installs agents from the bundled catalog. The clone + `bootstrap.sh` route above stays the supported path for developing the catalog itself (contributing agents, running the full gate).
 
 `bootstrap.sh` is safe to run twice — the second run is a no-op — and needs no `sudo`, no system Python and no `mise`. `gate.sh` ends with a greppable `GATE RESULT: PASS|FAIL` line; `--fast` is the inner loop and `--list` prints the checks without running them. Every command below runs **from the repo root** as `uv run agency-agents <command>`; run `source .venv/bin/activate` first if you would rather type `agency-agents <command>` bare. The full route, each step with its owner and its failure modes, is [docs/dx/golden-path.md](docs/dx/golden-path.md); the measured result and what is still owed is [docs/dx/scorecard.md](docs/dx/scorecard.md), and every developer-experience document is indexed in [docs/dx/](docs/dx/README.md).
 

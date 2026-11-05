@@ -1,0 +1,2168 @@
+{
+  "_note": "Machine-readable rosters for the NEXUS scenario runbooks in strategy/runbooks/. Consumed by the Agency Agents app to turn a runbook into a one-click team deploy: it reads the roster, maps each slug to a catalog agent, and installs the set. `agents[]` entries are SLUGS — the agent .md filename stem (the corpus id), e.g. engineering/engineering-frontend-developer.md -> \"engineering-frontend-developer\"; specialized/agents-orchestrator.md -> \"agents-orchestrator\" (note: the stem is NOT always division-prefixed, and display names are prefixed/drift — so rosters reference slugs, which are rename-proof and testable). `mode` is the NEXUS activation mode (Full | Sprint | Micro) that sizes the team; `roster` groups preserve the runbook's phase structure via `activation`. `doc` is the prose runbook the app renders. Keep this in sync with the markdown in strategy/runbooks/; every slug must resolve to a real agent file (scripts/check-runbooks.sh can guard this, mirroring check-divisions.sh). strategy/ holds orchestration doctrine, not installable agents — it is NOT a division (see divisions.json).",
+  "runbooks": [
+    {
+      "slug": "startup-mvp",
+      "title": "Startup MVP Build",
+      "mode": "NEXUS-Sprint",
+      "duration": "4-6 weeks",
+      "summary": "Idea to live product with real users, fast — without skipping QA.",
+      "doc": "strategy/runbooks/scenario-startup-mvp.md",
+      "roster": [
+        {
+          "group": "Core Team",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "product-sprint-prioritizer",
+            "design-ux-architect",
+            "engineering-frontend-developer",
+            "engineering-backend-architect",
+            "engineering-devops-automator",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        },
+        {
+          "group": "Growth Team",
+          "activation": "week 3+",
+          "agents": [
+            "marketing-growth-hacker",
+            "marketing-content-creator",
+            "marketing-social-media-strategist"
+          ]
+        },
+        {
+          "group": "Support Team",
+          "activation": "as needed",
+          "agents": [
+            "design-brand-guardian",
+            "support-analytics-reporter",
+            "engineering-rapid-prototyper",
+            "engineering-ai-engineer",
+            "testing-performance-benchmarker",
+            "support-infrastructure-maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "enterprise-feature",
+      "title": "Enterprise Feature Development",
+      "mode": "NEXUS-Sprint",
+      "duration": "6-12 weeks",
+      "summary": "Ship a major feature into an existing enterprise product with non-negotiable compliance, security, and quality gates, and multi-stakeholder alignment.",
+      "doc": "strategy/runbooks/scenario-enterprise-feature.md",
+      "roster": [
+        {
+          "group": "Core Team",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-management-project-shepherd",
+            "project-manager-senior",
+            "product-sprint-prioritizer",
+            "design-ux-architect",
+            "design-ux-researcher",
+            "design-ui-designer",
+            "engineering-frontend-developer",
+            "engineering-backend-architect",
+            "engineering-senior-developer",
+            "engineering-devops-automator",
+            "testing-evidence-collector",
+            "testing-api-tester",
+            "testing-reality-checker",
+            "testing-performance-benchmarker"
+          ]
+        },
+        {
+          "group": "Compliance & Governance",
+          "activation": "as needed",
+          "agents": [
+            "support-legal-compliance-checker",
+            "design-brand-guardian",
+            "support-finance-tracker",
+            "support-executive-summary-generator"
+          ]
+        },
+        {
+          "group": "Quality Assurance",
+          "activation": "as needed",
+          "agents": [
+            "testing-test-results-analyzer",
+            "testing-workflow-optimizer",
+            "project-management-experiment-tracker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "marketing-campaign",
+      "title": "Multi-Channel Marketing Campaign",
+      "mode": "NEXUS-Sprint",
+      "duration": "2-4 weeks",
+      "summary": "Launch a coordinated, brand-consistent campaign across channels that drives measurable acquisition and engagement.",
+      "doc": "strategy/runbooks/scenario-marketing-campaign.md",
+      "roster": [
+        {
+          "group": "Campaign Core",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "marketing-social-media-strategist",
+            "marketing-content-creator",
+            "marketing-growth-hacker",
+            "design-brand-guardian",
+            "support-analytics-reporter",
+            "marketing-email-strategist"
+          ]
+        },
+        {
+          "group": "Platform Specialists",
+          "activation": "as needed",
+          "agents": [
+            "marketing-twitter-engager",
+            "marketing-tiktok-strategist",
+            "marketing-instagram-curator",
+            "marketing-reddit-community-builder",
+            "marketing-app-store-optimizer"
+          ]
+        },
+        {
+          "group": "Support",
+          "activation": "as needed",
+          "agents": [
+            "product-trend-researcher",
+            "project-management-experiment-tracker",
+            "support-executive-summary-generator",
+            "support-legal-compliance-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "incident-response",
+      "title": "Incident Response",
+      "mode": "NEXUS-Micro",
+      "duration": "Minutes to hours",
+      "summary": "Detection through post-mortem for a production incident — fast response without cutting corners.",
+      "doc": "strategy/runbooks/scenario-incident-response.md",
+      "roster": [
+        {
+          "group": "P0 Critical Response",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "support-infrastructure-maintainer",
+            "engineering-devops-automator",
+            "engineering-backend-architect",
+            "support-support-responder",
+            "support-executive-summary-generator"
+          ]
+        },
+        {
+          "group": "Verification & Post-Mortem",
+          "activation": "post-fix",
+          "agents": [
+            "testing-evidence-collector",
+            "testing-api-tester",
+            "testing-workflow-optimizer",
+            "product-sprint-prioritizer"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "mobile-app-launch",
+      "title": "Mobile App Launch",
+      "mode": "NEXUS-Sprint",
+      "duration": "6-8 weeks",
+      "summary": "Take a mobile app from validated concept to store-ready release on iOS and Android — with performance, accessibility, and store-optimization gates built in.",
+      "doc": "strategy/runbooks/scenario-mobile-app-launch.md",
+      "roster": [
+        {
+          "group": "Core Build Team",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "product-manager",
+            "design-ux-architect",
+            "design-ui-designer",
+            "engineering-mobile-app-builder",
+            "engineering-backend-architect",
+            "engineering-devops-automator",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        },
+        {
+          "group": "Launch & Growth",
+          "activation": "week 4+",
+          "agents": [
+            "marketing-app-store-optimizer",
+            "marketing-content-creator",
+            "marketing-growth-hacker",
+            "design-brand-guardian"
+          ]
+        },
+        {
+          "group": "Post-Launch Support",
+          "activation": "as needed",
+          "agents": [
+            "support-support-responder",
+            "support-analytics-reporter",
+            "testing-performance-benchmarker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "data-platform-foundation",
+      "title": "Data Platform Foundation",
+      "mode": "NEXUS-Sprint",
+      "duration": "8-12 weeks",
+      "summary": "Build a reliable, governed data platform — ingestion, lakehouse, transformation, and analytics-ready assets — without sacrificing observability or compliance.",
+      "doc": "strategy/runbooks/scenario-data-platform-foundation.md",
+      "roster": [
+        {
+          "group": "Core Platform Team",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "product-manager",
+            "engineering-data-engineer",
+            "engineering-database-optimizer",
+            "engineering-backend-architect",
+            "engineering-devops-automator",
+            "engineering-sre",
+            "testing-api-tester",
+            "testing-evidence-collector"
+          ]
+        },
+        {
+          "group": "Analytics & Remediation",
+          "activation": "as needed",
+          "agents": [
+            "support-analytics-reporter",
+            "engineering-data-visualization-engineer",
+            "engineering-ai-data-remediation-engineer"
+          ]
+        },
+        {
+          "group": "Governance & Stakeholders",
+          "activation": "as needed",
+          "agents": [
+            "support-legal-compliance-checker",
+            "support-executive-summary-generator"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "ecommerce-storefront-launch",
+      "title": "E-commerce Storefront Launch",
+      "mode": "NEXUS-Sprint",
+      "duration": "4-6 weeks",
+      "summary": "Launch a conversion-focused storefront with payments, catalog, and content wired correctly — and with QA and brand consistency enforced before the first real order.",
+      "doc": "strategy/runbooks/scenario-ecommerce-storefront-launch.md",
+      "roster": [
+        {
+          "group": "Core Commerce Team",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "product-manager",
+            "design-ui-designer",
+            "design-ux-researcher",
+            "engineering-frontend-developer",
+            "engineering-backend-architect",
+            "engineering-cms-developer",
+            "engineering-payments-billing-engineer",
+            "testing-evidence-collector",
+            "testing-api-tester",
+            "testing-reality-checker"
+          ]
+        },
+        {
+          "group": "Growth & Content",
+          "activation": "week 3+",
+          "agents": [
+            "marketing-growth-hacker",
+            "marketing-content-creator",
+            "marketing-social-media-strategist"
+          ]
+        },
+        {
+          "group": "Operations & Support",
+          "activation": "as needed",
+          "agents": [
+            "support-support-responder",
+            "support-analytics-reporter",
+            "support-legal-compliance-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "ai-feature-integration",
+      "title": "AI Feature Integration",
+      "mode": "NEXUS-Sprint",
+      "duration": "4-8 weeks",
+      "summary": "Ship an LLM-powered feature into an existing product with prompt governance, evaluation, fallback behavior, and cost controls — not just a demo.",
+      "doc": "strategy/runbooks/scenario-ai-feature-integration.md",
+      "roster": [
+        {
+          "group": "Core AI Team",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "product-manager",
+            "engineering-ai-engineer",
+            "engineering-prompt-engineer",
+            "engineering-backend-architect",
+            "engineering-frontend-developer",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        },
+        {
+          "group": "Safety & Evaluation",
+          "activation": "as needed",
+          "agents": [
+            "testing-api-tester",
+            "support-legal-compliance-checker",
+            "engineering-multi-agent-systems-architect",
+            "engineering-review-risk"
+          ]
+        },
+        {
+          "group": "Operations",
+          "activation": "as needed",
+          "agents": [
+            "engineering-devops-automator",
+            "support-infrastructure-maintainer",
+            "support-analytics-reporter"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "accessibility-remediation-sprint",
+      "title": "Accessibility Remediation Sprint",
+      "mode": "NEXUS-Micro",
+      "duration": "1-2 weeks",
+      "summary": "Audit, prioritize, and fix accessibility failures against WCAG 2.2 / Section 508 — with evidence, not just good intentions.",
+      "doc": "strategy/runbooks/scenario-accessibility-remediation-sprint.md",
+      "roster": [
+        {
+          "group": "Remediation Core",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "engineering-section-508-specialist",
+            "testing-accessibility-auditor",
+            "design-ui-designer",
+            "engineering-frontend-developer",
+            "testing-evidence-collector"
+          ]
+        },
+        {
+          "group": "Advisory",
+          "activation": "as needed",
+          "agents": [
+            "support-legal-compliance-checker",
+            "design-inclusive-visuals-specialist"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "api-platform-launch",
+      "title": "Public API Platform Launch",
+      "mode": "NEXUS-Sprint",
+      "duration": "6-10 weeks",
+      "summary": "Launch a public API with stable contracts, developer documentation, sandbox access, and the operational guardrails that keep it usable and safe.",
+      "doc": "strategy/runbooks/scenario-api-platform-launch.md",
+      "roster": [
+        {
+          "group": "Core API Team",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "product-manager",
+            "engineering-backend-architect",
+            "engineering-platform-engineer",
+            "engineering-devops-automator",
+            "engineering-technical-writer",
+            "testing-api-tester",
+            "testing-evidence-collector"
+          ]
+        },
+        {
+          "group": "Developer Experience",
+          "activation": "as needed",
+          "agents": [
+            "marketing-developer-community-builder",
+            "design-ux-researcher",
+            "support-support-responder"
+          ]
+        },
+        {
+          "group": "Security & Operations",
+          "activation": "as needed",
+          "agents": [
+            "engineering-review-risk",
+            "engineering-sre",
+            "support-legal-compliance-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "digital-transformation-program",
+      "title": "Digital Transformation Program",
+      "mode": "NEXUS-Full",
+      "duration": "4-6 months",
+      "summary": "Modernize product, platform, and process across an established organization — sequencing discovery, delivery, and change management so the transformation ships instead of stalling in a deck.",
+      "doc": "strategy/runbooks/scenario-digital-transformation-program.md",
+      "roster": [
+        {
+          "group": "Program Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "project-management-project-shepherd",
+            "support-executive-summary-generator",
+            "support-finance-tracker"
+          ]
+        },
+        {
+          "group": "Discovery & Strategy",
+          "activation": "phase 1",
+          "agents": [
+            "product-trend-researcher",
+            "design-ux-researcher",
+            "product-sprint-prioritizer",
+            "project-management-experiment-tracker",
+            "support-analytics-reporter"
+          ]
+        },
+        {
+          "group": "Platform & Delivery",
+          "activation": "phase 2+",
+          "agents": [
+            "engineering-backend-architect",
+            "engineering-senior-developer",
+            "engineering-frontend-developer",
+            "engineering-platform-engineer",
+            "engineering-devops-automator",
+            "engineering-sre",
+            "engineering-database-optimizer"
+          ]
+        },
+        {
+          "group": "Experience & Brand",
+          "activation": "phase 2+",
+          "agents": [
+            "design-ux-architect",
+            "design-ui-designer",
+            "design-brand-guardian",
+            "design-inclusive-visuals-specialist",
+            "marketing-content-creator"
+          ]
+        },
+        {
+          "group": "Assurance",
+          "activation": "phase 2+",
+          "agents": [
+            "testing-evidence-collector",
+            "testing-reality-checker",
+            "testing-api-tester",
+            "testing-performance-benchmarker",
+            "testing-test-results-analyzer",
+            "testing-workflow-optimizer",
+            "testing-accessibility-auditor"
+          ]
+        },
+        {
+          "group": "Governance & Change",
+          "activation": "as needed",
+          "agents": [
+            "support-legal-compliance-checker",
+            "engineering-review-risk",
+            "support-support-responder"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "zero-to-one-venture",
+      "title": "Zero-to-One Venture Build",
+      "mode": "NEXUS-Full",
+      "duration": "4-6 months",
+      "summary": "Stand up a new business line or spin-out from inside an existing company — validate demand, build the product, and take it to market with real economics behind it.",
+      "doc": "strategy/runbooks/scenario-zero-to-one-venture.md",
+      "roster": [
+        {
+          "group": "Venture Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "project-management-project-shepherd",
+            "product-sprint-prioritizer",
+            "support-finance-tracker",
+            "support-executive-summary-generator"
+          ]
+        },
+        {
+          "group": "Discovery & Validation",
+          "activation": "phase 1",
+          "agents": [
+            "product-trend-researcher",
+            "design-ux-researcher",
+            "marketing-growth-hacker",
+            "project-management-experiment-tracker",
+            "support-analytics-reporter"
+          ]
+        },
+        {
+          "group": "Build",
+          "activation": "phase 2+",
+          "agents": [
+            "engineering-rapid-prototyper",
+            "engineering-backend-architect",
+            "engineering-frontend-developer",
+            "engineering-mobile-app-builder",
+            "engineering-ai-engineer",
+            "engineering-devops-automator",
+            "engineering-database-optimizer"
+          ]
+        },
+        {
+          "group": "Brand & Go-to-Market",
+          "activation": "phase 3+",
+          "agents": [
+            "design-brand-guardian",
+            "design-ui-designer",
+            "design-ux-architect",
+            "marketing-content-creator",
+            "marketing-social-media-strategist",
+            "marketing-app-store-optimizer",
+            "marketing-developer-community-builder"
+          ]
+        },
+        {
+          "group": "Assurance & Operations",
+          "activation": "as needed",
+          "agents": [
+            "testing-evidence-collector",
+            "testing-reality-checker",
+            "testing-performance-benchmarker",
+            "testing-api-tester",
+            "support-legal-compliance-checker",
+            "support-support-responder"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "legacy-platform-migration",
+      "title": "Legacy Platform Migration",
+      "mode": "NEXUS-Full",
+      "duration": "4-6 months",
+      "summary": "Move a production monolith or aging platform onto a modern architecture with a zero-downtime cutover plan, data integrity guarantees, and rollback paths that are actually tested.",
+      "doc": "strategy/runbooks/scenario-legacy-platform-migration.md",
+      "roster": [
+        {
+          "group": "Migration Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "project-management-project-shepherd",
+            "engineering-backend-architect",
+            "engineering-senior-developer",
+            "support-executive-summary-generator"
+          ]
+        },
+        {
+          "group": "Discovery & Mapping",
+          "activation": "phase 1",
+          "agents": [
+            "engineering-database-optimizer",
+            "engineering-sre",
+            "testing-api-tester",
+            "product-trend-researcher",
+            "support-analytics-reporter"
+          ]
+        },
+        {
+          "group": "Build & Cutover",
+          "activation": "phase 2+",
+          "agents": [
+            "engineering-platform-engineer",
+            "engineering-devops-automator",
+            "engineering-frontend-developer",
+            "engineering-data-engineer",
+            "engineering-ai-data-remediation-engineer",
+            "engineering-data-visualization-engineer"
+          ]
+        },
+        {
+          "group": "Assurance",
+          "activation": "phase 2+",
+          "agents": [
+            "testing-evidence-collector",
+            "testing-reality-checker",
+            "testing-performance-benchmarker",
+            "testing-test-results-analyzer",
+            "testing-workflow-optimizer"
+          ]
+        },
+        {
+          "group": "Risk & Communications",
+          "activation": "as needed",
+          "agents": [
+            "engineering-review-risk",
+            "support-legal-compliance-checker",
+            "marketing-content-creator",
+            "support-support-responder",
+            "support-infrastructure-maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "codebase-modernization-program",
+      "title": "Codebase Modernization Program",
+      "mode": "NEXUS-Full",
+      "duration": "3-5 months",
+      "summary": "Modernize a live codebase in place — reproducible toolchain and containerized local runtime first, then native data-plane consolidation, then load reduction and caching, then service extraction. Zero downtime, frozen baselines, and no big-bang rewrite.",
+      "doc": "strategy/runbooks/scenario-codebase-modernization-program.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "project-management-project-shepherd",
+            "engineering-backend-architect",
+            "engineering-software-architect",
+            "support-executive-summary-generator"
+          ]
+        },
+        {
+          "group": "Platform Baseline",
+          "activation": "phase 0",
+          "agents": [
+            "engineering-platform-engineer",
+            "engineering-devops-automator",
+            "engineering-developer-tooling-engineer"
+          ]
+        },
+        {
+          "group": "Codebase Intelligence",
+          "activation": "phase 1",
+          "agents": [
+            "specialized-codebase-archaeologist",
+            "engineering-codebase-onboarding-engineer",
+            "engineering-minimal-change-engineer",
+            "support-analytics-reporter"
+          ]
+        },
+        {
+          "group": "Data Plane",
+          "activation": "phase 0+",
+          "agents": [
+            "engineering-database-optimizer",
+            "engineering-database-reliability-engineer",
+            "engineering-data-engineer",
+            "engineering-review-security",
+            "engineering-privacy-engineer"
+          ]
+        },
+        {
+          "group": "Service & Load Modernization",
+          "activation": "phase 3+",
+          "agents": [
+            "engineering-senior-developer",
+            "engineering-frontend-developer",
+            "engineering-api-platform-engineer",
+            "engineering-review-reliability"
+          ]
+        },
+        {
+          "group": "Assurance",
+          "activation": "phase 0+",
+          "agents": [
+            "testing-evidence-collector",
+            "testing-reality-checker",
+            "testing-api-tester",
+            "testing-performance-benchmarker",
+            "testing-test-results-analyzer",
+            "testing-workflow-optimizer"
+          ]
+        },
+        {
+          "group": "Risk & Governance",
+          "activation": "as needed",
+          "agents": [
+            "engineering-review-risk",
+            "engineering-review-resilience",
+            "engineering-review-observability",
+            "support-legal-compliance-checker",
+            "support-infrastructure-maintainer"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "repository-hardening-program",
+      "title": "Repository Modernization & Hardening",
+      "mode": "NEXUS-Sprint",
+      "duration": "2-4 weeks",
+      "summary": "Turn a working repository into a governed, enforceable professional one — license, security policy, code of conduct, contribution path, templates, CODEOWNERS, hardened CI/CD, supply-chain controls, and branch protection each proven by a deliberately failing PR.",
+      "doc": "strategy/runbooks/scenario-repository-hardening-program.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "engineering-git-workflow-master",
+            "engineering-platform-engineer"
+          ]
+        },
+        {
+          "group": "Repository Foundation",
+          "activation": "phase 1-2",
+          "agents": [
+            "engineering-technical-writer",
+            "support-legal-compliance-checker",
+            "marketing-developer-community-builder",
+            "engineering-devops-automator"
+          ]
+        },
+        {
+          "group": "Governance & Automation",
+          "activation": "phase 3",
+          "agents": [
+            "engineering-developer-tooling-engineer",
+            "project-management-studio-operations"
+          ]
+        },
+        {
+          "group": "Security & Supply Chain",
+          "activation": "phase 4",
+          "agents": [
+            "engineering-review-security",
+            "security-appsec-engineer",
+            "security-secrets-credential-engineer",
+            "security-compliance-auditor"
+          ]
+        },
+        {
+          "group": "Quality & Enforcement Proof",
+          "activation": "phase 5",
+          "agents": [
+            "testing-test-automation-engineer",
+            "testing-evidence-collector",
+            "testing-reality-checker",
+            "engineering-code-reviewer"
+          ]
+        },
+        {
+          "group": "Developer Experience",
+          "activation": "as needed",
+          "agents": [
+            "product-dx-engineer",
+            "specialized-developer-advocate"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "post-merger-integration",
+      "title": "Post-Merger Integration",
+      "mode": "NEXUS-Full",
+      "duration": "3-6 months",
+      "summary": "Integrate systems, data, brands, and teams after an acquisition — keeping customers supported and compliance intact while the two organizations become one.",
+      "doc": "strategy/runbooks/scenario-post-merger-integration.md",
+      "roster": [
+        {
+          "group": "Integration Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "project-management-project-shepherd",
+            "support-executive-summary-generator",
+            "support-finance-tracker",
+            "support-legal-compliance-checker"
+          ]
+        },
+        {
+          "group": "Systems & Data",
+          "activation": "phase 1+",
+          "agents": [
+            "engineering-backend-architect",
+            "engineering-data-engineer",
+            "engineering-database-optimizer",
+            "engineering-devops-automator",
+            "engineering-sre",
+            "testing-api-tester"
+          ]
+        },
+        {
+          "group": "Brand & Customer",
+          "activation": "phase 2+",
+          "agents": [
+            "design-brand-guardian",
+            "design-ux-researcher",
+            "design-ux-architect",
+            "design-ui-designer",
+            "marketing-content-creator",
+            "support-support-responder"
+          ]
+        },
+        {
+          "group": "People & Process",
+          "activation": "as needed",
+          "agents": [
+            "project-management-experiment-tracker",
+            "testing-workflow-optimizer",
+            "support-analytics-reporter",
+            "marketing-social-media-strategist"
+          ]
+        },
+        {
+          "group": "Assurance",
+          "activation": "post-integration",
+          "agents": [
+            "testing-evidence-collector",
+            "testing-reality-checker",
+            "testing-test-results-analyzer"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "compliance-certification-program",
+      "title": "Compliance Certification Program",
+      "mode": "NEXUS-Full",
+      "duration": "3-5 months",
+      "summary": "Drive an organization to audit-ready for SOC 2, ISO 27001, or equivalent — controls implemented in code, evidence collected continuously, and the narrative defensible on the first pass.",
+      "doc": "strategy/runbooks/scenario-compliance-certification-program.md",
+      "roster": [
+        {
+          "group": "Program Core",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "project-management-project-shepherd",
+            "support-legal-compliance-checker",
+            "engineering-review-risk",
+            "support-executive-summary-generator"
+          ]
+        },
+        {
+          "group": "Control Implementation",
+          "activation": "phase 1+",
+          "agents": [
+            "engineering-devops-automator",
+            "engineering-sre",
+            "engineering-backend-architect",
+            "engineering-platform-engineer",
+            "engineering-section-508-specialist",
+            "support-infrastructure-maintainer"
+          ]
+        },
+        {
+          "group": "Evidence & Testing",
+          "activation": "phase 2+",
+          "agents": [
+            "testing-evidence-collector",
+            "testing-reality-checker",
+            "testing-test-results-analyzer",
+            "testing-api-tester",
+            "testing-accessibility-auditor",
+            "testing-workflow-optimizer"
+          ]
+        },
+        {
+          "group": "Reporting & Communications",
+          "activation": "as needed",
+          "agents": [
+            "support-analytics-reporter",
+            "marketing-content-creator",
+            "support-support-responder"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "security-vulnerability-response",
+      "title": "Security Vulnerability Response",
+      "mode": "NEXUS-Micro",
+      "duration": "Hours to days",
+      "summary": "Triage, contain, remediate, and disclose a reported vulnerability — with risk sign-off and coordinated disclosure rather than a silent hotfix.",
+      "doc": "strategy/runbooks/scenario-security-vulnerability-response.md",
+      "roster": [
+        {
+          "group": "Triage & Containment",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "engineering-review-risk",
+            "engineering-sre",
+            "engineering-devops-automator",
+            "engineering-backend-architect"
+          ]
+        },
+        {
+          "group": "Remediation & Disclosure",
+          "activation": "post-triage",
+          "agents": [
+            "engineering-senior-developer",
+            "testing-evidence-collector",
+            "support-legal-compliance-checker",
+            "support-executive-summary-generator",
+            "support-support-responder"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "design-sprint",
+      "title": "One-Week Design Sprint",
+      "mode": "NEXUS-Micro",
+      "duration": "5 days",
+      "summary": "Compress a product question into five days: research, sketch, prototype, and test with real users — and leave with a validated decision, not a prototype nobody tested.",
+      "doc": "strategy/runbooks/scenario-design-sprint.md",
+      "roster": [
+        {
+          "group": "Sprint Core",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "design-ux-researcher",
+            "design-ui-designer",
+            "design-ux-architect",
+            "product-sprint-prioritizer"
+          ]
+        },
+        {
+          "group": "Prototype & Validate",
+          "activation": "day 3+",
+          "agents": [
+            "engineering-rapid-prototyper",
+            "testing-reality-checker",
+            "design-inclusive-visuals-specialist",
+            "support-analytics-reporter"
+          ]
+        },
+        {
+          "group": "Handoff",
+          "activation": "day 5",
+          "agents": [
+            "project-manager-senior"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "bug-triage-and-defect-elimination",
+      "title": "Bug Triage & Defect Elimination",
+      "mode": "NEXUS-Sprint",
+      "duration": "2 weeks",
+      "summary": "Drain a defect backlog with priorities and evidence, then lock every fix behind a test so it cannot silently return.",
+      "doc": "strategy/runbooks/scenario-bug-triage-and-defect-elimination.md",
+      "roster": [
+        {
+          "group": "Triage Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "testing-test-results-analyzer",
+            "support-support-responder",
+            "product-feedback-synthesizer"
+          ]
+        },
+        {
+          "group": "Root Cause",
+          "activation": "week 1",
+          "agents": [
+            "engineering-review-reliability",
+            "engineering-minimal-change-engineer",
+            "engineering-backend-architect",
+            "engineering-frontend-developer",
+            "engineering-database-optimizer"
+          ]
+        },
+        {
+          "group": "Regression Lock",
+          "activation": "week 2",
+          "agents": [
+            "testing-test-automation-engineer",
+            "engineering-review-observability",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        },
+        {
+          "group": "Handoff",
+          "activation": "week 2",
+          "agents": [
+            "engineering-technical-writer",
+            "product-sprint-prioritizer"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "oss-maintainer-operations",
+      "title": "Open-Source Maintainer Operations",
+      "mode": "NEXUS-Sprint",
+      "duration": "2-4 weeks to install, then a permanent weekly cadence",
+      "summary": "Install the operating cadence that keeps a governed repository alive after hardening: triage, review pathway, release train, contributor pipeline.",
+      "doc": "strategy/runbooks/scenario-oss-maintainer-operations.md",
+      "roster": [
+        {
+          "group": "Maintainer Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "engineering-git-workflow-master",
+            "project-management-studio-operations"
+          ]
+        },
+        {
+          "group": "Triage & Review",
+          "activation": "always",
+          "agents": [
+            "engineering-code-reviewer",
+            "engineering-review-security",
+            "engineering-review-reliability",
+            "testing-test-automation-engineer",
+            "marketing-developer-community-builder"
+          ]
+        },
+        {
+          "group": "Release & Comms",
+          "activation": "weekly",
+          "agents": [
+            "engineering-devops-automator",
+            "engineering-technical-writer",
+            "specialized-developer-advocate"
+          ]
+        },
+        {
+          "group": "Trust & Safety",
+          "activation": "as needed",
+          "agents": [
+            "security-appsec-engineer",
+            "security-secrets-credential-engineer",
+            "security-compliance-auditor",
+            "support-legal-compliance-checker"
+          ]
+        },
+        {
+          "group": "Proof",
+          "activation": "monthly",
+          "agents": [
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "design-system-and-ui-quality",
+      "title": "Design System & UI Quality",
+      "mode": "NEXUS-Sprint",
+      "duration": "4-6 weeks",
+      "summary": "Turn screens into a system: tokens, components, parity between design and code, and a finish gate that keeps new UI from drifting.",
+      "doc": "strategy/runbooks/scenario-design-system-and-ui-quality.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior"
+          ]
+        },
+        {
+          "group": "Foundation",
+          "activation": "always",
+          "agents": [
+            "design-ux-architect",
+            "design-ui-designer",
+            "design-brand-guardian",
+            "design-inclusive-visuals-specialist"
+          ]
+        },
+        {
+          "group": "Build & Parity",
+          "activation": "phase 2",
+          "agents": [
+            "engineering-frontend-developer",
+            "engineering-technical-writer",
+            "marketing-content-creator",
+            "testing-accessibility-auditor"
+          ]
+        },
+        {
+          "group": "Quality Gate",
+          "activation": "phase 3",
+          "agents": [
+            "design-ui-finish-gate-reviewer",
+            "design-persona-walkthrough",
+            "design-ux-researcher",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "seo-and-ai-search-visibility",
+      "title": "SEO & AI Search Visibility",
+      "mode": "NEXUS-Sprint",
+      "duration": "6 weeks",
+      "summary": "Become the cited source in both classic search and generated answers - with sampled evidence, not ranking claims.",
+      "doc": "strategy/runbooks/scenario-seo-and-ai-search-visibility.md",
+      "roster": [
+        {
+          "group": "Strategy & Governance",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "marketing-seo-specialist",
+            "marketing-aeo-foundations",
+            "marketing-ai-citation-strategist",
+            "product-trend-researcher",
+            "support-legal-compliance-checker"
+          ]
+        },
+        {
+          "group": "Technical Foundation",
+          "activation": "phase 2",
+          "agents": [
+            "engineering-frontend-developer",
+            "engineering-cms-developer",
+            "engineering-technical-writer"
+          ]
+        },
+        {
+          "group": "Content & Authority",
+          "activation": "phase 3",
+          "agents": [
+            "marketing-content-creator",
+            "marketing-agentic-search-optimizer",
+            "marketing-pr-communications-manager",
+            "design-visual-storyteller"
+          ]
+        },
+        {
+          "group": "Measure & Prove",
+          "activation": "phase 4",
+          "agents": [
+            "support-analytics-reporter",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "paid-media-launch",
+      "title": "Paid Media Launch & Spend Governance",
+      "mode": "NEXUS-Sprint",
+      "duration": "3-4 weeks",
+      "summary": "Design the account, prove consent and measurement before a dollar moves, then hold spend to a finance-signed target.",
+      "doc": "strategy/runbooks/scenario-paid-media-launch.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "support-finance-tracker"
+          ]
+        },
+        {
+          "group": "Account Design",
+          "activation": "always",
+          "agents": [
+            "paid-media-ppc-strategist",
+            "paid-media-paid-social-strategist",
+            "paid-media-programmatic-buyer",
+            "marketing-growth-hacker"
+          ]
+        },
+        {
+          "group": "Creative",
+          "activation": "phase 2",
+          "agents": [
+            "paid-media-creative-strategist",
+            "design-brand-guardian",
+            "marketing-content-creator"
+          ]
+        },
+        {
+          "group": "Measurement Gate",
+          "activation": "phase 2, blocking",
+          "agents": [
+            "paid-media-tracking-specialist",
+            "support-analytics-reporter",
+            "testing-evidence-collector"
+          ]
+        },
+        {
+          "group": "Compliance & Consent",
+          "activation": "phase 2, blocking",
+          "agents": [
+            "support-legal-compliance-checker",
+            "engineering-privacy-engineer"
+          ]
+        },
+        {
+          "group": "Optimization",
+          "activation": "phase 3+",
+          "agents": [
+            "paid-media-auditor",
+            "paid-media-search-query-analyst"
+          ]
+        },
+        {
+          "group": "Verdict",
+          "activation": "phase 4",
+          "agents": [
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "monthly-close-and-financial-reporting",
+      "title": "Monthly Close & Financial Reporting",
+      "mode": "NEXUS-Micro",
+      "duration": "5 days per close cycle, recurring monthly",
+      "summary": "Run the close as a repeatable cycle that refuses to sign off on a figure that cannot be traced to a reconciled source.",
+      "doc": "strategy/runbooks/scenario-monthly-close-and-financial-reporting.md",
+      "roster": [
+        {
+          "group": "Close Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "finance-bookkeeper-controller",
+            "support-finance-tracker",
+            "accounts-payable-agent"
+          ]
+        },
+        {
+          "group": "Review & Variance",
+          "activation": "day 3-4",
+          "agents": [
+            "finance-fpa-analyst",
+            "finance-financial-analyst",
+            "finance-tax-strategist"
+          ]
+        },
+        {
+          "group": "Report & Sign Off",
+          "activation": "day 5",
+          "agents": [
+            "chief-financial-officer",
+            "support-executive-summary-generator",
+            "specialized-document-generator"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "pricing-and-monetization-review",
+      "title": "Pricing & Monetization Review",
+      "mode": "NEXUS-Sprint",
+      "duration": "3 weeks",
+      "summary": "Turn pricing from a guess into a decision with evidence, a customer migration path, and a billing change verified before anyone is charged.",
+      "doc": "strategy/runbooks/scenario-pricing-and-monetization-review.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "support-finance-tracker"
+          ]
+        },
+        {
+          "group": "Analysis",
+          "activation": "week 1",
+          "agents": [
+            "specialized-pricing-analyst",
+            "finance-fpa-analyst",
+            "finance-financial-analyst",
+            "product-trend-researcher"
+          ]
+        },
+        {
+          "group": "Market & Deal Reality",
+          "activation": "week 2",
+          "agents": [
+            "sales-deal-strategist",
+            "sales-pipeline-analyst",
+            "sales-account-strategist",
+            "product-manager"
+          ]
+        },
+        {
+          "group": "Implementation",
+          "activation": "week 3",
+          "agents": [
+            "engineering-payments-billing-engineer",
+            "product-feedback-synthesizer"
+          ]
+        },
+        {
+          "group": "Decision",
+          "activation": "week 3",
+          "agents": [
+            "support-executive-summary-generator",
+            "finance-profit-first-strategist",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "contract-and-legal-intake",
+      "title": "Contract & Legal Intake",
+      "mode": "NEXUS-Micro",
+      "duration": "5 days per batch, recurring",
+      "summary": "Classify what arrives, extract the clauses that carry risk, and route a decision to a human with authority - never issue an opinion of its own.",
+      "doc": "strategy/runbooks/scenario-contract-and-legal-intake.md",
+      "roster": [
+        {
+          "group": "Intake & Classification",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "legal-client-intake",
+            "data-privacy-officer"
+          ]
+        },
+        {
+          "group": "Review",
+          "activation": "per document",
+          "agents": [
+            "legal-document-review",
+            "support-legal-compliance-checker",
+            "finance-tax-strategist"
+          ]
+        },
+        {
+          "group": "Technical Control Review",
+          "activation": "per document",
+          "agents": [
+            "engineering-privacy-engineer",
+            "security-compliance-auditor"
+          ]
+        },
+        {
+          "group": "Output & Sign Off",
+          "activation": "per document",
+          "agents": [
+            "specialized-document-generator",
+            "specialized-chief-of-staff"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "developer-experience-platform",
+      "title": "Developer Experience Platform",
+      "mode": "NEXUS-Sprint",
+      "duration": "6 weeks",
+      "summary": "Remove every step between a developer and their first successful deploy, and prove it by timing a real person on a clean machine.",
+      "doc": "strategy/runbooks/scenario-developer-experience-platform.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "product-dx-engineer",
+            "product-manager"
+          ]
+        },
+        {
+          "group": "Platform Build",
+          "activation": "phase 2-3",
+          "agents": [
+            "engineering-platform-engineer",
+            "engineering-developer-tooling-engineer",
+            "engineering-sre",
+            "engineering-devops-automator"
+          ]
+        },
+        {
+          "group": "Onboarding Path",
+          "activation": "phase 3",
+          "agents": [
+            "engineering-codebase-onboarding-engineer",
+            "engineering-technical-writer",
+            "specialized-developer-advocate"
+          ]
+        },
+        {
+          "group": "Measure",
+          "activation": "phase 1, 4",
+          "agents": [
+            "support-analytics-reporter",
+            "testing-tool-evaluator",
+            "testing-workflow-optimizer"
+          ]
+        },
+        {
+          "group": "Proof",
+          "activation": "phase 5",
+          "agents": [
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "feature-discovery-to-spec",
+      "title": "Feature Discovery to Spec",
+      "mode": "NEXUS-Sprint",
+      "duration": "3 weeks",
+      "summary": "Convert a request into a spec with acceptance criteria a test can run against, and an explicit list of what is not being built.",
+      "doc": "strategy/runbooks/scenario-feature-discovery-to-spec.md",
+      "roster": [
+        {
+          "group": "Evidence",
+          "activation": "week 1",
+          "agents": [
+            "product-trend-researcher",
+            "research-synthesist",
+            "design-ux-researcher",
+            "product-feedback-synthesizer",
+            "support-analytics-reporter"
+          ]
+        },
+        {
+          "group": "Framing",
+          "activation": "week 2",
+          "agents": [
+            "product-manager",
+            "sales-deal-strategist",
+            "product-sprint-prioritizer",
+            "design-ui-designer"
+          ]
+        },
+        {
+          "group": "Specification",
+          "activation": "week 3",
+          "agents": [
+            "specialized-workflow-architect",
+            "engineering-software-architect",
+            "project-manager-senior"
+          ]
+        },
+        {
+          "group": "Decision",
+          "activation": "week 3",
+          "agents": [
+            "agents-orchestrator",
+            "support-executive-summary-generator",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "delivery-recovery",
+      "title": "Delivery Recovery",
+      "mode": "NEXUS-Sprint",
+      "duration": "3-4 weeks",
+      "summary": "Diagnose the real constraint in a failing program, renegotiate scope with named owners, and restore a cadence where the reported state matches the actual state.",
+      "doc": "strategy/runbooks/scenario-delivery-recovery.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "specialized-chief-of-staff"
+          ]
+        },
+        {
+          "group": "Diagnosis",
+          "activation": "week 1",
+          "agents": [
+            "project-management-project-shepherd",
+            "project-management-studio-producer",
+            "support-analytics-reporter",
+            "testing-evidence-collector"
+          ]
+        },
+        {
+          "group": "Recovery Plan",
+          "activation": "week 2",
+          "agents": [
+            "project-management-meeting-notes-specialist",
+            "product-sprint-prioritizer",
+            "engineering-review-risk",
+            "change-management-consultant"
+          ]
+        },
+        {
+          "group": "Execution & Proof",
+          "activation": "week 3-4",
+          "agents": [
+            "project-management-studio-operations",
+            "organizational-psychologist",
+            "support-executive-summary-generator",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "release-train",
+      "title": "Release Train",
+      "mode": "NEXUS-Micro",
+      "duration": "1-2 days per release, recurring",
+      "summary": "Turn releasing into a scheduled, boring, repeatable run: a go/no-go that can fail, notes generated from merged work, and a rollback actually exercised.",
+      "doc": "strategy/runbooks/scenario-release-train.md",
+      "roster": [
+        {
+          "group": "Release Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "engineering-git-workflow-master",
+            "engineering-devops-automator"
+          ]
+        },
+        {
+          "group": "Build & Verify",
+          "activation": "day 1",
+          "agents": [
+            "testing-test-automation-engineer",
+            "testing-evidence-collector",
+            "engineering-mobile-release-engineer"
+          ]
+        },
+        {
+          "group": "Ship & Communicate",
+          "activation": "day 2",
+          "agents": [
+            "engineering-technical-writer",
+            "support-support-responder"
+          ]
+        },
+        {
+          "group": "Verdict",
+          "activation": "day 2",
+          "agents": [
+            "engineering-review-risk"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "security-posture-review",
+      "title": "Security Posture Review",
+      "mode": "NEXUS-Sprint",
+      "duration": "4-6 weeks",
+      "summary": "Measure the exposure that exists, prove which controls actually work by observing them fail, and remediate in order of real exposure - inside a written authorization scope.",
+      "doc": "strategy/runbooks/scenario-security-posture-review.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "security-architect",
+            "security-senior-secops"
+          ]
+        },
+        {
+          "group": "Detection & Exposure",
+          "activation": "week 1-2",
+          "agents": [
+            "security-threat-detection-engineer",
+            "security-threat-intelligence-analyst",
+            "security-cloud-security-architect"
+          ]
+        },
+        {
+          "group": "Code & Supply Chain",
+          "activation": "week 2-3",
+          "agents": [
+            "security-appsec-engineer",
+            "security-ai-generated-code-auditor",
+            "security-secrets-credential-engineer"
+          ]
+        },
+        {
+          "group": "Adversarial Validation",
+          "activation": "week 3-4",
+          "agents": [
+            "security-penetration-tester",
+            "engineering-sre"
+          ]
+        },
+        {
+          "group": "Governance & Proof",
+          "activation": "week 5-6",
+          "agents": [
+            "security-compliance-auditor",
+            "support-executive-summary-generator",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "customer-support-operations",
+      "title": "Customer Support Operations",
+      "mode": "NEXUS-Sprint",
+      "duration": "4-6 weeks",
+      "summary": "Install the operating system of a support function: triage, knowledge that deflects, measurement that cannot be gamed by closing faster, and a feedback loop into product work.",
+      "doc": "strategy/runbooks/scenario-customer-support-operations.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "support-support-responder",
+            "product-manager"
+          ]
+        },
+        {
+          "group": "Triage & Knowledge",
+          "activation": "week 1-2",
+          "agents": [
+            "customer-service",
+            "engineering-technical-writer",
+            "project-management-studio-operations"
+          ]
+        },
+        {
+          "group": "Deflection & Channels",
+          "activation": "week 3-4",
+          "agents": [
+            "marketing-email-strategist",
+            "engineering-platform-engineer",
+            "testing-workflow-optimizer"
+          ]
+        },
+        {
+          "group": "Voice of Customer",
+          "activation": "week 3-5",
+          "agents": [
+            "product-feedback-synthesizer",
+            "support-analytics-reporter",
+            "customer-success-manager"
+          ]
+        },
+        {
+          "group": "Proof",
+          "activation": "week 5-6",
+          "agents": [
+            "support-infrastructure-maintainer",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "agentic-product-build",
+      "title": "Agentic Product Build",
+      "mode": "NEXUS-Sprint",
+      "duration": "6 weeks",
+      "summary": "Build an agent product with the evaluation harness before the feature list: tools, retrieval, guardrails, cost ceilings, and a regression suite on every change.",
+      "doc": "strategy/runbooks/scenario-agentic-product-build.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "engineering-multi-agent-systems-architect",
+            "product-manager"
+          ]
+        },
+        {
+          "group": "Agent Core",
+          "activation": "week 2-3",
+          "agents": [
+            "specialized-mcp-builder",
+            "engineering-prompt-engineer",
+            "engineering-rag-pipeline-engineer",
+            "engineering-ai-engineer"
+          ]
+        },
+        {
+          "group": "Evaluation & Safety",
+          "activation": "week 1, 4",
+          "agents": [
+            "specialized-model-qa",
+            "security-ai-generated-code-auditor"
+          ]
+        },
+        {
+          "group": "Cost & Operations",
+          "activation": "week 4",
+          "agents": [
+            "engineering-finops-engineer",
+            "engineering-devops-automator"
+          ]
+        },
+        {
+          "group": "Product Surface & Proof",
+          "activation": "week 5-6",
+          "agents": [
+            "engineering-backend-architect",
+            "engineering-frontend-developer",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "sales-pipeline-engine",
+      "title": "Sales Pipeline Engine",
+      "mode": "NEXUS-Sprint",
+      "duration": "4-6 weeks",
+      "summary": "Build the revenue motion: a defined ICP, signal-based outbound with a documented legal basis, discovery that disqualifies fast, and a forecast reconciled against closed reality.",
+      "doc": "strategy/runbooks/scenario-sales-pipeline-engine.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "sales-coach"
+          ]
+        },
+        {
+          "group": "Demand & Signal",
+          "activation": "week 1-2",
+          "agents": [
+            "sales-offer-lead-gen-strategist",
+            "sales-outbound-strategist",
+            "marketing-content-creator"
+          ]
+        },
+        {
+          "group": "Conversion",
+          "activation": "week 3-4",
+          "agents": [
+            "sales-discovery-coach",
+            "sales-deal-strategist",
+            "sales-engineer",
+            "sales-proposal-strategist"
+          ]
+        },
+        {
+          "group": "Measurement & Compliance",
+          "activation": "week 5-6",
+          "agents": [
+            "sales-pipeline-analyst",
+            "support-analytics-reporter",
+            "support-legal-compliance-checker"
+          ]
+        },
+        {
+          "group": "Expansion & Proof",
+          "activation": "week 5-6",
+          "agents": [
+            "sales-account-strategist",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "growth-experiment-loop",
+      "title": "Growth Experiment Loop",
+      "mode": "NEXUS-Micro",
+      "duration": "5 agent-days across a 14+ day calendar window, recurring",
+      "summary": "Run one experiment at a time with a pre-registered hypothesis, a computed sample size, a stopping rule, and the decision recorded before the data is seen.",
+      "doc": "strategy/runbooks/scenario-growth-experiment-loop.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-management-experiment-tracker"
+          ]
+        },
+        {
+          "group": "Hypothesis & Design",
+          "activation": "day 1-2",
+          "agents": [
+            "marketing-growth-hacker",
+            "product-manager",
+            "design-ux-researcher"
+          ]
+        },
+        {
+          "group": "Instrumentation",
+          "activation": "day 3",
+          "agents": [
+            "engineering-frontend-developer",
+            "support-analytics-reporter"
+          ]
+        },
+        {
+          "group": "Readout & Proof",
+          "activation": "day 4-5",
+          "agents": [
+            "testing-evidence-collector",
+            "testing-reality-checker",
+            "marketing-content-creator"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "gis-program-launch",
+      "title": "GIS Program Launch",
+      "mode": "NEXUS-Sprint",
+      "duration": "6 weeks",
+      "summary": "Deliver a spatial product whose coordinate reference, geometry and topology are verified before it is styled.",
+      "doc": "strategy/runbooks/scenario-gis-program-launch.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "gis-technical-consultant",
+            "gis-solution-engineer"
+          ]
+        },
+        {
+          "group": "Spatial Foundation",
+          "activation": "week 1-2",
+          "agents": [
+            "gis-spatial-data-engineer",
+            "gis-geoprocessing-specialist",
+            "gis-bim-specialist",
+            "gis-drone-reality-mapping"
+          ]
+        },
+        {
+          "group": "Data & Analysis",
+          "activation": "week 3-4",
+          "agents": [
+            "gis-spatial-data-scientist",
+            "gis-geoai-ml-engineer",
+            "gis-analyst"
+          ]
+        },
+        {
+          "group": "Delivery",
+          "activation": "week 4-5",
+          "agents": [
+            "gis-web-gis-developer",
+            "gis-3d-scene-developer",
+            "gis-cartography-designer"
+          ]
+        },
+        {
+          "group": "Quality & Proof",
+          "activation": "week 4-6",
+          "agents": [
+            "gis-qa-engineer",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "spatial-app-launch",
+      "title": "Spatial App Launch",
+      "mode": "NEXUS-Sprint",
+      "duration": "6 weeks",
+      "summary": "Ship a spatial product whose comfort, latency and interaction budgets are release gates, verified in a real space by someone who did not build it.",
+      "doc": "strategy/runbooks/scenario-spatial-app-launch.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "xr-interface-architect"
+          ]
+        },
+        {
+          "group": "Spatial Build",
+          "activation": "week 2-4",
+          "agents": [
+            "visionos-spatial-engineer",
+            "xr-immersive-developer",
+            "macos-spatial-metal-engineer",
+            "terminal-integration-specialist"
+          ]
+        },
+        {
+          "group": "Interaction & Comfort",
+          "activation": "week 2-4",
+          "agents": [
+            "xr-cockpit-interaction-specialist",
+            "design-ux-researcher",
+            "testing-accessibility-auditor"
+          ]
+        },
+        {
+          "group": "Design",
+          "activation": "week 1-3",
+          "agents": [
+            "design-ui-designer",
+            "design-ui-finish-gate-reviewer"
+          ]
+        },
+        {
+          "group": "Quality & Proof",
+          "activation": "week 5-6",
+          "agents": [
+            "testing-performance-benchmarker",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "game-launch",
+      "title": "Game Launch",
+      "mode": "NEXUS-Sprint",
+      "duration": "6 weeks",
+      "summary": "Take a game to a store release with the content pipeline verified from a clean machine and certification treated as an input, not a surprise.",
+      "doc": "strategy/runbooks/scenario-game-launch.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "project-manager-senior",
+            "game-designer"
+          ]
+        },
+        {
+          "group": "Content & Systems",
+          "activation": "week 1-2",
+          "agents": [
+            "level-designer",
+            "narrative-designer",
+            "economy-designer"
+          ]
+        },
+        {
+          "group": "Build & Art",
+          "activation": "week 2-4",
+          "agents": [
+            "technical-artist",
+            "game-audio-engineer",
+            "engineering-backend-architect"
+          ]
+        },
+        {
+          "group": "Certification & Quality",
+          "activation": "week 4-6",
+          "agents": [
+            "testing-performance-benchmarker",
+            "testing-evidence-collector",
+            "testing-reality-checker",
+            "testing-accessibility-auditor"
+          ]
+        },
+        {
+          "group": "Launch",
+          "activation": "week 5-6",
+          "agents": [
+            "marketing-app-store-optimizer",
+            "engineering-devops-automator",
+            "engineering-mobile-release-engineer"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "academic-research-program",
+      "title": "Academic Research Program",
+      "mode": "NEXUS-Sprint",
+      "duration": "6 weeks",
+      "summary": "Deliver research output that survives scrutiny: every claim traceable to a source that was read, every figure regenerable, every method decision frozen before the result.",
+      "doc": "strategy/runbooks/scenario-academic-research-program.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "research-synthesist",
+            "project-manager-senior"
+          ]
+        },
+        {
+          "group": "Evidence & Method",
+          "activation": "week 1-2",
+          "agents": [
+            "academic-statistician",
+            "academic-psychologist",
+            "academic-anthropologist"
+          ]
+        },
+        {
+          "group": "Domain & Narrative",
+          "activation": "week 3-5",
+          "agents": [
+            "academic-historian",
+            "academic-geographer",
+            "academic-narratologist"
+          ]
+        },
+        {
+          "group": "Production",
+          "activation": "week 3-5",
+          "agents": [
+            "engineering-data-engineer",
+            "engineering-technical-writer",
+            "support-analytics-reporter"
+          ]
+        },
+        {
+          "group": "Proof",
+          "activation": "week 5-6",
+          "agents": [
+            "testing-evidence-collector",
+            "testing-reality-checker",
+            "support-legal-compliance-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "clinical-evidence-review",
+      "title": "Clinical Evidence Review",
+      "mode": "NEXUS-Micro",
+      "duration": "5 days per review batch, recurring",
+      "summary": "Assemble a cited evidence brief, state the strength of what it found, and route every clinical judgement to a named clinician - never issue a recommendation.",
+      "doc": "strategy/runbooks/scenario-clinical-evidence-review.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "healthcare-clinical-evidence-agent"
+          ]
+        },
+        {
+          "group": "Evidence & Appraisal",
+          "activation": "day 1-4",
+          "agents": [
+            "healthcare-innovation-strategist",
+            "research-synthesist",
+            "data-privacy-officer"
+          ]
+        },
+        {
+          "group": "Governance",
+          "activation": "day 2-5",
+          "agents": [
+            "support-legal-compliance-checker",
+            "healthcare-sovereign-health-systems-agent",
+            "engineering-privacy-engineer"
+          ]
+        },
+        {
+          "group": "Proof",
+          "activation": "day 5",
+          "agents": [
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "toolchain-standardization",
+      "title": "Toolchain Standardization",
+      "mode": "NEXUS-Micro",
+      "duration": "1-5 days",
+      "summary": "One pinned toolchain, one lockfile, one task graph that mirrors CI step for step, and one documented way in — so local and remote agree about what verified means.",
+      "doc": "strategy/runbooks/scenario-toolchain-standardization.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "engineering-platform-engineer"
+          ]
+        },
+        {
+          "group": "Pinning",
+          "activation": "day 1",
+          "agents": [
+            "engineering-devops-automator"
+          ]
+        },
+        {
+          "group": "Task Contract",
+          "activation": "day 2",
+          "agents": [
+            "engineering-developer-tooling-engineer",
+            "engineering-git-workflow-master",
+            "engineering-technical-writer"
+          ]
+        },
+        {
+          "group": "Drift & Proof",
+          "activation": "day 3-5",
+          "agents": [
+            "engineering-codebase-onboarding-engineer",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        }
+      ]
+    }
+  ]
+}
