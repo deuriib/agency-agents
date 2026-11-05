@@ -308,7 +308,12 @@ def test_install_rejects_unparsable_agent_file(repo: Path, monkeypatch: pytest.M
 
     assert result.exit_code == 1
     assert "Cannot parse agent frontmatter" in result.output
-    assert "engineering/bro" in result.output  # console hard-wraps the long path
+    # The console hard-wraps a long absolute path, and where it wraps depends on
+    # the length of the pytest tmp directory — which changes between runs. Join
+    # the wrapped lines before matching, or this test fails on its own temp path
+    # length: a real flake that reported as a product failure.
+    unwrapped = "".join(result.output.split())
+    assert "engineering/broken.md" in unwrapped
     assert not (repo / ".claude").exists()
 
 
