@@ -83,6 +83,42 @@ jobs:
       - name: Verify conversion outputs
         run: uv run python -m agency_agents verify --all
 
+  documented-commands:
+    name: documented-commands
+    # M8: every command the docs tell a newcomer to run is executed here. A
+    # documented command that no job runs is a command nobody has proven works —
+    # which is how `agency-agents --help` shipped broken while 222 tests passed.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+        with:
+          version: "0.12.12"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Bootstrap (golden path step 2)
+        run: ./scripts/bootstrap.sh
+      - name: Bootstrap is idempotent
+        run: ./scripts/bootstrap.sh
+      - name: Console script answers (golden path step 5)
+        # The installed entry point, not `python -m`: they are different
+        # surfaces and only this one was broken.
+        run: uv run agency-agents --help
+      - name: Runbook listing
+        run: uv run agency-agents install --list runbooks
+      - name: Runbook dry-run install
+        # The runbook this repository rides on must be installable by its own CLI.
+        run: |
+          uv run agency-agents install \
+            --runbook developer-experience-platform \
+            --tool claude-code --dry-run
+      - name: Gate listing (golden path step 3)
+        run: ./scripts/gate.sh --list
+      - name: Catalog lint fails on an inconsistency
+        # D2: the gate used to print an error and exit 0. Asserting the exit code
+        # is what stops a report that disagrees with its status from shipping.
+        run: ./scripts/ci/assert_lint_fails.sh
+
   security:
     name: security
     runs-on: ubuntu-24.04
@@ -109,7 +145,7 @@ jobs:
 
   required:
     name: ci/required
-    needs: [lint, types, test, verify-manifest, security]
+    needs: [lint, types, test, verify-manifest, security, documented-commands]
     if: always()
     runs-on: ubuntu-24.04
     steps:
