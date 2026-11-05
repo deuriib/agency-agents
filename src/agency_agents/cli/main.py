@@ -23,7 +23,12 @@ from agency_agents.infrastructure.browser_app import (
     choose_tools,
     run_browser,
 )
-from agency_agents.infrastructure.catalog import CatalogManager, RunbookDefinition, ToolDefinition
+from agency_agents.infrastructure.catalog import (
+    CatalogManager,
+    RunbookDefinition,
+    ToolDefinition,
+    resolve_catalog_root,
+)
 from agency_agents.infrastructure.hash_manager import HashManager, ManifestError
 from agency_agents.infrastructure.installer import InstallationManager
 
@@ -41,7 +46,7 @@ def lint():
     """
     Perform full project linting: divisions, tools, and agents.
     """
-    root_dir = Path(".").absolute()
+    root_dir = resolve_catalog_root()
     engine = LintEngine(root_dir)
 
     console.print(Panel("[bold blue]Running Project Linting...[/bold blue]"))
@@ -262,9 +267,9 @@ def install(
     """
     Install agents for a specific tool or all tools.
     """
-    root_dir = Path(".").absolute()
+    root_dir = resolve_catalog_root()
     catalog = CatalogManager(root_dir)
-    installer = InstallationManager(root_dir, Path.home())
+    installer = InstallationManager(root_dir, Path.home(), project_root=Path.cwd())
 
     if list_what:
         divisions = list(catalog.load_divisions().divisions.keys())
@@ -413,9 +418,9 @@ def tui(
     """
     Browse the roster interactively and install what you select.
     """
-    root_dir = Path(".").absolute()
+    root_dir = resolve_catalog_root()
     catalog = CatalogManager(root_dir)
-    installer = InstallationManager(root_dir, Path.home())
+    installer = InstallationManager(root_dir, Path.home(), project_root=Path.cwd())
     divisions = list(catalog.load_divisions().divisions.keys())
     by_division = _collect_roster(console, root_dir, divisions)
 
@@ -643,7 +648,7 @@ def verify(
     """
     Verify the conversion outputs against a SHA256 manifest.
     """
-    root_dir = Path(".").absolute()
+    root_dir = resolve_catalog_root()
     engine = ConverterEngine(root_dir)
     hash_manager = HashManager()
     all_agents = _load_roster(console, root_dir, engine)
@@ -679,7 +684,7 @@ def update_manifest(
     """
     Regenerate the SHA256 manifest for one tool, or every per-agent tool with --all.
     """
-    root_dir = Path(".").absolute()
+    root_dir = resolve_catalog_root()
     engine = ConverterEngine(root_dir)
     hash_manager = HashManager()
     all_agents = _load_roster(console, root_dir, engine)
@@ -713,7 +718,7 @@ def check_originality(
     warn: float = typer.Option(20.0, "--warn", help="WARN threshold percent (default 20)"),
 ):
     """Flag agent files that substantially duplicate an existing agent."""
-    root_dir = Path(".").absolute()
+    root_dir = resolve_catalog_root()
     code = run_originality_check(files, repo_root=root_dir, fail_threshold=fail, warn_threshold=warn)
     if code != 0:
         raise typer.Exit(code=code)
@@ -727,7 +732,7 @@ def convert(
     jobs: int = typer.Option(4, "--jobs", help="Number of parallel jobs"),
 ):
     """Generate tool-specific integration files from the agent roster (legacy convert.sh)."""
-    root_dir = Path(".").absolute()
+    root_dir = resolve_catalog_root()
     catalog = CatalogManager(root_dir)
     engine = ConverterEngine(root_dir)
 
