@@ -2120,6 +2120,49 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "toolchain-standardization",
+      "title": "Toolchain Standardization",
+      "mode": "NEXUS-Micro",
+      "duration": "1-5 days",
+      "summary": "One pinned toolchain, one lockfile, one task graph that mirrors CI step for step, and one documented way in — so local and remote agree about what verified means.",
+      "doc": "strategy/runbooks/scenario-toolchain-standardization.md",
+      "roster": [
+        {
+          "group": "Command",
+          "activation": "always",
+          "agents": [
+            "agents-orchestrator",
+            "engineering-platform-engineer"
+          ]
+        },
+        {
+          "group": "Pinning",
+          "activation": "day 1",
+          "agents": [
+            "engineering-devops-automator"
+          ]
+        },
+        {
+          "group": "Task Contract",
+          "activation": "day 2",
+          "agents": [
+            "engineering-developer-tooling-engineer",
+            "engineering-git-workflow-master",
+            "engineering-technical-writer"
+          ]
+        },
+        {
+          "group": "Drift & Proof",
+          "activation": "day 3-5",
+          "agents": [
+            "engineering-codebase-onboarding-engineer",
+            "testing-evidence-collector",
+            "testing-reality-checker"
+          ]
+        }
+      ]
     }
   ]
 }

@@ -465,3 +465,36 @@ maintained doctrine, and unused doctrine decays into fiction that QA cannot catc
 
 Catalog reach after Waves 1-3: **~62%**. Everything above that is a documentation problem, not a
 runbook problem.
+
+### 6.4 A single directed addition — `toolchain-standardization`
+
+One runbook was added outside the wave plan, at the maintainer's request, and it is recorded here
+for the same reason §6.3 is: §5 rejects "a second repo hygiene runbook", and this one has to show
+it is not that.
+
+| | |
+| --- | --- |
+| **Slug** | `toolchain-standardization` |
+| **Mode / Duration** | NEXUS-Micro · 1-5 days · 9 agents |
+| **Answers** | tools, versions, tasks, "how do I run this" |
+| **Owns** | Pinned runtimes with a committed lockfile, a task graph that mirrors CI step for step, one documented entry point, and a committed drift gate |
+
+**Why it is not the runbook §5 forbids.** `repository-hardening-program` covers the repository
+*surface* — licence, security policy, community files, ownership, templates, branch protection —
+and its text contains no toolchain content at all. `developer-experience-platform` measures
+*clone-to-deploy throughput for real people* over six weeks. Neither owns the question this one
+answers in a day: which version of which tool is the truth, and what single command proves it.
+The differentiation is on the problem, which is the test §5 applies.
+
+**Why it is not a fleet program.** Standardizing N repositories onto one config is a genuinely
+different job — registry layering, migration off `asdf`/`nvm`/`pyenv`, adoption waves per
+service owner. This runbook is single-repository by design, and its Applicability table sends a
+fleet request to "no runbook covers this yet" rather than stretching a one-day Micro into a
+four-week fiction.
+
+**Existing mise precedent in this repository.** `docs/agency-flow/repo-standards-baseline/`
+enforces criterion **C8** (`mise run check` reproduces the CI gate) against this repo already,
+and `scenario-codebase-modernization-program` lists `mise.toml` as a one-line deliverable.
+Neither is deployable doctrine, so the runbook formalizes what this repo already practises.
+
+Registered total is now **42 runbooks**.
