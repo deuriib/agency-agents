@@ -50,7 +50,7 @@ bash scripts/ci/cleanroom_onboarding.sh \
 | M4 Flake rate | **0.0%** — 0 flakes across 39 completed gating runs | MEASURED | `ci_metrics.py` |
 | M5 Bootstrap failure rate | **100%** — 1 of 1 clean-machine attempts exited non-zero | MEASURED | Clean-room transcript |
 | M6 Step count | **5 steps**, of which **2 are undocumented** | MEASURED | `scripts/ci/paths/baseline.sh` |
-| M7 Tool decision pass | **0 decisions recorded** → 0% | MEASURED (as absent) | `docs/dx/m7-tool-decisions.md` |
+| M7 Tool decision pass | **0 decisions recorded** at baseline. The decisions in `docs/dx/m7-tool-decisions.md` were produced by this runbook, not before it — that is what M7 set out to fix | MEASURED (as absent) | `docs/dx/m7-tool-decisions.md` |
 | M8 Documented-command pass rate | **1 of 5 documented-path commands exits non-zero (80%)**. The console-script surface is never executed in CI at all | MEASURED | Clean-room transcript + `ci.yml` |
 | M9 Stale sample count | Not counted at baseline | UNMEASURED | — |
 | M10 Senior hours per onboarding | `UNMEASURED` — no onboarding run has ever been instrumented | UNMEASURED | — |

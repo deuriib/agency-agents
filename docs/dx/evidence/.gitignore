@@ -1,0 +1,5 @@
+# Evidence transcripts are committed on purpose: they are the artifacts that
+# docs/dx/evidence-pack.md cites for each metric. The repo-wide `*.log` rule in
+# the root .gitignore would otherwise silently drop them, which would turn every
+# citation in the evidence pack into a broken path. Re-include them here only.
+!*.log

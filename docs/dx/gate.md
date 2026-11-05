@@ -1,8 +1,15 @@
 # The gate — one command, the CI job set, cheapest first (golden-path step 3)
 
-`./scripts/gate.sh` is the only pre-push gate. It runs the exact commands
-`.github/workflows/ci.yml` runs, cheapest first, labelling each check with the CI
-job it mirrors so drift is visible instead of guessed. `--list` prints this table.
+`./scripts/gate.sh` is the only pre-push gate. It runs the exact commands of the
+five **blocking** jobs in `.github/workflows/ci.yml`, cheapest first, labelling
+each check with the CI job it mirrors so drift is visible instead of guessed.
+`--list` prints this table.
+
+**Known gap, stated rather than hidden.** The `documented-commands` job is *not*
+mirrored here: it asserts that every command the docs publish still exits 0, and
+running it inside the gate it documents would be circular. A green gate therefore
+means the five blocking jobs will pass; it does not prove `documented-commands`
+will. That job runs only in CI.
 
 | # | Check | Mirrors | Measured | Command |
 | --- | --- | --- | --- | --- |

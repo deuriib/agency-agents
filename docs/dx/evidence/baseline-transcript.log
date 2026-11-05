@@ -1,0 +1,144 @@
+# Clean-room onboarding transcript
+harness_start_utc: 20261105T145724Z
+image: agency-agents-cleanroom:1
+clone_source: git bundle of ref feat/cli-runbooks-tui
+path_file: baseline.sh
+executor: ENGINEER-EXECUTED (not a human subject)
+
+## Pre-run cleanliness check
+image: agency-agents-cleanroom:1
+workdir: /work
+workdir listing (expect empty):
+  [end of listing]
+which git: /usr/bin/git
+which curl: /usr/bin/curl
+which uv: <absent>
+which python3: <absent>
+which agency-agents: <absent>
+clean: true
+
+## Documented path
+--- step 1: clone
+Cloning into 'repo'...
+step_1_label: clone
+step_1_exit: 0
+step_1_seconds: 2
+
+--- step 2: install-uv (undocumented)
+uv 0.13.7 (x86_64-unknown-linux-gnu)
+step_2_label: install-uv (undocumented)
+step_2_exit: 0
+step_2_seconds: 6
+
+--- step 3: uv-sync (undocumented)
+Downloading cpython-3.13.18-linux-x86_64-gnu (download) (33.8MiB)
+ Downloaded cpython-3.13.18-linux-x86_64-gnu (download)
+Using CPython 3.13.18
+Creating virtual environment at: .venv
+   Building agency-agents @ file:///work/repo
+warning: `build_system.requires = ["uv-build>=0.12.12,<0.13.0"]` does not contain the current uv version 0.13.7
+      Built agency-agents @ file:///work/repo
+Downloading ruff (10.1MiB)
+Downloading pygments (1.2MiB)
+Downloading ast-serialize (1.3MiB)
+Downloading mypy (14.8MiB)
+Downloading pydantic-core (2.1MiB)
+Downloading pip (1.7MiB)
+Downloading virtualenv (5.3MiB)
+ Downloaded pygments
+ Downloaded ast-serialize
+ Downloaded pip
+ Downloaded pydantic-core
+ Downloaded virtualenv
+ Downloaded ruff
+ Downloaded mypy
+Prepared 60 packages in 9.92s
+Installed 60 packages in 811ms
+ + agency-agents==1.8.0 (from file:///work/repo)
+ + annotated-doc==0.0.5
+ + annotated-types==0.8.0
+ + ast-serialize==0.13.1
+ + boolean-py==5.0
+ + cachecontrol==0.14.4
+ + certifi==2026.10.23
+ + cfgv==3.5.0
+ + charset-normalizer==3.5.2
+ + coverage==7.17.0
+ + cyclonedx-python-lib==11.12.0
+ + defusedxml==0.7.1
+ + distlib==0.4.4
+ + filelock==4.2.7
+ + identify==2.6.20
+ + idna==3.20
+ + iniconfig==2.3.1
+ + librt==0.16.0
+ + license-expression==30.4.4
+ + markdown-it-py==4.2.0
+ + mdurl==0.1.2
+ + msgpack==1.2.4
+ + mypy==2.4.1
+ + mypy-extensions==1.1.0
+ + nodeenv==1.12.0
+ + packageurl-python==0.17.6
+ + packaging==26.3
+ + pathspec==1.1.1
+ + pip==26.2.2
+ + pip-api==0.0.35
+ + pip-audit==2.10.1
+ + pip-requirements-parser==32.0.1
+ + platformdirs==4.14.3
+ + pluggy==1.7.0
+ + pre-commit==4.7.0
+ + prompt-toolkit==3.0.53
+ + py-serializable==2.1.0
+ + pydantic==2.14.1
+ + pydantic-core==2.50.1
+ + pygments==2.21.0
+ + pyparsing==3.3.3
+ + pytest==9.1.1
+ + pytest-asyncio==1.4.1
+ + pytest-cov==7.1.0
+ + python-discovery==1.9.1
+ + pyyaml==6.0.3
+ + requests==2.34.2
+ + rich==15.0.0
+ + ruff==0.17.3
+ + shellingham==1.5.4
+ + sortedcontainers==2.4.0
+ + tomli==2.5.0
+ + tomli-w==1.2.0
+ + typer==0.27.3
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.4
+ + urllib3==2.8.0
+ + virtualenv==21.15.2
+ + wcwidth==0.9.4
+ + yamllint==1.38.0
+step_3_label: uv-sync (undocumented)
+step_3_exit: 0
+step_3_seconds: 18
+
+--- step 4: cli-install-agents
+✓ Installation process completed! 
+step_4_label: cli-install-agents
+step_4_exit: 0
+step_4_seconds: 8
+
+--- step 5: console-script --help
+Traceback (most recent call last):
+  File "/work/repo/.venv/bin/agency-agents", line 4, in <module>
+    from agency_agents import main
+ImportError: cannot import name 'main' from 'agency_agents' (/work/repo/src/agency_agents/__init__.py)
+step_5_label: console-script --help
+step_5_exit: 1
+step_5_seconds: 0
+
+step_5_FAILED: true
+## Result
+steps_total: 5
+steps_failed: 1
+totals_seconds: 34
+harness_end_utc: 20261105T145804Z
+
+transcript: /tmp/cleanroom-20261105T145724Z.log
+harness_exit: 1

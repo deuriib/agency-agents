@@ -1,4 +1,4 @@
-# The golden path — one route, five steps (G2)
+# The golden path — one route, five documented steps (G2)
 
 There is exactly one supported route from a clean machine to a developer's own
 change running in the tool they use. Alternatives are removed, not maintained.
@@ -28,6 +28,41 @@ names the clone as the fix, closing the handoff in code rather than in prose. Th
 five phases it runs, and what each failure message means, are in
 `docs/dx/bootstrap.md`.
 
+## What this path can and cannot prove
+
+The runbook defines **first success** as *the subject's own change is deployed by
+the documented path **and** an observability query returns data for it*. This
+repository has neither a deploy target nor an observability surface: it publishes
+markdown agents and a CLI, and `grep -ri observability` over this tree returns
+nothing. The definition therefore has no referent here, and **M1 is
+`UNMEASURED` for this run.**
+
+What *was* measured on a proven-clean machine is narrower and must be named
+narrowly:
+
+> **Clean clone → a working, verified local install: 5 documented commands,
+> 0 failures, 116 seconds, 298 agents installed and manifest-verified.**
+
+That is a real and reproducible result, and it is **not** M1. An earlier draft of
+this document described those 116 seconds as "time to first success" without
+noting that the runbook's definition demands a deploy and an observability query.
+That was a silent redefinition, and it is corrected here rather than defended. The
+runbook's own doctrine applies to this document: a threshold nobody defined, or a
+definition quietly swapped for a convenient one, is a fail.
+
+Where the analogues fall short, explicitly:
+
+| Runbook term | What this run actually did | Gap |
+| --- | --- | --- |
+| Deployed change | Wrote 298 rendered agents into `~/.claude/agents` | Nothing was published or served; there is no environment to deploy to |
+| Observability query | `agency-agents verify --all` (SHA-256 manifest) plus a file-count assertion | A manifest check proves integrity, not that a running system emits telemetry |
+| Subject's own change | The subject installed the published catalog unchanged | No change of the subject's was deployed, so "their own change" was not exercised |
+
+Closing these needs either a deploy surface (issue #12, publishing to PyPI, is the
+nearest analogue) or an explicit, written decision that this repository's "first
+success" is an install-and-verify event. That decision belongs to the platform
+owner at G5 handover, not to this document.
+
 ## What changed from the baseline, and why
 
 | Baseline step | Golden-path step | Change |
@@ -39,15 +74,25 @@ five phases it runs, and what each failure message means, are in
 | — (did not exist) | 3 | The gate had no one-command entry point |
 | — (did not exist) | 5 | Nothing proved the install landed |
 
-M6 before/after: **5 steps → 5 steps**, but the composition changes. Two steps a
-newcomer had to *guess* (`install-uv`, `uv-sync`) become one step the repo owns,
-and the two steps that did not exist (the gate, the proof) are added. The count
-is flat; the number of steps requiring undocumented knowledge drops from 2 to 0.
+M6 before/after: **5 documented commands → 5 documented commands**, with the
+composition changed. Two commands a newcomer had to *guess* (`install-uv`,
+`uv-sync`) are absorbed into one command the repo owns, and two commands that did
+not exist at all are added (the gate and the proof). The count is flat; the number
+of commands requiring undocumented knowledge drops from 2 to 0, and the number
+that exit non-zero drops from 1 to 0.
 
-This is recorded as a deliberate, costed trade rather than a step reduction: a
-flat M6 with zero guessed steps is the honest win here, and claiming a reduction
-by hiding bootstrap work inside a script would be exactly the "measure the happy
-path" pitfall the runbook names.
+This is a deliberate, costed trade, not a step reduction. Claiming a reduction by
+hiding bootstrap work inside a script would be exactly the "measure the happy
+path" pitfall the runbook names, so the count is reported flat.
+
+**Instrument versus document, stated explicitly.** The clean-room harness
+(`scripts/ci/paths/golden-path.sh`) measures **six** things: the five documented
+commands plus a sixth observation step in which the Evidence Collector asserts the
+installed files are visible on disk. M6 counts *distinct developer commands from
+clone to first success*, so M6 = 5 and the harness reports 6 measured steps on
+purpose. The two numbers are never merged. An earlier revision fused the
+observation into the fifth step to make the harness print five; that changed no
+work, bought nothing, and was reverted — the instrument names what it measures.
 
 ## Mandated versus optional — the costed decisions (G2 clause 2.4)
 
@@ -62,9 +107,16 @@ costed saving fails G2.
 | `mise run ci` as an alternative gate | **Removed** | 0.5 h — a second gate means two answers to "is this green"; `scripts/gate.sh` calls the same tasks | Developer Tooling Engineer |
 | Hand-rolling a venv without `uv` | **Removed** | 6.0 h — the pinned interpreter and lockfile are what make CI and local agree | Platform Engineer |
 
-Total measured senior time removable per onboarding: **13.0 hours** (baseline
-M10 target was 24 hours from the last 5 hires; the Phase 4 instrument replaces
-that estimate with a measurement).
+Total senior time the design *claims* to remove per onboarding: **13.0 hours**.
+
+**This figure is an estimate, not a measurement, and no gate may read it.** It is
+the sum of the per-decision figures above, and each of those is a judgement with
+no instrument behind it: there is no intervention log, no onboarding-channel
+ticket history, and no timed human subject, so M10 remains `UNMEASURED` (see
+`baseline.md` §2). The baseline figure of "24 hours from the last 5 hires" quoted
+in the runbook's Success Criteria table is likewise unverified for this
+repository. Treat both as hypotheses to be tested by the first instrumented
+onboarding run, not as savings already banked.
 
 ## Path friction: measured or `UNMEASURED`
 
@@ -89,13 +141,13 @@ rather than on a delta that cannot exist.
 | --- | --- | --- |
 | `agency_agents:main` broken entry point | Phase 3 | Replaced by a real `main()`; the import no longer fails |
 | Manual copying of `strategy/runbooks/` | Phase 3 | Replaced by `install --runbook <slug>` / `install --list runbooks` (tool decision D-002) |
-| `TUIWizard` as the only interactive surface | Phase 3 | Superseded by the browsable TUI; deleted in the same change per D-001 |
+| `TUIWizard` as the *only* interactive surface | Phase 3 | Superseded **as the only** interactive surface: `tui` now offers browse/search/detail/multi-select. `TUIWizard` itself is **kept**, because `install` with no flags is a documented behaviour (README) and issue #13's own non-goal forbids replacing existing commands. This deviates from D-001's removal line; the deviation and its reason are recorded in `m7-tool-decisions.md`. |
 | "Copy a category" manual `cp` instructions | Phase 3 | Replaced by `--division` / `--agent`, which already existed |
 
 ## G2 verdict
 
 ```text
-G2.1  Six or fewer steps (M6), each with a named owner.                    PASS (5 steps)
+G2.1  Six or fewer steps (M6), each with a named owner.                    PASS (5 documented steps)
 G2.2  No two steps share an owner without a handoff note.                  PASS (note H1)
 G2.3  A step's friction is measured at baseline, or declared UNMEASURED
       with a Phase 3 instrumentation owner and date.                       PASS (steps 3, 5)

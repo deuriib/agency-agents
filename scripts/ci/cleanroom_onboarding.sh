@@ -87,6 +87,13 @@ exec > >(tee "${OUT}") 2>&1
 echo "# Clean-room onboarding transcript"
 echo "harness_start_utc: ${STAMP}"
 echo "image: ${IMAGE}"
+# Chain of custody: a transcript that does not name the commit it measured and
+# the image digest it ran in cannot be re-checked later.
+echo "commit_sha: $(git -C "${REPO}" rev-parse "${REF}" 2>/dev/null || echo "<unknown>")"
+echo "commit_subject: $(git -C "${REPO}" log -1 --format=%s "${REF}" 2>/dev/null || echo "<unknown>")"
+echo "image_digest: $(docker image inspect --format "{{index .RepoDigests 0}}" "${IMAGE}" 2>/dev/null || echo "<no-repo-digest: locally built>")"
+echo "image_id: $(docker image inspect --format "{{.Id}}" "${IMAGE}" 2>/dev/null || echo "<unknown>")"
+echo "invocation: scripts/ci/cleanroom_onboarding.sh --path $(basename "${PATH_FILE}") --ref ${REF} --image ${IMAGE}"
 echo "clone_source: git bundle of ref ${REF}"
 echo "path_file: $(basename "${PATH_FILE}")"
 echo "executor: ENGINEER-EXECUTED (not a human subject)"
