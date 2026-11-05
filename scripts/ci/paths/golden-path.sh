@@ -33,9 +33,14 @@ run_step "install-your-work" \
   agency-agents install --tool claude-code --scope user --no-interactive
 
 # Step 5 — prove it landed. Owner: SRE (Site Reliability Engineer).
-# The tree is healthy (manifest verify) and the observable outcome exists on
-# disk. A deploy nobody can see is not first success.
-run_step "prove-it-landed" agency-agents verify --all
-
-run_step "observe-installed-agents" \
-  bash -c 'expected=298; written=$(find "$HOME/.claude/agents" -name "*.md" | wc -l); echo "installed agents: ${written}"; test "${written}" -ge "${expected}"'
+# One step, two assertions: the tree is healthy (manifest verify) and the
+# observable outcome exists on disk. A deploy nobody can see is not first
+# success, and a visible file that fails the manifest is not a deploy.
+run_step "prove-it-landed" \
+  bash -c '
+set -eo pipefail
+agency-agents verify --all
+expected=298
+written=$(find "$HOME/.claude/agents" -name "*.md" | wc -l)
+echo "installed agents: ${written}"
+test "${written}" -ge "${expected}"'
