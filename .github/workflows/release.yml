@@ -150,6 +150,12 @@ jobs:
         with:
           coverage: "true"
 
+      - name: Verify version sources agree
+        # The release PR must bump pyproject.toml and __init__.py together. Drift
+        # here means release-please missed the extra-files entry and the wheel
+        # would ship a stale agency_agents.__version__.
+        run: uv run python scripts/ci/check_version_sync.py
+
       - name: Publish ci/required on the release PR
         # The release PR is created with GITHUB_TOKEN, so GitHub never runs the
         # CI workflow on it. Publishing the status from the gate that actually

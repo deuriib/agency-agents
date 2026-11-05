@@ -28,10 +28,11 @@ description = "Run tests with coverage and enforce the 80% floor"
 run = "uv run pytest -q --cov=agency_agents --cov-branch --cov-report=term-missing --cov-fail-under=80"
 
 [tasks.verify]
-description = "Verify conversion outputs and the bundled catalog are in sync"
+description = "Verify conversion outputs, the bundled catalog, and version sync"
 run = [
     "uv run python -m agency_agents verify --all",
     "uv run python scripts/sync_catalog_data.py --check",
+    "uv run python scripts/ci/check_version_sync.py",
 ]
 
 [tasks.security]
