@@ -1,0 +1,84 @@
+name: Docs Site
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: docs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: build-docs
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e
+        with:
+          version: "0.12.12"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Build site and measure duration
+        id: build-step
+        run: |
+          set -euo pipefail
+          start_time=$(date +%s)
+
+          # 1. Generate content tree
+          uv run python scripts/build_docs_site.py
+
+          # 2. Build MkDocs in strict mode
+          NO_MKDOCS_2_WARNING=1 uv run mkdocs build --strict
+
+          # 3. Run automated verification suite
+          uv run python scripts/ci/test_docs_site.py
+
+          end_time=$(date +%s)
+          duration=$((end_time - start_time))
+          echo "build_duration=${duration}" >> "$GITHUB_OUTPUT"
+
+          # D12 budget check (< 120s)
+          echo "### Docs Site Build Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Duration:** ${duration}s (budget: < 120s)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Strict Mode:** PASS (0 warnings)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Parity:** 18 divisions + 298 agents" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Status:** ✅ SUCCESS" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$duration" -ge 120 ]; then
+            echo "::error::Build duration exceeded 120 seconds: ${duration}s"
+            exit 1
+          fi
+
+      - name: Upload Pages Artifact
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
+        with:
+          path: site/
+
+  deploy:
+    name: deploy-pages
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e

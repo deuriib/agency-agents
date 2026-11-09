@@ -95,3 +95,23 @@ run = "uv run python -m agency_agents convert"
 description = "Lint, test, verify, install and convert end to end"
 depends = ["check", "install", "convert"]
 run = "echo Pipeline completed successfully!"
+
+# ---------------------------------------------------------------------------
+# Documentation site operations
+# ---------------------------------------------------------------------------
+
+[tasks.docs-build]
+description = "Generate docs content and build MkDocs site in strict mode"
+run = [
+    "uv run python scripts/build_docs_site.py",
+    "NO_MKDOCS_2_WARNING=1 uv run mkdocs build --strict",
+    "uv run python scripts/ci/test_docs_site.py",
+]
+
+[tasks.docs-serve]
+description = "Generate docs content and run local preview server"
+run = [
+    "uv run python scripts/build_docs_site.py",
+    "NO_MKDOCS_2_WARNING=1 uv run mkdocs serve",
+]
+

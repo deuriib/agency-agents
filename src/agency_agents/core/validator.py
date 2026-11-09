@@ -46,7 +46,20 @@ class LintEngine:
 
         # Support dirs that are deliberately not divisions.
         # dist/ is generated build output; docs/ is documentation (docs site, doctrine).
-        ignore = {"integrations", "strategy", "examples", "scripts", "src", "dist", "docs"}
+        # site/ and site-docs/ are generated documentation site artifacts.
+        # project-tasks/ holds orchestration and tracking task lists.
+        ignore = {
+            "integrations",
+            "strategy",
+            "examples",
+            "scripts",
+            "src",
+            "dist",
+            "docs",
+            "site",
+            "site-docs",
+            "project-tasks",
+        }
         # Dot-dirs (.git, .venv, .pytest_cache, .github...) are tooling state, never divisions
         actual_dirs = {
             d.name for d in self.root_dir.iterdir()

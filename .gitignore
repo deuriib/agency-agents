@@ -80,3 +80,8 @@ graphify-out/
 
 # Worktrees
 .Worktrees/
+
+# Documentation site build artifacts
+site/
+site-docs/
+

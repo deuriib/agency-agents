@@ -4,7 +4,7 @@
 
 Publish a public documentation site for `agency-agents` built with MkDocs
 Material and GitHub Pages, generated from content that already exists plus a
-bounded set of 23 Spanish translations of the core guides. The site is
+bounded set of 22 Spanish translations of the core guides. The site is
 reproducible in one command, bilingual in English and Spanish from the first
 deploy, and never exposes internal Agency-Flow phase artifacts.
 
@@ -14,15 +14,15 @@ deploy, and never exposes internal Agency-Flow phase artifacts.
 
 - [ ] D1. `mkdocs.yml` exists at repository root with the Material theme, an explicitly declared `docs_dir` pointing to a directory that is **not** `docs/`, and `site/` listed in `.gitignore`.
 - [ ] D2. `mkdocs build --strict` exits 0 with **0 warnings** and **0 broken internal links** on a clean clone.
-- [ ] D3. The built site contains exactly **19 division pages** and **298 agent pages**, matching the counts in the repository at build time; a parity check fails the build when the two numbers diverge.
+- [ ] D3. The built site contains exactly **18 division pages** and **298 agent pages**, matching the counts in the repository at build time; a parity check fails the build when the two numbers diverge.
 - [ ] D4. The built site contains **0 files** originating from `docs/agency-flow/**`; verified by a grep assertion in the build workflow that exits non-zero on any match.
 - [ ] D5. `mise run docs-build` produces the site locally in a single command and exits 0; `mise run docs-serve` serves it on localhost.
 
 ### Internationalisation
 
 - [ ] D6. `mkdocs-static-i18n` is configured with `en` as default and `es` as the second locale; every page in the built HTML contains the language-switcher element, verified by asserting that the count of pages carrying the switcher selector equals the total page count.
-- [ ] D7. The fallback set is an exact invariant, not a tautology: `fallback_count == total_pages − 23`, and none of the 23 translated pages appears in the fallback set. The build fails if either condition is violated.
-- [ ] D8. Each of the 23 core pages (home, installation, contributing, security, and the 19 division landing pages) has a Spanish counterpart at the equivalent relative path in the `es` locale tree, with non-empty content and a SHA-256 that differs from its English source. The build fails when a counterpart is missing, empty, or byte-identical to English.
+- [ ] D7. The fallback set is an exact invariant, not a tautology: `fallback_count == total_pages − 22`, and none of the 22 translated pages appears in the fallback set. The build fails if either condition is violated.
+- [ ] D8. Each of the 22 core pages (home, installation, contributing, security, and the 18 division landing pages) has a Spanish counterpart at the equivalent relative path in the `es` locale tree, with non-empty content and a SHA-256 that differs from its English source. The build fails when a counterpart is missing, empty, or byte-identical to English.
 
 ### Delivery
 
@@ -34,7 +34,7 @@ deploy, and never exposes internal Agency-Flow phase artifacts.
 
 ## Scope
 
-- In: `mkdocs.yml`, the chosen `docs_dir` content tree, the agent/division page generator script, `mkdocs-static-i18n` locale files for `en` and `es`, the Pages build-and-deploy workflow, `mise` tasks for build and serve, and the Spanish translations of the 23 core pages (home, installation, contributing, security, and the 19 division landing pages).
+- In: `mkdocs.yml`, the chosen `docs_dir` content tree, the agent/division page generator script, `mkdocs-static-i18n` locale files for `en` and `es`, the Pages build-and-deploy workflow, `mise` tasks for build and serve, and the Spanish translations of the 22 core pages (home, installation, contributing, security, and the 18 division landing pages).
 - Out: publishing to a custom domain; analytics, tracking, or cookie banners; translating agent body content into Spanish (only division landing pages and the four core guides are translated); authoring brand-new long-form documentation beyond what is extracted from `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, and agent frontmatter; replacing the existing `README.md`; versioned docs (`mike`) — deferred; community translation repos (`agency-agents-zh`, `-ko`, `-ja`) integration.
 
 ## Domain profile
@@ -58,11 +58,11 @@ Management and Testing remain verifiers only and are excluded from the profile.
 - Deploy runs only from `main`; pull requests build and upload artifacts but never publish.
 - Site build must stay under 120 seconds wall clock; if generation of 298 agent pages exceeds that, pages are generated in a single pass, not one build hook per file.
 - The theme and plugin configuration must keep `mkdocs build --strict` green; suppressing a warning with `validation: ignore` is a recorded deviation requiring justification.
-- **DENY-07**: the 23 Spanish translations require human review before merge, with a disclosure line in the pull request identifying them as translated content. D8 proves "translated, not copied" — it does not prove quality, and no machine-translated page goes live unreviewed.
+- **DENY-07**: the 22 Spanish translations require human review before merge, with a disclosure line in the pull request identifying them as translated content. D8 proves "translated, not copied" — it does not prove quality, and no machine-translated page goes live unreviewed.
 
 ## Assigned team
 
-- Domain: **Technical Writer** (`engineering-technical-writer`) — owns information architecture, navigation, page extraction from existing content, Spanish translations of the four core guides and 19 division landing pages. Signs the domain gate for D1–D3, D6–D8, D13.
+- Domain: **Technical Writer** (`engineering-technical-writer`) — owns information architecture, navigation, page extraction from existing content, Spanish translations of the four core guides and 18 division landing pages. Signs the domain gate for D1–D3, D6–D8, D13.
 - Domain: **Platform Engineer** (`engineering-platform-engineer`) — owns the Pages workflow, `mkdocs.yml` configuration, i18n plugin wiring, build-time parity and leakage assertions, mise tasks, SHA pinning. Signs the domain gate for D4, D5, D9–D12.
 - Verification (review-only, not in the domain profile): **Evidence Collector** (`testing-evidence-collector`) for HTTP 200 and screenshot evidence of the live site, plus **Reality Checker** (`testing-reality-checker`) for the final verdict.
 - Process steward: **Vasquez** (Project Management) — process gate only. Staffing is feasible: `engineering-technical-writer` and `engineering-platform-engineer` both exist; all 13 criteria are checkable from the build log, `gh api` output, HTTP responses, and file counts.
