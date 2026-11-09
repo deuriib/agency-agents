@@ -427,7 +427,7 @@ The unique specialists who don't fit in a box.
 
 | Agent | Specialty | When to Use |
 | ------- | ----------- | ------------- |
-| 🎭 [Agents Orchestrator](specialized/agents-orchestrator.md) | Multi-agent coordination, workflow management | Complex projects requiring multiple agent coordination |
+| 🎛️ [Agents Orchestrator](specialized/agents-orchestrator.md) | Cross-division request routing, NEXUS runbook selection, chained and parallel pipelines with quality gates | Any multi-agent request, from one deliverable to multi-division programs |
 | 🔍 [LSP/Index Engineer](specialized/lsp-index-engineer.md) | Language Server Protocol, code intelligence | Code intelligence systems, LSP implementation, semantic indexing |
 | 📥 [Sales Data Extraction Agent](specialized/sales-data-extraction-agent.md) | Excel monitoring, sales metric extraction | Sales data ingestion, MTD/YTD/Year End metrics |
 | 📈 [Data Consolidation Agent](specialized/data-consolidation-agent.md) | Sales data aggregation, dashboard reports | Territory summaries, rep performance, pipeline snapshots |
