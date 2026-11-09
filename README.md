@@ -11,9 +11,9 @@
 
 > ### 🆕 There's an app now
 >
-> **[Agency Agents](https://agencyagents.app)** is a native app for **macOS, Linux & Windows** that browses the entire roster and installs it into Claude Code, Cursor, Codex, Gemini, Osaurus, and more — with a click. No clone, no scripts, and it auto-updates.
+> **[Agency Agents]([https://agencyagents.app](https://deuriib.github.io/agency-agents-app))** is a native app for **macOS, Linux & Windows** that browses the entire roster and installs it into Claude Code, Cursor, Codex, Gemini, Osaurus, and more — with a click. No clone, no scripts, and it auto-updates.
 >
-> **→ [Download the latest release](https://github.com/msitarzewski/agency-agents-app/releases/latest) · [agencyagents.app](https://agencyagents.app)**
+> **→ [Download the latest release](https://github.com/deuriib/agency-agents-app/releases/latest) · [agencyagents.app]([https://agencyagents.app](https://deuriib.github.io/agency-agents-app))**
 
 ---
 
@@ -45,7 +45,7 @@ brew install --cask msitarzewski/agency-agents/agency-agents
 Prefer the command line? The Python CLI below installs the same agents. **Git is the only prerequisite** — from a fresh clone, three commands take you from nothing to agents installed in your tool:
 
 ```bash
-git clone https://github.com/msitarzewski/agency-agents.git && cd agency-agents
+git clone https://github.com/deuriib/agency-agents.git && cd agency-agents
 ./scripts/bootstrap.sh     # uv + a managed Python 3.13 + uv sync --frozen + proves the console script answers
 ./scripts/gate.sh          # the same checks CI runs, cheapest first
 uv run agency-agents install --tool claude-code
@@ -1198,10 +1198,7 @@ To everyone who has opened a PR, filed an issue, started a Discussion, or simply
 
 ## 💬 Community
 
-- **GitHub Discussions**: [Share your success stories](https://github.com/deuriib/agency-agents/discussions)
 - **Issues**: [Report bugs or request features](https://github.com/deuriib/agency-agents/issues)
-- **Reddit**: Join the conversation on r/ClaudeAI
-- **Twitter/X**: Share with #TheAgency
 
 ---
 
