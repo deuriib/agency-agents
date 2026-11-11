@@ -6,7 +6,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://img.shields.io/pypi/v/py-agency-agents.svg)](https://pypi.org/project/py-agency-agents/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://makeapullrequest.com)
-[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github)](https://github.com/sponsors/deuriib)
 [![Download the app](https://img.shields.io/github/v/release/msitarzewski/agency-agents-app?label=Download%20app&color=2563eb)](https://github.com/deuriib/agency-agents-app/releases/latest)
 
 > ### 🆕 There's an app now
@@ -1216,8 +1215,6 @@ To everyone who has opened a PR, filed an issue, started a Discussion, or simply
 
 **🎭 The Agency: Your AI Dream Team Awaits 🎭**
 
-[⭐ Star this repo](https://github.com/deuriib/agency-agents) • [🍴 Fork it](https://github.com/deuriib/agency-agents/fork) • [🐛 Report an issue](https://github.com/deuriib/agency-agents/issues) • [❤️ Sponsor](https://github.com/sponsors/deuriib)
-
-Made with ❤️ by the community, for the community
+[⭐ Star this repo](https://github.com/deuriib/agency-agents) • [🍴 Fork it](https://github.com/deuriib/agency-agents/fork) • [🐛 Report an issue](https://github.com/deuriib/agency-agents/issues)
 
 </div>
