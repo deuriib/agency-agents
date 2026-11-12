@@ -4,7 +4,7 @@
 Validates criteria D1-D8, D10, D13:
 - D1: mkdocs.yml exists, Material theme, docs_dir != 'docs', site/ in .gitignore
 - D2: mkdocs build --strict exits 0 with 0 warnings/broken links
-- D3: Site contains exactly 18 division pages and 298 agent pages
+- D3: Site contains exactly 18 division pages and 299 agent pages
 - D4: 0 files originating from docs/agency-flow/**
 - D6: Every content page carries the language switcher
 - D7: Fallback invariant holds: fallback_count == total_pages - 22
@@ -48,7 +48,7 @@ def test_d1_structure() -> None:
 
 
 def test_d3_parity() -> None:
-    print("[TEST] D3: Catalog Parity (18 divisions + 298 agents)...")
+    print("[TEST] D3: Catalog Parity (18 divisions + 299 agents)...")
     # Verify raw repo agent count
     raw_agents = []
     for d in DIVISIONS:
@@ -56,7 +56,7 @@ def test_d3_parity() -> None:
             for f in files:
                 if f.endswith(".md"):
                     raw_agents.append(Path(root) / f)
-    assert len(raw_agents) == 298, f"Expected 298 raw agents, found {len(raw_agents)}"
+    assert len(raw_agents) == 299, f"Expected 299 raw agents, found {len(raw_agents)}"
 
     # Check generated English docs
     en_divisions_dir = REPO_ROOT / "site-docs" / "docs" / "en" / "divisions"
@@ -66,7 +66,7 @@ def test_d3_parity() -> None:
     assert len(division_landing_pages) == 18, f"Expected 18 division index pages, found {len(division_landing_pages)}"
 
     agent_pages = [p for p in en_divisions_dir.glob("*/*.md") if p.name != "index.md"]
-    assert len(agent_pages) == 298, f"Expected 298 agent markdown pages, found {len(agent_pages)}"
+    assert len(agent_pages) == 299, f"Expected 299 agent markdown pages, found {len(agent_pages)}"
     print("  -> D3 PASS")
 
 
