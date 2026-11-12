@@ -70,15 +70,15 @@ Guide accountants, developers, and finance teams through the complete Formato 60
 | 12 | ITBIS Retenido | `0.00` | `<=` field 11; requires field 7 |
 | 13 | ITBIS sujeto a Proporcionalidad | `0.00` | Art. 349; feeds IT-1 Annex A |
 | 14 | ITBIS llevado al Costo | `0.00` | Non-deductible ITBIS |
-| 15 | ITBIS por Adelantar | `0.00` | Deductible tax credit |
+| 15 | ITBIS por Adelantar | `0.00` | Auto: field 11 − field 14 (ITBIS Facturado − ITBIS llevado al Costo) |
 | 16 | ITBIS percibido en compras | `0.00` | Perception-agent ITBIS |
 | 17 | Tipo de Retención en ISR | 2 digits | `01`–`09`; required when field 18 > 0 |
 | 18 | Monto Retención Renta | `0.00` | Requires field 7 |
 | 19 | ISR Percibido en compras | `0.00` | Income tax perceived |
 | 20 | Impuesto Selectivo al Consumo | `0.00` | ISC, when applicable |
 | 21 | Otros Impuestos / Tasas | `0.00` | Other statutory charges |
-| 22 | Monto Propina Legal | `0.00` | 10% legal tip where applicable |
-| 23 | Forma de Pago | 2 digits | `01` cash, `02` check/transfer, `03` card, `04` credit, `05` barter, `06` other |
+| 22 | Monto Propina Legal | `0.00` | 10% legal tip under Ley 54-32 |
+| 23 | Forma de Pago | 2 digits | `01` Efectivo · `02` Cheque/Transferencia/Depósito · `03` Tarjeta crédito/débito · `04` Compra a crédito · `05` Permuta · `06` Notas de crédito · `07` Mixto |
 
 > Codes and optionality must be confirmed against the current DGII 606 template and instructions before each filing. The table is a working contract, not a substitute for the official document.
 
@@ -117,7 +117,7 @@ ISR_RETENTION_TYPES = {
     "09": "Retenciones subsector de ganadería de carne bovina",
 }
 
-PAYMENT_METHODS = {"01", "02", "03", "04", "05", "06"}
+PAYMENT_METHODS = {"01", "02", "03", "04", "05", "06", "07"}
 
 
 def validate_rnc(value: str) -> bool:
@@ -178,7 +178,7 @@ class Purchase:
     itbis_retenido: Decimal = Decimal("0")
     itbis_proporcional: Decimal = Decimal("0")
     itbis_costo: Decimal = Decimal("0")
-    itbis_adelantar: Decimal = Decimal("0")
+    itbis_adelantar: Decimal = Decimal("0")  # DGII auto-computes: ITBIS Facturado − ITBIS llevado al Costo
     itbis_percibido: Decimal = Decimal("0")
     tipo_retencion_isr: str = ""
     isr_retenido: Decimal = Decimal("0")
@@ -193,11 +193,12 @@ class Purchase:
 
 class Formato606:
     def __init__(self, rnc_declarante: str, periodo: str):
-        if not re.fullmatch(r"\d{9}", re.sub(r"\D", "", rnc_declarante)):
-            raise ValueError("Declarant RNC must be 9 digits")
+        declarante = re.sub(r"\D", "", rnc_declarante)
+        if not re.fullmatch(r"\d{9}|\d{11}", declarante):
+            raise ValueError("Declarant ID must be a 9-digit RNC or 11-digit Cédula")
         if not re.fullmatch(r"\d{6}", periodo):
             raise ValueError("Periodo must be AAAAMM")
-        self.rnc = re.sub(r"\D", "", rnc_declarante)
+        self.rnc = declarante
         self.periodo = periodo
         self.records: list[Purchase] = []
         self.errors: list[str] = []
