@@ -5,7 +5,7 @@ Generates the docs directory from repository markdown sources and agent catalog:
 - English docs in site-docs/docs/en/
 - Spanish docs in site-docs/docs/es/ (22 core translated pages: home, installation,
   contributing, security, and 18 division landing pages)
-- 18 division landing pages and 298 agent persona pages generated deterministically.
+- 18 division landing pages and 299 agent persona pages generated deterministically.
 """
 
 from __future__ import annotations
@@ -140,7 +140,7 @@ def build_en_home(readme_text: str) -> str:
     # Extract overview and features from README
     return """# 🎭 The Agency
 
-> **A complete AI agency at your fingertips** — 298 specialized AI agent personas ready to install across Claude Code, Cursor, Codex, Gemini CLI, OpenCode, Qwen, Windsurf, Aider, and more.
+> **A complete AI agency at your fingertips** — 299 specialized AI agent personas ready to install across Claude Code, Cursor, Codex, Gemini CLI, OpenCode, Qwen, Windsurf, Aider, and more.
 
 ## Overview
 
@@ -213,7 +213,7 @@ uv run agency-agents install --tool claude-code
 def build_es_home() -> str:
     return """# 🎭 The Agency
 
-> **Una agencia completa de IA al alcance de tus dedos** — 298 agentes especializados listos para instalarse en Claude Code, Cursor, Codex, Gemini CLI, OpenCode, Qwen, Windsurf, Aider y más.
+> **Una agencia completa de IA al alcance de tus dedos** — 299 agentes especializados listos para instalarse en Claude Code, Cursor, Codex, Gemini CLI, OpenCode, Qwen, Windsurf, Aider y más.
 
 ## Descripción General
 
@@ -327,8 +327,8 @@ En su lugar, envía un reporte confidencial a través de los canales privados de
 
 
 def build_divisions_and_agents() -> None:
-    en_div_index = ["# 🏛️ Divisions Overview\n\nThe Agency is structured into 18 specialized divisions, organizing 298 expert AI agents:\n\n| Division | Agents | Description |\n|---|---|---|"]
-    es_div_index = ["# 🏛️ Resumen de Divisiones\n\nThe Agency está organizada en 18 divisiones especializadas con 298 agentes de IA expertos:\n\n| División | Agentes | Descripción |\n|---|---|---|"]
+    en_div_index = ["# 🏛️ Divisions Overview\n\nThe Agency is structured into 18 specialized divisions, organizing 299 expert AI agents:\n\n| Division | Agents | Description |\n|---|---|---|"]
+    es_div_index = ["# 🏛️ Resumen de Divisiones\n\nThe Agency está organizada en 18 divisiones especializadas con 299 agentes de IA expertos:\n\n| División | Agentes | Descripción |\n|---|---|---|"]
 
     nav_divisions_en = []
     nav_divisions_es = []
@@ -413,7 +413,7 @@ def build_divisions_and_agents() -> None:
 def write_mkdocs_config() -> None:
     mkdocs_config = {
         "site_name": "The Agency",
-        "site_description": "298 specialized AI agents for development, design, and operations",
+        "site_description": "299 specialized AI agents for development, design, and operations",
         "site_url": "https://deuriib.github.io/agency-agents/",
         "repo_name": "deuriib/agency-agents",
         "repo_url": "https://github.com/deuriib/agency-agents",

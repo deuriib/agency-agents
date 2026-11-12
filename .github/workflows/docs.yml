@@ -56,7 +56,7 @@ jobs:
           echo "### Docs Site Build Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Duration:** ${duration}s (budget: < 120s)" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Strict Mode:** PASS (0 warnings)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Parity:** 18 divisions + 298 agents" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Parity:** 18 divisions + 299 agents" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Status:** ✅ SUCCESS" >> "$GITHUB_STEP_SUMMARY"
 
           if [ "$duration" -ge 120 ]; then
