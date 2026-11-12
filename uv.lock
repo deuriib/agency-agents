@@ -1065,7 +1065,7 @@ wheels = [
 
 [[package]]
 name = "py-agency-agents"
-version = "1.13.0"
+version = "1.13.1"
 source = { editable = "." }
 dependencies = [
     { name = "prompt-toolkit" },
