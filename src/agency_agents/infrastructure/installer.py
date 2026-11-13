@@ -135,9 +135,11 @@ class InstallationManager:
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as f:
                 f.write(content)
-            # `mkstemp` creates 0600; restore the 0644 mode `write_text` produced
-            # so a `--scope project` install stays readable in a shared checkout.
-            os.chmod(tmp_name, 0o644)
+            # `mkstemp` creates the temp file 0600; the final artifact keeps that
+            # owner-only mode. Installed agents are per-user tool config (not
+            # shared secrets), so owner-read/write is the right default — it is
+            # also more restrictive than the 0644 `write_text` produced, and
+            # avoids a world-readable chmod.
             os.replace(tmp_name, path)
         except BaseException:
             with contextlib.suppress(OSError):
