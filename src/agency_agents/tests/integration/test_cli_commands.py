@@ -437,7 +437,7 @@ def test_install_without_flags_asks_for_a_tool_when_none_is_detected(
     """The wizard's tool picker is preserved as a dialog, not as a second wizard."""
     script_browser(monkeypatch, ["code-reviewer"])
     monkeypatch.setattr(
-        "agency_agents.cli.main.choose_tools", lambda catalog, detected=(): ["claude-code"]
+        "agency_agents.cli.main.choose_tools", lambda catalog, detected=(), scope=None: ["claude-code"]
     )
 
     result = invoke(repo, ["install"], monkeypatch)
@@ -451,7 +451,7 @@ def test_install_interactive_reports_a_cancelled_tool_dialog(
 ) -> None:
     script_browser(monkeypatch, ["code-reviewer"])
 
-    def cancel(catalog: object, detected: object = ()) -> list[str]:
+    def cancel(catalog: object, detected: object = (), scope: object = None) -> list[str]:
         raise BrowserCancelled("No tool selected, so nothing was installed.")
 
     monkeypatch.setattr("agency_agents.cli.main.choose_tools", cancel)

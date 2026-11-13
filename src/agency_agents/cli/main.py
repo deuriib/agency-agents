@@ -4,6 +4,7 @@ from typing import Dict, List, Mapping, Optional
 
 import typer
 from rich.console import Console
+from rich.markup import escape as _rich_escape
 from rich.panel import Panel
 from rich.table import Table
 
@@ -40,6 +41,21 @@ for _stream in (sys.stdout, sys.stderr):
 
 app = typer.Typer(help="Agency Agents Management Tool")
 console = Console()
+
+
+def _safe(value: object) -> str:
+    """Render caller/catalog text literally inside rich markup.
+
+    ``Console`` has markup enabled, so a caller-supplied selector such as
+    ``--agent '[/x]'`` becomes a ``MarkupError`` traceback, and control bytes in a
+    non-tty stream reach logs intact. Strip C0/C1/DEL and escape the markup
+    brackets so external text is always printed verbatim, never parsed or injected.
+    """
+    text = "".join(
+        c for c in str(value)
+        if c in "\n\t" or (c >= " " and c != "\x7f" and not ("\x80" <= c <= "\x9f"))
+    )
+    return _rich_escape(text)
 
 @app.command()
 def lint():
@@ -160,13 +176,13 @@ def _print_plan(console: Console, installer: InstallationManager, agents, tools,
     for tool_kebab in tools:
         tool = installer.catalog.load_tools().tools.get(tool_kebab)
         if not tool:
-            console.print(f"[bold red]  - {tool_kebab}: unknown tool[/bold red]")
+            console.print(f"[bold red]  - {_safe(tool_kebab)}: unknown tool[/bold red]")
             continue
         dests = tool.dest.get(scope, [])
-        console.print(f"[bold cyan]{tool_kebab}[/bold cyan] ({tool.installKind}, {len(agents)} agents, scope={scope})")
+        console.print(f"[bold cyan]{_safe(tool_kebab)}[/bold cyan] ({tool.installKind}, {len(agents)} agents, scope={_safe(scope)})")
         for pattern in dests:
             marker = "roster file" if tool.installKind == "roster" else "per agent"
-            console.print(f"    {pattern}  [{marker}]")
+            console.print(f"    {_safe(pattern)}  [{marker}]")
         if not dests:
             console.print("    [dim]no destinations for this scope[/dim]")
 
@@ -175,7 +191,7 @@ def _collect_roster(console: Console, root_dir: Path, divisions) -> Dict[str, Li
     try:
         return _collect_by_division(root_dir, divisions)
     except ValueError as e:
-        console.print(f"[bold red]❌ {e}[/bold red]")
+        console.print(f"[bold red]❌ {_safe(e)}[/bold red]")
         raise typer.Exit(code=1)
 
 
@@ -220,7 +236,7 @@ def _handle_list(console: Console, catalog, by_division, divisions, list_what: s
             console.print(f"  {line}")
         return
     console.print(
-        f"[bold red]Unknown --list value '{list_what}'. "
+        f"[bold red]Unknown --list value '{_safe(list_what)}'. "
         f"Use: tools | teams | agents | runbooks | all[/bold red]"
     )
     raise typer.Exit(code=1)
@@ -240,7 +256,7 @@ def _resolve_runbook_roster(
     runbook = by_slug.get(slug)
     if runbook is None:
         console.print(
-            f"[bold red]\u274c Unknown runbook '{slug}'. "
+            f"[bold red]\u274c Unknown runbook '{_safe(slug)}'. "
             f"Run `agency-agents install --list runbooks` to see all {len(by_slug)}.[/bold red]"
         )
         raise typer.Exit(code=1)
@@ -307,12 +323,12 @@ def install(
         runbook_title = definition.title
         agent_ids = roster_ids
         console.print(
-            f"[bold]Runbook[/bold] {definition.slug} \u2014 {definition.title} "
-            f"({definition.mode}, {definition.duration})"
+            f"[bold]Runbook[/bold] {_safe(definition.slug)} \u2014 {_safe(definition.title)} "
+            f"({_safe(definition.mode)}, {_safe(definition.duration)})"
         )
         for group in definition.roster:
             console.print(
-                f"  {group.group:<26} {group.activation:<12} {len(group.agents):>3} agents"
+                f"  {_safe(group.group):<26} {_safe(group.activation):<12} {len(group.agents):>3} agents"
             )
 
     # Filters, --tool, --runbook, --dry-run and --no-interactive all force a
@@ -349,17 +365,17 @@ def install(
                 agents_file=agents_file,
             )
         except SelectionError as e:
-            console.print(f"[bold red]❌ {e}[/bold red]")
+            console.print(f"[bold red]❌ {_safe(e)}[/bold red]")
             raise typer.Exit(code=1)
 
     tools_catalog = catalog.load_tools().tools
     unknown = [t for t in selected_tools if t not in tools_catalog]
     if unknown:
-        console.print(f"[bold red]❌ Unknown tool(s): {', '.join(unknown)}[/bold red]")
+        console.print(f"[bold red]❌ Unknown tool(s): {_safe(', '.join(unknown))}[/bold red]")
         raise typer.Exit(code=1)
 
     if scope not in ("user", "project"):
-        console.print(f"[bold red]❌ Invalid scope '{scope}'. Use 'user' or 'project'.[/bold red]")
+        console.print(f"[bold red]❌ Invalid scope '{_safe(scope)}'. Use 'user' or 'project'.[/bold red]")
         raise typer.Exit(code=1)
 
     unsupported = [t for t in selected_tools if not tools_catalog[t].dest.get(scope)]
@@ -369,7 +385,7 @@ def install(
             # the skip visible instead of reporting a clean success.
             console.print(
                 f"[bold yellow]⚠ Skipping tools with no {scope} destination: "
-                f"{', '.join(unsupported)} (use --scope project)[/bold yellow]"
+                f"{_safe(', '.join(unsupported))} (use --scope project)[/bold yellow]"
             )
             selected_tools = [t for t in selected_tools if t not in unsupported]
         else:
@@ -457,6 +473,28 @@ def _browse_and_install(
         console.print("[bold red]❌ No agents found in the roster.[/bold red]")
         raise typer.Exit(code=1)
 
+    tools_catalog = catalog.load_tools().tools
+    resolved_scope = scope or "user"
+
+    # Validate everything known before the first frame, so a typo does not burn
+    # a whole interactive session (fail fast and closed).
+    if resolved_scope not in ("user", "project"):
+        console.print(
+            f"[bold red]❌ Invalid scope '{_safe(resolved_scope)}'. "
+            f"Use 'user' or 'project'.[/bold red]"
+        )
+        raise typer.Exit(code=1)
+    if tool and tool not in tools_catalog:
+        console.print(f"[bold red]❌ Unknown tool '{_safe(tool)}'.[/bold red]")
+        raise typer.Exit(code=1)
+    if tool and not tools_catalog[tool].dest.get(resolved_scope):
+        supported = [s for s in ("user", "project") if tools_catalog[tool].dest.get(s)]
+        console.print(
+            f"[bold red]❌ {_safe(tool)} has no {resolved_scope} destination "
+            f"(supported: {', '.join(supported) or 'none'})[/bold red]"
+        )
+        raise typer.Exit(code=1)
+
     try:
         selected = run_browser(model, title="Agency Agents - select agents")
     except BrowserCancelled as e:
@@ -465,9 +503,8 @@ def _browse_and_install(
 
     if not selected:
         console.print("[bold yellow]Nothing selected — nothing installed.[/bold yellow]")
-        return
+        raise typer.Exit(code=1)
 
-    tools_catalog = catalog.load_tools().tools
     if tool:
         selected_tools = [tool]
     else:
@@ -476,38 +513,33 @@ def _browse_and_install(
             # The wizard used to ask this with a numbered list; the dialog keeps
             # the capability without a second interactive surface.
             try:
-                selected_tools = choose_tools(tools_catalog)
+                selected_tools = choose_tools(tools_catalog, scope=resolved_scope)
             except BrowserCancelled as e:
                 console.print(f"[bold yellow]{e}[/bold yellow]")
                 raise typer.Exit(code=1)
         if not selected_tools:
             console.print("[bold yellow]No tool selected — nothing installed.[/bold yellow]")
-            return
+            raise typer.Exit(code=1)
 
-    unknown = [t for t in selected_tools if t not in tools_catalog]
-    if unknown:
-        console.print(f"[bold red]❌ Unknown tool(s): {', '.join(unknown)}[/bold red]")
-        raise typer.Exit(code=1)
-
-    resolved_scope = scope or "user"
-    if resolved_scope not in ("user", "project"):
-        console.print(f"[bold red]❌ Invalid scope '{resolved_scope}'. Use 'user' or 'project'.[/bold red]")
-        raise typer.Exit(code=1)
-
+    # Detected tools are our default, not the user's explicit choice, so a tool
+    # with no destination for this scope is skipped with a warning — not a hard
+    # error (mirrors `install`'s skip branch). An explicit `--tool` was already
+    # validated above.
     unsupported = [t for t in selected_tools if not tools_catalog[t].dest.get(resolved_scope)]
-    if unsupported:
-        for t in unsupported:
-            supported = [s for s in ("user", "project") if tools_catalog[t].dest.get(s)]
-            console.print(
-                f"[bold red]❌ {t} has no {resolved_scope} destination "
-                f"(supported: {', '.join(supported) or 'none'})[/bold red]"
-            )
-        raise typer.Exit(code=1)
+    if unsupported and tool is None:
+        console.print(
+            f"[bold yellow]⚠ Skipping tools with no {resolved_scope} destination: "
+            f"{_safe(', '.join(unsupported))} (use --scope project)[/bold yellow]"
+        )
+        selected_tools = [t for t in selected_tools if t not in unsupported]
+        if not selected_tools:
+            console.print("[bold yellow]No tool applicable to this scope — nothing installed.[/bold yellow]")
+            raise typer.Exit(code=1)
 
     try:
         agents = select_agents(by_division, agent_ids=selected)
     except SelectionError as e:
-        console.print(f"[bold red]❌ {e}[/bold red]")
+        console.print(f"[bold red]❌ {_safe(e)}[/bold red]")
         raise typer.Exit(code=1)
 
     for tool_kebab in selected_tools:
@@ -572,9 +604,9 @@ def _install_agents(
                     parallel=parallel,
                     jobs=jobs,
                 )
-            except (RuntimeError, UnknownFormatError) as e:
+            except (RuntimeError, UnknownFormatError, OSError) as e:
                 failures.append(t_kebab)
-                console.print(f"[bold red]\u274c Error installing {t_kebab}:[/bold red] {e}")
+                console.print(f"[bold red]\u274c Error installing {t_kebab}:[/bold red] {_safe(e)}")
     return failures
 
 
