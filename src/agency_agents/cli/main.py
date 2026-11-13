@@ -8,6 +8,7 @@ from rich.markup import escape as _rich_escape
 from rich.panel import Panel
 from rich.table import Table
 
+from agency_agents import __version__
 from agency_agents.core.converter import ConverterEngine, UnknownFormatError
 from agency_agents.core.models import Agent
 from agency_agents.core.originality import run_originality_check
@@ -39,8 +40,25 @@ for _stream in (sys.stdout, sys.stderr):
     if _stream.encoding and _stream.encoding.lower() not in ("utf-8", "utf8"):
         _stream.reconfigure(encoding="utf-8", errors="replace")
 
-app = typer.Typer(help="Agency Agents Management Tool")
+app = typer.Typer(
+    help="Agency Agents Management Tool",
+    context_settings={"help_option_names": ["-h", "--help"]},
+)
 console = Console()
+
+
+@app.callback(invoke_without_command=True)
+def _main_callback(
+    ctx: typer.Context,
+    version: bool = typer.Option(False, "--version", "-v", help="Show the version and exit."),
+) -> None:
+    """Agency Agents Management Tool."""
+    if version:
+        console.print(f"Agency Agents {__version__}")
+        raise typer.Exit()
+    if ctx.invoked_subcommand is None:
+        console.print(ctx.get_help(), markup=False)
+        raise typer.Exit()
 
 
 def _safe(value: object) -> str:

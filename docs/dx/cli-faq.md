@@ -37,7 +37,7 @@ Keys verified against `browser.apply_key` — the on-screen footer names only si
 | `up`/`down`, `c-p`/`c-n` · `pageup`/`pagedown`, `c-b`/`c-f` | move one row · move ten rows |
 | `tab` · `c-a` · `c-x` · `c-u` | toggle a row · select all visible · clear · reset the filter |
 | printable char · `backspace`/`c-h` | widen the filter · narrow it |
-| `enter`/`c-m` · `escape`/`c-c`/`c-q` | install the selection · leave (selection kept) |
+| `enter`/`c-m` · `escape`/`c-c`/`c-q` | install the selection · cancel (selection discarded) |
 
 All 22 behaviours were exercised against the model and pass; check one with no terminal: `uv run python -c "from agency_agents.infrastructure.browser import BrowserModel,apply_key; print(apply_key(BrowserModel(rows=[]),'enter'))"`
 
@@ -58,3 +58,10 @@ frontmatter; **any** inconsistency is now fatal and names the file or catalog en
 D2 (`docs/dx/baseline.md:99`) it printed `❌ Tools Consistency Errors` and exited **0**, so CI gated on a
 green run full of red text. `bash scripts/ci/assert_lint_fails.sh` (exit 0) proves the gate fails: it
 injects a schema-valid tool naming an unregistered `format`, asserts a non-zero exit, restores `tools.json` via a `trap`.
+
+## 6. `--version`, `-v`, `-h`, and the no-args default
+
+- `agency-agents --version` / `-v` prints `Agency Agents <version>` and exits 0.
+- `agency-agents -h` is the short form of `--help`; both print the full command list and exit 0.
+- A bare `agency-agents` with no command is **help, not an error**: it prints the same help and exits 0
+  (previously it exited 2 with `Missing command`).
