@@ -15,6 +15,7 @@ The view lives in `browser_app.py` and holds no state of its own.
 
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Set
 
@@ -40,6 +41,22 @@ class BrowserRow:
         )
 
 
+def _display_safe(text: str) -> str:
+    """Neutralise control and format characters for on-screen text.
+
+    Agent `name`/`description`/`division` come from catalog markdown we do not
+    control. prompt-toolkit already remaps C0/C1 to visible ``^X``/``<XX>``, but
+    Unicode *format* characters (RTL/bidi overrides, zero-width, line/paragraph
+    separators) pass through and can visually spoof a row on a bidi terminal.
+    Replace them with a readable escape so what renders is what the string
+    is, while keeping the slug untouched (it is already ``[a-z0-9-]``).
+    """
+    return "".join(
+        c if unicodedata.category(c) not in ("Cc", "Cf", "Zl", "Zp") else f"\\u{ord(c):04x}"
+        for c in text
+    )
+
+
 def build_rows(by_division: Mapping[str, Sequence[Agent]]) -> List[BrowserRow]:
     """Flatten the roster into rows, ordered by division then agent name.
 
@@ -52,10 +69,10 @@ def build_rows(by_division: Mapping[str, Sequence[Agent]]) -> List[BrowserRow]:
         for agent in by_division[division]:
             rows.append(
                 BrowserRow(
-                    division=division,
+                    division=_display_safe(division),
                     slug=agent.slug,
-                    name=agent.frontmatter.name,
-                    description=(agent.frontmatter.description or "").strip(),
+                    name=_display_safe(agent.frontmatter.name),
+                    description=_display_safe((agent.frontmatter.description or "").strip()),
                 )
             )
     rows.sort(key=lambda row: (row.division, row.name.lower(), row.slug))
@@ -85,8 +102,12 @@ class BrowserModel:
 
         Keeping the cursor where it was would leave it pointing past the end of
         a narrowed list, which is how a filtered browser shows a blank detail
-        pane with rows still visible.
+        pane with rows still visible. An identical query is a no-op, so a stray
+        backspace or c-u on an already-empty query does not yank the cursor to
+        the top of the list.
         """
+        if query == self.query:
+            return
         self.query = query
         self.cursor = 0
 
@@ -105,7 +126,7 @@ class BrowserModel:
         visible = self.visible()
         if not visible:
             return None
-        return visible[min(self.cursor, len(visible) - 1)]
+        return visible[max(0, min(self.cursor, len(visible) - 1))]
 
     # -------------------------------------------------------------- selection
 
@@ -163,7 +184,7 @@ class BrowserModel:
         total = len(self.rows)
         picked = len(self.selected)
         scope = f"{shown}/{total} shown" if self.query.strip() else f"{total} agents"
-        return f"{scope} | {picked} selected | type to filter, space to select, enter to install"
+        return f"{scope} | {picked} selected | type to filter, tab to select, enter to install"
 
 
 def slugs_for_division(rows: Iterable[BrowserRow], division: str) -> List[str]:
@@ -190,13 +211,29 @@ _BACKSPACE = {"backspace", "c-h"}
 _ACCEPT = {"enter", "c-m"}
 _ABORT = {"escape", "c-c", "c-q"}
 
-try:
-    from prompt_toolkit.keys import Keys as _Keys
+# Raw control bytes that prompt-toolkit's `Keys.Any` delivers via `event.data`.
+# They must be translated to the names `apply_key` understands *before* the
+# parsed key identity is consulted, because prompt-toolkit names Tab `c-i` and
+# Enter `c-m` — names the browser does not use. See `key_name`.
+_CHAR_NAMES = {
+    "\r": "enter",
+    "\n": "enter",
+    "\t": "tab",
+    "\x08": "c-h",
+    "\x7f": "backspace",
+}
 
-    _BACKSPACE.add(str(_Keys.ControlH))
-    _BACKSPACE.add(str(_Keys.Backspace))
-except Exception:  # pragma: no cover - prompt_toolkit is a hard dependency
-    pass
+
+def key_name(key: str, data: str) -> str:
+    """Name a key press for `apply_key`.
+
+    `key` is the parsed key identity (a `Keys` enum `.value` such as ``"up"`` or
+    ``"c-a"``, or the literal character for a printable key). `data` is the raw
+    byte sequence prompt-toolkit received. Control bytes are matched on `data`
+    first so that Tab/Enter/Backspace resolve to the browser's names rather than
+    prompt-toolkit's (``c-i``/``c-m``); everything else passes through as `key`.
+    """
+    return _CHAR_NAMES.get(data, key)
 
 PAGE_SIZE = 10
 

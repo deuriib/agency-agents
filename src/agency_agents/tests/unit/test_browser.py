@@ -21,8 +21,10 @@ from agency_agents.infrastructure.browser import (
     PAGE_SIZE,
     BrowserModel,
     BrowserRow,
+    _display_safe,
     apply_key,
     build_rows,
+    key_name,
     slugs_for_division,
 )
 
@@ -400,3 +402,72 @@ def test_slugs_for_division_filters_by_division(roster: Dict[str, List[Agent]]) 
 
     assert slugs_for_division(rows, "marketing") == ["growth-hacker"]
     assert slugs_for_division(rows, "nope") == []
+
+
+# --------------------------------------------------------------------- key_name
+
+
+def test_key_name_translates_control_bytes_to_browser_names() -> None:
+    # prompt-toolkit names Tab/Enter/Backspace `c-i`/`c-m`/`c-h`; the browser's
+    # names differ, so the raw byte must win over the parsed key identity.
+    assert key_name("c-i", "\t") == "tab"
+    assert key_name("c-m", "\r") == "enter"
+    assert key_name("c-m", "\n") == "enter"
+    assert key_name("c-h", "\x7f") == "backspace"
+
+
+def test_key_name_passes_through_named_keys_and_printables() -> None:
+    assert key_name("up", "\x1b[A") == "up"
+    assert key_name("down", "\x1b[B") == "down"
+    assert key_name("pageup", "\x1b[5~") == "pageup"
+    assert key_name("pagedown", "\x1b[6~") == "pagedown"
+    assert key_name("c-a", "\x01") == "c-a"
+    assert key_name("escape", "\x1b") == "escape"
+    assert key_name("a", "a") == "a"
+
+
+def test_apply_key_moves_on_arrow_key_names() -> None:
+    model = BrowserModel(
+        rows=[
+            BrowserRow("d", "a", "A", ""),
+            BrowserRow("d", "b", "B", ""),
+            BrowserRow("d", "c", "C", ""),
+        ]
+    )
+
+    apply_key(model, key_name("down", "\x1b[B"))
+    assert model.cursor == 1
+    apply_key(model, key_name("up", "\x1b[A"))
+    assert model.cursor == 0
+
+
+# ------------------------------------------------------------------ display
+
+
+def test_display_safe_neutralises_bidi_and_zero_width() -> None:
+    assert _display_safe("\u202eAuditor\u202c") == "\\u202eAuditor\\u202c"
+    assert _display_safe("a\u200bb") == "a\\u200bb"
+    assert _display_safe("plain") == "plain"
+
+
+# ------------------------------------------------------- query/cursor guards
+
+
+def test_set_query_is_a_no_op_when_unchanged() -> None:
+    model = BrowserModel(rows=[BrowserRow("d", "a", "A", "")])
+    model.move(0)
+    model.cursor = 0
+
+    model.set_query("")
+
+    assert model.cursor == 0
+
+
+def test_current_clamps_a_negative_cursor() -> None:
+    model = BrowserModel(
+        rows=[BrowserRow("d", "a", "A", ""), BrowserRow("d", "b", "B", "")]
+    )
+    model.cursor = -2
+
+    assert model.current() is not None
+    assert model.current().slug == "a"

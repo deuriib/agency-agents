@@ -1,5 +1,7 @@
+import contextlib
 import os
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -97,9 +99,8 @@ class InstallationManager:
 
         for i, pattern in enumerate(dests):
             filename, content = outputs[i] if i < len(outputs) else outputs[0]
-            target_base = self.resolve_path(pattern, slug, scope, tool_kebab=tool_kebab)
-            target_base.parent.mkdir(parents=True, exist_ok=True)
-            target_base.write_text(content, encoding='utf-8')
+            target = self.resolve_path(pattern, slug, scope, tool_kebab=tool_kebab)
+            self._atomic_write(target, content)
 
     def install_roster(self, agents: List[Agent], tool_kebab: str, scope: str = "user"):
         tool = self.catalog.load_tools().tools.get(tool_kebab)
@@ -118,8 +119,30 @@ class InstallationManager:
         full_content = header + body
         for pattern in dests:
             target = self.resolve_path(pattern, "roster", scope)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(full_content, encoding='utf-8')
+            self._atomic_write(target, full_content)
+
+    def _atomic_write(self, path: Path, content: str) -> None:
+        """Write a rendered artifact atomically.
+
+        ``Path.write_text`` truncates then writes, so an interrupt, ``ENOSPC`` or
+        ``ENAMETOOLONG`` leaves a partial file in the user's tool config. Write a
+        unique temp file beside the target and ``os.replace`` it, so an artifact
+        appears complete or not at all and a torn write can never masquerade as a
+        full install.
+        """
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp_name = tempfile.mkstemp(dir=path.parent, prefix=path.name + ".", suffix=".tmp")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                f.write(content)
+            # `mkstemp` creates 0600; restore the 0644 mode `write_text` produced
+            # so a `--scope project` install stays readable in a shared checkout.
+            os.chmod(tmp_name, 0o644)
+            os.replace(tmp_name, path)
+        except BaseException:
+            with contextlib.suppress(OSError):
+                os.unlink(tmp_name)
+            raise
 
     def install_plugin(self, tool_kebab: str, scope: str = "user"):
         """
@@ -127,8 +150,10 @@ class InstallationManager:
         Runs the build script since plugins are built artifacts.
         """
         tool = self.catalog.load_tools().tools.get(tool_kebab)
-        if not tool or tool.installKind != "plugin":
-            return
+        if not tool:
+            raise RuntimeError(f"Unknown tool: {tool_kebab}")
+        if tool.installKind != "plugin":
+            raise RuntimeError(f"{tool_kebab}: not a plugin tool")
 
         # We call the existing build script to ensure 1:1 artifact generation
         # but manage it from the modular architecture.
@@ -148,10 +173,15 @@ class InstallationManager:
                 ["uv", "run", "python", str(build_script), "--out", str(out_dir)],
                 check=True,
                 capture_output=True,
-                text=True
+                text=True,
+                timeout=300,
             )
+        except subprocess.TimeoutExpired as e:
+            raise RuntimeError(f"Hermes plugin build timed out after 300s: {e.cmd[0]}") from e
+        except FileNotFoundError as e:
+            raise RuntimeError("Hermes plugin build needs `uv` on PATH") from e
         except subprocess.CalledProcessError as e:
-            raise RuntimeError(f"Hermes plugin build failed: {e.stderr}")
+            raise RuntimeError(f"Hermes plugin build failed: {e.stderr}") from e
 
     def install_all_for_tool(
         self,

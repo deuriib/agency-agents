@@ -240,7 +240,7 @@ def test_tui_with_an_empty_selection_installs_nothing(
 
     result = invoke(repo, ["tui", "--tool", "claude-code"], monkeypatch)
 
-    assert result.exit_code == 0
+    assert result.exit_code == 1
     assert "Nothing selected" in result.output
     assert not (repo / "home" / ".claude").exists()
 
@@ -269,7 +269,7 @@ def test_tui_asks_for_a_tool_when_none_is_detected(
         "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
     )
     monkeypatch.setattr(
-        "agency_agents.cli.main.choose_tools", lambda catalog, detected=(): ["claude-code"]
+        "agency_agents.cli.main.choose_tools", lambda catalog, detected=(), scope=None: ["claude-code"]
     )
 
     result = invoke(repo, ["tui"], monkeypatch)
@@ -295,7 +295,7 @@ def test_tui_reports_a_cancelled_tool_dialog(
         "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
     )
 
-    def cancel(catalog: object, detected: object = ()) -> list[str]:
+    def cancel(catalog: object, detected: object = (), scope: object = None) -> list[str]:
         raise BrowserCancelled("No tool selected, so nothing was installed. Pass --tool")
 
     monkeypatch.setattr("agency_agents.cli.main.choose_tools", cancel)
