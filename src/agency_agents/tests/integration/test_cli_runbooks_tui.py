@@ -25,6 +25,7 @@ from typing import Any
 import pytest
 from typer.testing import CliRunner
 
+from agency_agents import __version__
 from agency_agents.cli.main import app
 
 runner = CliRunner()
@@ -430,6 +431,55 @@ def test_installed_console_script_answers_help() -> None:
     if binary is None:
         pytest.skip("the console script is not installed in this environment")
     result = subprocess.run([binary, "--help"], capture_output=True, text=True)
+
+    assert result.returncode == 0, result.stderr
+    assert "Agency Agents Management Tool" in result.stdout
+
+
+def test_module_entry_point_no_args_exits_zero() -> None:
+    """A bare `agency-agents` is help with exit 0, not a "Missing command" (exit 2)."""
+    result = subprocess.run(
+        [sys.executable, "-m", "agency_agents"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "Agency Agents Management Tool" in result.stdout
+
+
+def test_version_flag_prints_version() -> None:
+    result = subprocess.run(
+        [sys.executable, "-m", "agency_agents", "--version"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert __version__ in result.stdout
+
+
+def test_short_version_flag_prints_version() -> None:
+    result = subprocess.run(
+        [sys.executable, "-m", "agency_agents", "-v"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert __version__ in result.stdout
+
+
+def test_short_help_flag_prints_help() -> None:
+    result = subprocess.run(
+        [sys.executable, "-m", "agency_agents", "-h"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
 
     assert result.returncode == 0, result.stderr
     assert "Agency Agents Management Tool" in result.stdout
