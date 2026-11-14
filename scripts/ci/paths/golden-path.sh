@@ -41,4 +41,4 @@ run_step "prove-it-landed" agency-agents verify --all
 # document publishes (five developer commands) is never confused with the number
 # of things this harness measures.
 run_step "observe-installed-agents" \
-  bash -c 'expected=299; written=$(find "$HOME/.claude/agents" -name "*.md" | wc -l); echo "installed agents: ${written}"; test "${written}" -ge "${expected}"'
+  bash -c 'expected=300; written=$(find "$HOME/.claude/agents" -name "*.md" | wc -l); echo "installed agents: ${written}"; test "${written}" -ge "${expected}"'
