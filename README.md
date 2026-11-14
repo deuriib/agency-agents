@@ -188,6 +188,7 @@ Building the future, one commit at a time.
 | 🔐 [Security Reviewer](engineering/engineering-review-security.md) | Threat modeling, exploitation analysis, trust-boundary review | Auditing code for attack paths, insecure defaults, and real-world risk |
 | 🗄️ [Database Optimizer](engineering/engineering-database-optimizer.md) | Schema design, query optimization, indexing strategies | PostgreSQL/MySQL tuning, slow query debugging, migration planning |
 | 🌿 [Git Workflow Master](engineering/engineering-git-workflow-master.md) | Branching strategies, conventional commits, advanced Git | Git workflow design, history cleanup, CI-friendly branch management |
+| 🐙 [GitHub Operations Engineer](engineering/engineering-github-operations-engineer.md) | GitHub platform operations, rulesets, Actions governance, triage at scale | Administering orgs, repos, and workflow permissions as reviewable configuration |
 | 🏛️ [Software Architect](engineering/engineering-software-architect.md) | System design, DDD, architectural patterns, trade-off analysis | Architecture decisions, domain modeling, system evolution strategy |
 | 🛡️ [SRE](engineering/engineering-sre.md) | SLOs, error budgets, observability, chaos engineering | Production reliability, toil reduction, capacity planning |
 | 🧬 [AI Data Remediation Engineer](engineering/engineering-ai-data-remediation-engineer.md) | Self-healing pipelines, air-gapped SLMs, semantic clustering | Fixing broken data at scale with zero data loss |
