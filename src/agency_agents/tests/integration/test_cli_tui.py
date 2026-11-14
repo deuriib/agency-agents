@@ -1,10 +1,11 @@
 """The `tui` command and its view layer.
 
-`run_browser` itself opens a full-screen application and is exercised by a human,
-not by pytest; what is covered here is everything around it — the command's
-selection handling, its target resolution, and the pure renderer that decides
-what appears on screen. That split is the point of decision D-001: the view is
-thin enough that the untestable part is the terminal loop and nothing else.
+`run_install_tui` itself opens a full-screen application and is exercised by a
+human, not by pytest; what is covered here is everything around it — the
+command's selection handling, its target resolution, and the pure renderers that
+decide what appears on screen. That split is the point of decision D-001: the
+view is thin enough that the untestable part is the terminal loop and nothing
+else.
 """
 
 from __future__ import annotations
@@ -21,6 +22,7 @@ from agency_agents.cli.main import app
 from agency_agents.infrastructure.browser import BrowserModel, BrowserRow
 from agency_agents.infrastructure.browser_app import (
     BrowserCancelled,
+    InstallSelection,
     render_screen,
 )
 
@@ -111,18 +113,25 @@ def invoke(repo: Path, args: list[str], monkeypatch: pytest.MonkeyPatch):
     return runner.invoke(app, args, catch_exceptions=False)
 
 
-def fake_browser(selection: list[str]):
-    """Replace the terminal loop with a fixed selection."""
+def _sel(
+    agents: list[str],
+    *,
+    scope: str = "user",
+    tools: list[str] | None = None,
+    project_root: Path | None = None,
+) -> InstallSelection:
+    return InstallSelection(
+        scope=scope, project_root=project_root, tools=tools or ["claude-code"], agents=agents
+    )
 
-    def _run(model: BrowserModel, title: str = "") -> list[str]:
+
+def fake_tui(selection: InstallSelection):
+    """Replace the install TUI with a fixed selection."""
+
+    def _run(*args, **kwargs) -> InstallSelection:
         return selection
 
     return _run
-
-
-def script_scope(monkeypatch: pytest.MonkeyPatch, scope: str = "user") -> None:
-    """Answer the scope dialog with a fixed choice."""
-    monkeypatch.setattr("agency_agents.cli.main.choose_scope", lambda: scope)
 
 
 # ------------------------------------------------------------------- render_screen
@@ -202,9 +211,8 @@ def test_tui_installs_the_selection(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
-        "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
+        "agency_agents.cli.main.run_install_tui", fake_tui(_sel(["growth-hacker"]))
     )
-    script_scope(monkeypatch)
 
     result = invoke(repo, ["tui", "--tool", "claude-code"], monkeypatch)
 
@@ -214,11 +222,52 @@ def test_tui_installs_the_selection(
     assert "Installed 1 agent(s)." in result.output
 
 
+def test_tui_passes_flags_as_presets(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    captured: dict[str, Any] = {}
+
+    def _run(*args, **kwargs) -> InstallSelection:
+        captured.update(kwargs)
+        return _sel(["growth-hacker"])
+
+    monkeypatch.setattr("agency_agents.cli.main.run_install_tui", _run)
+
+    invoke(
+        repo,
+        ["tui", "--tool", "opencode", "--scope", "project", "--project-root", str(repo / "proj")],
+        monkeypatch,
+    )
+
+    assert captured["tool"] == "opencode"
+    assert captured["scope"] == "project"
+    assert captured["project_root"] == repo / "proj"
+
+
+def test_tui_passes_detected_tools_as_defaults(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The detected harness list is handed to the TUI, not auto-installed."""
+    (repo / "home" / ".claude").mkdir(parents=True)
+    captured: dict[str, Any] = {}
+
+    def _run(*args, **kwargs) -> InstallSelection:
+        captured["detected"] = list(kwargs["detected"])
+        return _sel(["growth-hacker"])
+
+    monkeypatch.setattr("agency_agents.cli.main.run_install_tui", _run)
+
+    result = invoke(repo, ["tui"], monkeypatch)
+
+    assert result.exit_code == 0, result.output
+    assert captured["detected"] == ["claude-code"]
+    assert (repo / "home" / ".claude" / "agents" / "growth-hacker.md").exists()
+
+
 def test_tui_dry_run_writes_nothing(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
+        "agency_agents.cli.main.run_install_tui", fake_tui(_sel(["growth-hacker"]))
     )
-    script_scope(monkeypatch)
 
     result = invoke(repo, ["tui", "--tool", "claude-code", "--dry-run"], monkeypatch)
 
@@ -230,11 +279,10 @@ def test_tui_dry_run_writes_nothing(repo: Path, monkeypatch: pytest.MonkeyPatch)
 def test_tui_exits_1_when_the_user_cancels(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    def _cancel(model: BrowserModel, title: str = "") -> list[str]:
+    def _cancel(*args, **kwargs) -> InstallSelection:
         raise BrowserCancelled("No agents selected — nothing installed.")
 
-    monkeypatch.setattr("agency_agents.cli.main.run_browser", _cancel)
-    script_scope(monkeypatch)
+    monkeypatch.setattr("agency_agents.cli.main.run_install_tui", _cancel)
 
     result = invoke(repo, ["tui", "--tool", "claude-code"], monkeypatch)
 
@@ -245,58 +293,15 @@ def test_tui_exits_1_when_the_user_cancels(
 def test_tui_with_an_empty_selection_installs_nothing(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr("agency_agents.cli.main.run_browser", fake_browser([]))
-    script_scope(monkeypatch)
+    monkeypatch.setattr(
+        "agency_agents.cli.main.run_install_tui", fake_tui(_sel([]))
+    )
 
     result = invoke(repo, ["tui", "--tool", "claude-code"], monkeypatch)
 
     assert result.exit_code == 1
     assert "Nothing selected" in result.output
     assert not (repo / "home" / ".claude").exists()
-
-
-def test_tui_offers_detected_tools_as_the_default(
-    repo: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Detected harnesses are pre-checked in the picker, not auto-installed."""
-    (repo / "home" / ".claude").mkdir(parents=True)
-    monkeypatch.setattr(
-        "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
-    )
-    script_scope(monkeypatch)
-
-    captured: dict[str, list[str]] = {}
-
-    def _choose(catalog: object, detected: object = (), scope: object = None) -> list[str]:
-        captured["detected"] = list(detected)
-        return ["claude-code"]
-
-    monkeypatch.setattr("agency_agents.cli.main.choose_tools", _choose)
-
-    result = invoke(repo, ["tui"], monkeypatch)
-
-    assert result.exit_code == 0, result.output
-    assert captured["detected"] == ["claude-code"]
-    assert (repo / "home" / ".claude" / "agents" / "growth-hacker.md").exists()
-    assert not (repo / "home" / ".config" / "opencode").exists()
-
-
-def test_tui_asks_for_a_tool_when_none_is_detected(
-    repo: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """No detected tool still opens the picker: the destination is a question."""
-    monkeypatch.setattr(
-        "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
-    )
-    script_scope(monkeypatch)
-    monkeypatch.setattr(
-        "agency_agents.cli.main.choose_tools", lambda catalog, detected=(), scope=None: ["claude-code"]
-    )
-
-    result = invoke(repo, ["tui"], monkeypatch)
-
-    assert result.exit_code == 0, result.output
-    assert (repo / "home" / ".claude" / "agents" / "growth-hacker.md").exists()
 
 
 def test_tui_refuses_to_run_without_a_terminal(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -309,30 +314,13 @@ def test_tui_refuses_to_run_without_a_terminal(repo: Path, monkeypatch: pytest.M
     assert not (repo / "home" / ".claude").exists()
 
 
-def test_tui_refuses_to_ask_scope_without_a_terminal(
+def test_tui_reports_a_cancelled_tool_selection(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """The scope dialog also refuses a non-terminal instead of erroring."""
-    result = invoke(repo, ["tui", "--tool", "claude-code"], monkeypatch)
-
-    assert result.exit_code == 1
-    assert "needs a terminal" in result.output
-    assert "--scope" in result.output
-    assert not (repo / "home" / ".claude").exists()
-
-
-def test_tui_reports_a_cancelled_tool_dialog(
-    repo: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setattr(
-        "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
-    )
-    script_scope(monkeypatch)
-
-    def cancel(catalog: object, detected: object = (), scope: object = None) -> list[str]:
+    def cancel(*args, **kwargs) -> InstallSelection:
         raise BrowserCancelled("No tool selected, so nothing was installed. Pass --tool")
 
-    monkeypatch.setattr("agency_agents.cli.main.choose_tools", cancel)
+    monkeypatch.setattr("agency_agents.cli.main.run_install_tui", cancel)
 
     result = invoke(repo, ["tui"], monkeypatch)
 
@@ -342,40 +330,35 @@ def test_tui_reports_a_cancelled_tool_dialog(
 
 
 def test_tui_rejects_an_unknown_tool(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
-    )
-
     result = invoke(repo, ["tui", "--tool", "nope"], monkeypatch)
 
     assert result.exit_code == 1
     assert "Unknown tool" in result.output
 
 
-def test_tui_asks_for_a_project_path_when_scope_is_project(
+def test_tui_project_scope_installs_into_the_chosen_root(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Project scope without --project-root is a question, not an assumption."""
+    """A project-scope selection installs under the path the TUI resolved."""
     monkeypatch.setattr(
-        "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
-    )
-    monkeypatch.setattr("agency_agents.cli.main.choose_scope", lambda: "project")
-    monkeypatch.setattr(
-        "agency_agents.cli.main.choose_project_path",
-        lambda cwd: repo / "target-project",
+        "agency_agents.cli.main.run_install_tui",
+        fake_tui(
+            _sel(
+                ["growth-hacker"],
+                scope="project",
+                tools=["opencode"],
+                project_root=repo / "target-project",
+            )
+        ),
     )
 
-    result = invoke(repo, ["tui", "--tool", "opencode"], monkeypatch)
+    result = invoke(repo, ["tui"], monkeypatch)
 
     assert result.exit_code == 0, result.output
     assert (repo / "target-project" / ".opencode" / "agents" / "growth-hacker.md").exists()
 
 
 def test_tui_rejects_an_invalid_scope(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
-    )
-
     result = invoke(repo, ["tui", "--tool", "claude-code", "--scope", "global"], monkeypatch)
 
     assert result.exit_code == 1
@@ -385,10 +368,6 @@ def test_tui_rejects_an_invalid_scope(repo: Path, monkeypatch: pytest.MonkeyPatc
 def test_tui_rejects_a_tool_without_the_requested_scope(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(
-        "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
-    )
-
     result = invoke(repo, ["tui", "--tool", "claude-code", "--scope", "project"], monkeypatch)
 
     assert result.exit_code == 1

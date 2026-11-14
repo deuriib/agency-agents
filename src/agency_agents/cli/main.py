@@ -22,10 +22,7 @@ from agency_agents.core.validator import LintEngine
 from agency_agents.infrastructure.browser import BrowserModel, build_rows
 from agency_agents.infrastructure.browser_app import (
     BrowserCancelled,
-    choose_project_path,
-    choose_scope,
-    choose_tools,
-    run_browser,
+    run_install_tui,
 )
 from agency_agents.infrastructure.catalog import (
     CatalogManager,
@@ -488,12 +485,12 @@ def _browse_and_install(
     parallel: bool = False,
     jobs: int = 4,
 ) -> None:
-    """Browse for agents, resolve the destination, install.
+    """Run the integrated install TUI, then install what it selected.
 
     The single interactive implementation behind both `tui` and a bare
     `install`, so the two entry points can never drift. Scope and harness are
-    resolved *before* anything is installed: scope first (it decides which
-    harnesses exist and where files land), then the harness, then the roster.
+    chosen *inside* the TUI (one screen walks scope → project path → harness →
+    agents), not by separate dialogs before it opens.
     """
     model = BrowserModel(rows=build_rows(by_division))
     if not model.rows:
@@ -502,31 +499,52 @@ def _browse_and_install(
 
     tools_catalog = catalog.load_tools().tools
 
-    # A typo in an explicit --tool should fail before any dialog: reject the name
-    # without asking for scope or a path the caller would never need.
+    # Validate explicit flags before the TUI so a typo does not burn an
+    # interactive session (fail fast and closed).
     if tool and tool not in tools_catalog:
         console.print(f"[bold red]❌ Unknown tool '{_safe(tool)}'.[/bold red]")
         raise typer.Exit(code=1)
-
-    # Resolve the install scope first: it filters the harness picker and decides
-    # the destination root, so answering it later would invalidate the tool list.
-    if scope is None:
-        try:
-            scope = choose_scope()
-        except BrowserCancelled as e:
-            console.print(f"[bold yellow]{e}[/bold yellow]")
-            raise typer.Exit(code=1)
-    resolved_scope = scope or "user"
-    if resolved_scope not in ("user", "project"):
+    if scope and scope not in ("user", "project"):
         console.print(
-            f"[bold red]❌ Invalid scope '{_safe(resolved_scope)}'. "
+            f"[bold red]❌ Invalid scope '{_safe(scope)}'. "
             f"Use 'user' or 'project'.[/bold red]"
         )
         raise typer.Exit(code=1)
+    if tool and scope and not tools_catalog[tool].dest.get(scope):
+        supported = [s for s in ("user", "project") if tools_catalog[tool].dest.get(s)]
+        console.print(
+            f"[bold red]❌ {_safe(tool)} has no {scope} destination "
+            f"(supported: {', '.join(supported) or 'none'})[/bold red]"
+        )
+        raise typer.Exit(code=1)
 
-    # An explicit tool must also have a destination for the resolved scope; this
-    # check needs the scope, so it runs after scope resolution and before the
-    # project-root prompt (a tool that cannot install here needs no path).
+    detected = _detected_tools(tools_catalog)
+
+    try:
+        selection = run_install_tui(
+            model=model,
+            tools_catalog=tools_catalog,
+            detected=detected,
+            scope=scope,
+            project_root=project_root,
+            tool=tool,
+            title="Agency Agents",
+        )
+    except BrowserCancelled as e:
+        console.print(f"[bold yellow]{e}[/bold yellow]")
+        raise typer.Exit(code=1)
+
+    resolved_scope = selection.scope
+    selected_tools = selection.tools
+    if not selected_tools:
+        console.print("[bold yellow]No tool selected — nothing installed.[/bold yellow]")
+        raise typer.Exit(code=1)
+    if not selection.agents:
+        console.print("[bold yellow]Nothing selected — nothing installed.[/bold yellow]")
+        raise typer.Exit(code=1)
+
+    # An explicit `--tool` was validated against a *preset* scope above; when the
+    # scope was chosen in the TUI, the same check has to happen after the answer.
     if tool and not tools_catalog[tool].dest.get(resolved_scope):
         supported = [s for s in ("user", "project") if tools_catalog[tool].dest.get(s)]
         console.print(
@@ -535,48 +553,17 @@ def _browse_and_install(
         )
         raise typer.Exit(code=1)
 
-    # Project scope writes into a repository; resolve which one, interactively
-    # when the caller did not name it, then rebuild the installer so its
+    # Project scope writes into the chosen repository; rebuild the installer so
     # `resolve_path` targets that root instead of the process cwd.
     if resolved_scope == "project":
-        if project_root is None:
-            try:
-                project_root = choose_project_path(Path.cwd())
-            except BrowserCancelled as e:
-                console.print(f"[bold yellow]{e}[/bold yellow]")
-                raise typer.Exit(code=1)
         installer = InstallationManager(
-            installer.root_dir, installer.user_home, project_root=project_root
+            installer.root_dir,
+            installer.user_home,
+            project_root=selection.project_root or Path.cwd(),
         )
 
-    # Resolve the harness/tool. An explicit `--tool` is already validated; the
-    # user otherwise picks from the full list (detected harnesses pre-checked),
-    # so the destination is a decision, not an assumption.
-    if tool:
-        selected_tools = [tool]
-    else:
-        detected = _detected_tools(tools_catalog)
-        try:
-            selected_tools = choose_tools(tools_catalog, detected=detected, scope=resolved_scope)
-        except BrowserCancelled as e:
-            console.print(f"[bold yellow]{e}[/bold yellow]")
-            raise typer.Exit(code=1)
-        if not selected_tools:
-            console.print("[bold yellow]No tool selected — nothing installed.[/bold yellow]")
-            raise typer.Exit(code=1)
-
     try:
-        selected = run_browser(model, title="Agency Agents - select agents")
-    except BrowserCancelled as e:
-        console.print(f"[bold yellow]{e}[/bold yellow]")
-        raise typer.Exit(code=1)
-
-    if not selected:
-        console.print("[bold yellow]Nothing selected — nothing installed.[/bold yellow]")
-        raise typer.Exit(code=1)
-
-    try:
-        agents = select_agents(by_division, agent_ids=selected)
+        agents = select_agents(by_division, agent_ids=selection.agents)
     except SelectionError as e:
         console.print(f"[bold red]❌ {_safe(e)}[/bold red]")
         raise typer.Exit(code=1)

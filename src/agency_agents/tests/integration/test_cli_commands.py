@@ -15,7 +15,7 @@ from typer.testing import CliRunner, Result
 
 from agency_agents.cli.main import app
 from agency_agents.core.converter import ConverterEngine
-from agency_agents.infrastructure.browser_app import BrowserCancelled
+from agency_agents.infrastructure.browser_app import BrowserCancelled, InstallSelection
 from agency_agents.infrastructure.hash_manager import MANIFEST_HEADER
 
 runner = CliRunner()
@@ -391,34 +391,22 @@ def test_install_all_tools_skipped_when_scope_has_nothing_applicable(repo: Path,
 # ------------------------------------------------------------------ interactive
 
 
-def script_browser(monkeypatch: pytest.MonkeyPatch, slugs: list[str]) -> None:
-    """Answer the browser with a fixed selection."""
+def script_tui(monkeypatch: pytest.MonkeyPatch, selection: InstallSelection) -> None:
+    """Answer the install TUI with a fixed selection."""
 
-    def fake_browser(model: object, title: str = "") -> list[str]:
-        return list(slugs)
+    def fake_tui(*args, **kwargs) -> InstallSelection:
+        return selection
 
-    monkeypatch.setattr("agency_agents.cli.main.run_browser", fake_browser)
+    monkeypatch.setattr("agency_agents.cli.main.run_install_tui", fake_tui)
 
 
-def script_scope(monkeypatch: pytest.MonkeyPatch, scope: str = "user") -> None:
-    """Answer the scope dialog with a fixed choice."""
-    monkeypatch.setattr("agency_agents.cli.main.choose_scope", lambda: scope)
+def _sel(agents: list[str], *, scope: str = "user", tools: list[str] | None = None) -> InstallSelection:
+    return InstallSelection(scope=scope, project_root=None, tools=tools or ["claude-code"], agents=agents)
 
 
 def test_install_without_flags_opens_the_browser(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A bare `install` is the browser now: TUIWizard was removed in its favour."""
-    # Declare a detection dir and create it, so the tool picker has claude-code
-    # pre-checked as the default; the test accepts that default.
-    tools = json.loads((repo / "tools.json").read_text(encoding="utf-8"))
-    tools["tools"]["claude-code"]["detect"]["dirs"] = [".claude"]
-    write_json(repo / "tools.json", tools)
-    (repo / "home" / ".claude").mkdir(parents=True)
-    script_browser(monkeypatch, ["code-reviewer", "devops-automator"])
-    script_scope(monkeypatch)
-    monkeypatch.setattr(
-        "agency_agents.cli.main.choose_tools",
-        lambda catalog, detected=(), scope=None: list(detected),
-    )
+    """A bare `install` is the TUI: scope, harness and agents are one screen."""
+    script_tui(monkeypatch, _sel(["code-reviewer", "devops-automator"]))
 
     result = invoke(repo, ["install"], monkeypatch)
 
@@ -429,15 +417,10 @@ def test_install_without_flags_opens_the_browser(repo: Path, monkeypatch: pytest
 
 
 def test_install_interactive_cancel_writes_nothing(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    def cancel(model: object, title: str = "") -> list[str]:
+    def cancel(*args, **kwargs) -> InstallSelection:
         raise BrowserCancelled("No agents selected — nothing installed.")
 
-    monkeypatch.setattr("agency_agents.cli.main.run_browser", cancel)
-    script_scope(monkeypatch)
-    monkeypatch.setattr(
-        "agency_agents.cli.main.choose_tools",
-        lambda catalog, detected=(), scope=None: ["claude-code"],
-    )
+    monkeypatch.setattr("agency_agents.cli.main.run_install_tui", cancel)
 
     result = invoke(repo, ["install"], monkeypatch)
 
@@ -446,32 +429,25 @@ def test_install_interactive_cancel_writes_nothing(repo: Path, monkeypatch: pyte
     assert not (repo / "home" / ".claude").exists()
 
 
-def test_install_without_flags_asks_for_a_tool_when_none_is_detected(
+def test_install_without_flags_uses_the_selected_tools_and_agents(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """The wizard's tool picker is preserved as a dialog, not as a second wizard."""
-    script_browser(monkeypatch, ["code-reviewer"])
-    script_scope(monkeypatch)
-    monkeypatch.setattr(
-        "agency_agents.cli.main.choose_tools", lambda catalog, detected=(), scope=None: ["claude-code"]
-    )
+    """The TUI's returned selection is what drives the install."""
+    script_tui(monkeypatch, _sel(["code-reviewer"], tools=["opencode"]))
 
     result = invoke(repo, ["install"], monkeypatch)
 
     assert result.exit_code == 0, result.output
-    assert (repo / "home" / ".claude" / "agents" / "code-reviewer.md").exists()
+    assert (repo / "home" / ".config" / "opencode" / "agents" / "code-reviewer.md").exists()
 
 
-def test_install_interactive_reports_a_cancelled_tool_dialog(
+def test_install_interactive_reports_a_cancelled_tool_selection(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    script_browser(monkeypatch, ["code-reviewer"])
-    script_scope(monkeypatch)
-
-    def cancel(catalog: object, detected: object = (), scope: object = None) -> list[str]:
+    def cancel(*args, **kwargs) -> InstallSelection:
         raise BrowserCancelled("No tool selected, so nothing was installed.")
 
-    monkeypatch.setattr("agency_agents.cli.main.choose_tools", cancel)
+    monkeypatch.setattr("agency_agents.cli.main.run_install_tui", cancel)
 
     result = invoke(repo, ["install"], monkeypatch)
 
