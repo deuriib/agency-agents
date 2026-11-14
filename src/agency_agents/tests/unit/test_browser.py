@@ -21,6 +21,8 @@ from agency_agents.infrastructure.browser import (
     PAGE_SIZE,
     BrowserModel,
     BrowserRow,
+    HarnessOption,
+    InstallFlow,
     _display_safe,
     apply_key,
     build_rows,
@@ -471,3 +473,83 @@ def test_current_clamps_a_negative_cursor() -> None:
 
     assert model.current() is not None
     assert model.current().slug == "a"
+
+
+# ------------------------------------------------------------------ install flow
+
+
+def _flow() -> InstallFlow:
+    return InstallFlow(agents=BrowserModel(rows=[]))
+
+
+def test_flow_scope_moves_and_clamps() -> None:
+    flow = _flow()
+
+    flow.move_scope(1)
+    assert flow.scope_index == 1
+
+    flow.move_scope(1)
+    assert flow.scope_index == 1  # clamped at project
+
+    flow.move_scope(-1)
+    assert flow.scope_index == 0
+
+
+def test_flow_scope_user_skips_the_path_stage() -> None:
+    flow = _flow()
+    flow.accept_scope()
+
+    assert flow.scope == "user"
+    assert flow.next_stage_after_scope() == "harness"
+
+
+def test_flow_scope_project_asks_for_a_path() -> None:
+    flow = _flow()
+    flow.move_scope(1)
+    flow.accept_scope()
+
+    assert flow.scope == "project"
+    assert flow.next_stage_after_scope() == "path"
+
+
+def test_flow_path_types_and_backspaces() -> None:
+    flow = _flow()
+    flow.type_path("/srv")
+    flow.type_path("/app")
+    assert flow.path == "/srv/app"
+
+    flow.backspace_path()
+    assert flow.path == "/srv/ap"
+
+
+def test_flow_harness_toggles_and_reports_in_order() -> None:
+    flow = _flow()
+    flow.tools = [
+        HarnessOption(kebab="claude-code", label="Claude Code"),
+        HarnessOption(kebab="opencode", label="opencode"),
+    ]
+    flow.harness_selected = {"opencode"}
+
+    flow.move_harness(0)  # stays at index 0 (already at top)
+    flow.toggle_harness()  # select claude-code
+    flow.move_harness(1)
+    flow.toggle_harness()  # deselect opencode
+
+    assert flow.selected_tools() == ["claude-code"]
+
+
+def test_flow_harness_move_clamps_to_the_options() -> None:
+    flow = _flow()
+    flow.tools = [HarnessOption(kebab="a", label="A")]
+
+    flow.move_harness(5)
+    assert flow.harness_index == 0
+
+
+def test_flow_empty_harness_toggles_nothing() -> None:
+    flow = _flow()
+    flow.toggle_harness()
+    flow.move_harness(1)
+
+    assert flow.harness_selected == set()
+    assert flow.selected_tools() == []

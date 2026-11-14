@@ -192,6 +192,79 @@ def slugs_for_division(rows: Iterable[BrowserRow], division: str) -> List[str]:
     return [row.slug for row in rows if row.division == division]
 
 
+# ------------------------------------------------------------------ install flow
+
+
+@dataclass(frozen=True)
+class HarnessOption:
+    """One selectable tool in the harness step of the install flow."""
+
+    kebab: str
+    label: str
+    detected: bool = False
+
+
+_SCOPE_OPTIONS = ("user", "project")
+
+
+@dataclass
+class InstallFlow:
+    """Pure state for the integrated install TUI.
+
+    One screen walks scope → (project path) → harness → agents. Cursor movement,
+    selection and text editing live here so they are assertable without a
+    terminal; the view only renders this state and forwards keystrokes.
+    """
+
+    agents: BrowserModel
+    tools: List[HarnessOption] = field(default_factory=list)
+    stage: str = "scope"  # "scope" | "path" | "harness" | "agents"
+    scope: str = "user"
+    scope_index: int = 0  # 0 = user, 1 = project
+    path: str = ""        # raw project-root text (empty => current directory)
+    harness_index: int = 0
+    harness_selected: Set[str] = field(default_factory=set)
+
+    # -- scope stage ------------------------------------------------------
+    def move_scope(self, delta: int) -> None:
+        self.scope_index = max(0, min(1, self.scope_index + delta))
+
+    def accept_scope(self) -> None:
+        """Commit the highlighted scope choice."""
+        self.scope = _SCOPE_OPTIONS[self.scope_index]
+
+    def next_stage_after_scope(self) -> str:
+        """Where scope leads: project scope asks for a path, user skips it."""
+        return "path" if self.scope == "project" else "harness"
+
+    # -- path stage -------------------------------------------------------
+    def type_path(self, char: str) -> None:
+        self.path += char
+
+    def backspace_path(self) -> None:
+        self.path = self.path[:-1]
+
+    # -- harness stage ----------------------------------------------------
+    def move_harness(self, delta: int) -> None:
+        if not self.tools:
+            self.harness_index = 0
+            return
+        self.harness_index = max(0, min(len(self.tools) - 1, self.harness_index + delta))
+
+    def toggle_harness(self) -> None:
+        if not self.tools:
+            return
+        kebab = self.tools[self.harness_index].kebab
+        if kebab in self.harness_selected:
+            self.harness_selected.discard(kebab)
+        else:
+            self.harness_selected.add(kebab)
+
+    def selected_tools(self) -> List[str]:
+        """Selected harness kebabs in option order, so the plan is reproducible."""
+        return [t.kebab for t in self.tools if t.kebab in self.harness_selected]
+
+
 # Outcomes of one keystroke. The view turns them into redraw/exit decisions and
 # nothing else, so key handling is asserted without a terminal.
 CONTINUE = "continue"

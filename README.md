@@ -138,7 +138,7 @@ uv run agency-agents tui --tool claude-code --dry-run    # print the plan, write
 | `Ctrl-U` | Clear the filter |
 | `Enter` / `Esc` | Install the selection / cancel |
 
-`tui` takes `--tool`, `--scope`, `--project-root` and `--dry-run`. Run it bare and it asks for the install scope first (`user` or `project`; project scope asks for a repository path), then the harness (harnesses detected under your home directory are pre-checked), then the browser to tick the agents. `--scope` and `--tool` skip those questions; `--project-root` sets the repository for `project` scope.
+`tui` takes `--tool`, `--scope`, `--project-root` and `--dry-run`. Run it bare and it opens one full-screen flow that walks **scope → project path → harness → agents**: pick `user` or `project` (project asks for a repository path), pick the harnesses (detected ones are pre-checked), then tick the agents. `--scope`, `--tool` and `--project-root` skip their steps.
 
 **Install a runbook's roster.** A [runbook](strategy/runbooks.json) names the team for one job, and `--runbook` installs exactly that roster:
 
