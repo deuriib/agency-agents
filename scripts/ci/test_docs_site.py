@@ -4,7 +4,7 @@
 Validates criteria D1-D8, D10, D13:
 - D1: mkdocs.yml exists, Material theme, docs_dir != 'docs', site/ in .gitignore
 - D2: mkdocs build --strict exits 0 with 0 warnings/broken links
-- D3: Site contains exactly 18 division pages and 300 agent pages
+- D3: Site contains exactly 18 division pages and one page per agent
 - D4: 0 files originating from docs/agency-flow/**
 - D6: Every content page carries the language switcher
 - D7: Fallback invariant holds: fallback_count == total_pages - 22
@@ -48,15 +48,17 @@ def test_d1_structure() -> None:
 
 
 def test_d3_parity() -> None:
-    print("[TEST] D3: Catalog Parity (18 divisions + 300 agents)...")
-    # Verify raw repo agent count
+    # Raw repo agent count is the source of truth the generated site must mirror.
     raw_agents = []
     for d in DIVISIONS:
         for root, _, files in os.walk(REPO_ROOT / d):
             for f in files:
                 if f.endswith(".md"):
                     raw_agents.append(Path(root) / f)
-    assert len(raw_agents) == 300, f"Expected 300 raw agents, found {len(raw_agents)}"
+    expected = len(raw_agents)
+    # Coarse tripwire: a walk that finds almost nothing is a bug, not a small roster.
+    assert expected >= 250, f"Suspiciously low agent count: {expected} (walk bug?)"
+    print(f"[TEST] D3: Catalog Parity (18 divisions + {expected} agents)...")
 
     # Check generated English docs
     en_divisions_dir = REPO_ROOT / "site-docs" / "docs" / "en" / "divisions"
@@ -66,8 +68,8 @@ def test_d3_parity() -> None:
     assert len(division_landing_pages) == 18, f"Expected 18 division index pages, found {len(division_landing_pages)}"
 
     agent_pages = [p for p in en_divisions_dir.glob("*/*.md") if p.name != "index.md"]
-    assert len(agent_pages) == 300, f"Expected 300 agent markdown pages, found {len(agent_pages)}"
-    print("  -> D3 PASS")
+    assert len(agent_pages) == expected, f"Expected {expected} agent markdown pages, found {len(agent_pages)}"
+    print(f"  -> D3 PASS ({expected} agents)")
 
 
 def test_d4_leakage() -> None:

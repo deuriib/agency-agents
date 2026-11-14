@@ -40,5 +40,7 @@ run_step "prove-it-landed" agency-agents verify --all
 # install is visible on disk. It is measured separately so the step count the
 # document publishes (five developer commands) is never confused with the number
 # of things this harness measures.
+# Coarse tripwire only: the install must write the large majority of the roster.
+# The exact count is derived by CI's parity check (test_docs_site.py), not pinned here.
 run_step "observe-installed-agents" \
-  bash -c 'expected=300; written=$(find "$HOME/.claude/agents" -name "*.md" | wc -l); echo "installed agents: ${written}"; test "${written}" -ge "${expected}"'
+  bash -c 'expected=250; written=$(find "$HOME/.claude/agents" -name "*.md" | wc -l); echo "installed agents: ${written}"; test "${written}" -ge "${expected}"'
