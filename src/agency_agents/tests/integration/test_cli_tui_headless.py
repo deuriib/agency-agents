@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
 from typing import List
 from unittest import mock
 
@@ -27,7 +28,13 @@ from prompt_toolkit.input import create_pipe_input
 from prompt_toolkit.output import DummyOutput
 
 from agency_agents.infrastructure.browser import BrowserModel, BrowserRow
-from agency_agents.infrastructure.browser_app import BrowserCancelled, choose_tools, run_browser
+from agency_agents.infrastructure.browser_app import (
+    BrowserCancelled,
+    choose_project_path,
+    choose_scope,
+    choose_tools,
+    run_browser,
+)
 
 
 def make_model() -> BrowserModel:
@@ -134,3 +141,58 @@ def test_choose_tools_escape_cancels() -> None:
 def test_choose_tools_ctrl_c_cancels() -> None:
     with pytest.raises(BrowserCancelled):
         _drive_dialog("\x03")
+
+
+# ------------------------------------------------------------------ scope dialog
+
+
+def _drive_scope(keys: str) -> str:
+    with create_pipe_input() as pipe, create_app_session(input=pipe, output=DummyOutput()):
+        with mock.patch.object(sys.stdin, "isatty", lambda: True), mock.patch.object(
+            sys.stdout, "isatty", lambda: True
+        ):
+            pipe.send_text(keys)
+            return choose_scope()
+
+
+def test_choose_scope_defaults_to_user() -> None:
+    assert _drive_scope("\t\r") == "user"
+
+
+def test_choose_scope_down_arrow_selects_project() -> None:
+    assert _drive_scope("\x1b[B\t\r") == "project"
+
+
+def test_choose_scope_escape_cancels() -> None:
+    with pytest.raises(BrowserCancelled):
+        _drive_scope("\x1b")
+
+
+def test_choose_scope_ctrl_c_cancels() -> None:
+    with pytest.raises(BrowserCancelled):
+        _drive_scope("\x03")
+
+
+# ------------------------------------------------------------------ project path
+
+
+def _drive_path(keys: str, cwd: Path) -> Path:
+    with create_pipe_input() as pipe, create_app_session(input=pipe, output=DummyOutput()):
+        with mock.patch.object(sys.stdin, "isatty", lambda: True), mock.patch.object(
+            sys.stdout, "isatty", lambda: True
+        ):
+            pipe.send_text(keys)
+            return choose_project_path(cwd)
+
+
+def test_choose_project_path_defaults_to_cwd() -> None:
+    assert _drive_path("\r", Path("/tmp/x")) == Path("/tmp/x")
+
+
+def test_choose_project_path_accepts_a_path() -> None:
+    assert _drive_path("/srv/app\r", Path("/tmp/x")) == Path("/srv/app")
+
+
+def test_choose_project_path_ctrl_c_cancels() -> None:
+    with pytest.raises(BrowserCancelled):
+        _drive_path("\x03", Path("/tmp/x"))

@@ -22,6 +22,8 @@ from agency_agents.core.validator import LintEngine
 from agency_agents.infrastructure.browser import BrowserModel, build_rows
 from agency_agents.infrastructure.browser_app import (
     BrowserCancelled,
+    choose_project_path,
+    choose_scope,
     choose_tools,
     run_browser,
 )
@@ -289,6 +291,7 @@ def install(
     tool: Optional[str] = typer.Option(None, "--tool", help="Specific tool to install for"),
     interactive: bool = typer.Option(True, "--interactive/--no-interactive", help="Use interactive wizard"),
     scope: Optional[str] = typer.Option(None, "--scope", help="Installation scope: 'user' or 'project' (asks in interactive mode, defaults to 'user' otherwise)"),
+    project_root: Optional[Path] = typer.Option(None, "--project-root", help="Project root for 'project' scope (default: current directory)"),
     parallel: bool = typer.Option(False, "--parallel", help="Run conversions in parallel"),
     jobs: int = typer.Option(4, "--jobs", help="Number of parallel jobs"),
     division: Optional[str] = typer.Option(None, "--division", help="Only these teams/divisions (comma-separated)"),
@@ -303,7 +306,7 @@ def install(
     """
     root_dir = resolve_catalog_root()
     catalog = CatalogManager(root_dir)
-    installer = InstallationManager(root_dir, Path.home(), project_root=Path.cwd())
+    installer = InstallationManager(root_dir, Path.home(), project_root=project_root or Path.cwd())
 
     if list_what:
         divisions = list(catalog.load_divisions().divisions.keys())
@@ -367,6 +370,7 @@ def install(
             by_division=by_division,
             tool=tool,
             scope=scope,
+            project_root=project_root,
             dry_run=dry_run,
             parallel=parallel,
             jobs=jobs,
@@ -446,7 +450,8 @@ def install(
 @app.command("tui")
 def tui(
     tool: Optional[str] = typer.Option(None, "--tool", help="Install into this tool (default: tools detected on this machine)"),
-    scope: str = typer.Option("user", "--scope", help="Installation scope: 'user' or 'project'"),
+    scope: Optional[str] = typer.Option(None, "--scope", help="Installation scope: 'user' or 'project' (asks in interactive mode)"),
+    project_root: Optional[Path] = typer.Option(None, "--project-root", help="Project root for 'project' scope (default: current directory)"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Print the plan and exit without writing anything"),
 ) -> None:
     """
@@ -454,7 +459,7 @@ def tui(
     """
     root_dir = resolve_catalog_root()
     catalog = CatalogManager(root_dir)
-    installer = InstallationManager(root_dir, Path.home(), project_root=Path.cwd())
+    installer = InstallationManager(root_dir, Path.home(), project_root=project_root or Path.cwd())
     divisions = list(catalog.load_divisions().divisions.keys())
     by_division = _collect_roster(console, root_dir, divisions)
 
@@ -465,6 +470,7 @@ def tui(
         by_division=by_division,
         tool=tool,
         scope=scope,
+        project_root=project_root,
         dry_run=dry_run,
     )
 
@@ -477,6 +483,7 @@ def _browse_and_install(
     by_division: Dict[str, List[Agent]],
     tool: Optional[str],
     scope: Optional[str],
+    project_root: Optional[Path],
     dry_run: bool,
     parallel: bool = False,
     jobs: int = 4,
@@ -484,7 +491,9 @@ def _browse_and_install(
     """Browse for agents, resolve the destination, install.
 
     The single interactive implementation behind both `tui` and a bare
-    `install`, so the two entry points can never drift.
+    `install`, so the two entry points can never drift. Scope and harness are
+    resolved *before* anything is installed: scope first (it decides which
+    harnesses exist and where files land), then the harness, then the roster.
     """
     model = BrowserModel(rows=build_rows(by_division))
     if not model.rows:
@@ -492,19 +501,32 @@ def _browse_and_install(
         raise typer.Exit(code=1)
 
     tools_catalog = catalog.load_tools().tools
-    resolved_scope = scope or "user"
 
-    # Validate everything known before the first frame, so a typo does not burn
-    # a whole interactive session (fail fast and closed).
+    # A typo in an explicit --tool should fail before any dialog: reject the name
+    # without asking for scope or a path the caller would never need.
+    if tool and tool not in tools_catalog:
+        console.print(f"[bold red]❌ Unknown tool '{_safe(tool)}'.[/bold red]")
+        raise typer.Exit(code=1)
+
+    # Resolve the install scope first: it filters the harness picker and decides
+    # the destination root, so answering it later would invalidate the tool list.
+    if scope is None:
+        try:
+            scope = choose_scope()
+        except BrowserCancelled as e:
+            console.print(f"[bold yellow]{e}[/bold yellow]")
+            raise typer.Exit(code=1)
+    resolved_scope = scope or "user"
     if resolved_scope not in ("user", "project"):
         console.print(
             f"[bold red]❌ Invalid scope '{_safe(resolved_scope)}'. "
             f"Use 'user' or 'project'.[/bold red]"
         )
         raise typer.Exit(code=1)
-    if tool and tool not in tools_catalog:
-        console.print(f"[bold red]❌ Unknown tool '{_safe(tool)}'.[/bold red]")
-        raise typer.Exit(code=1)
+
+    # An explicit tool must also have a destination for the resolved scope; this
+    # check needs the scope, so it runs after scope resolution and before the
+    # project-root prompt (a tool that cannot install here needs no path).
     if tool and not tools_catalog[tool].dest.get(resolved_scope):
         supported = [s for s in ("user", "project") if tools_catalog[tool].dest.get(s)]
         console.print(
@@ -512,6 +534,36 @@ def _browse_and_install(
             f"(supported: {', '.join(supported) or 'none'})[/bold red]"
         )
         raise typer.Exit(code=1)
+
+    # Project scope writes into a repository; resolve which one, interactively
+    # when the caller did not name it, then rebuild the installer so its
+    # `resolve_path` targets that root instead of the process cwd.
+    if resolved_scope == "project":
+        if project_root is None:
+            try:
+                project_root = choose_project_path(Path.cwd())
+            except BrowserCancelled as e:
+                console.print(f"[bold yellow]{e}[/bold yellow]")
+                raise typer.Exit(code=1)
+        installer = InstallationManager(
+            installer.root_dir, installer.user_home, project_root=project_root
+        )
+
+    # Resolve the harness/tool. An explicit `--tool` is already validated; the
+    # user otherwise picks from the full list (detected harnesses pre-checked),
+    # so the destination is a decision, not an assumption.
+    if tool:
+        selected_tools = [tool]
+    else:
+        detected = _detected_tools(tools_catalog)
+        try:
+            selected_tools = choose_tools(tools_catalog, detected=detected, scope=resolved_scope)
+        except BrowserCancelled as e:
+            console.print(f"[bold yellow]{e}[/bold yellow]")
+            raise typer.Exit(code=1)
+        if not selected_tools:
+            console.print("[bold yellow]No tool selected — nothing installed.[/bold yellow]")
+            raise typer.Exit(code=1)
 
     try:
         selected = run_browser(model, title="Agency Agents - select agents")
@@ -522,37 +574,6 @@ def _browse_and_install(
     if not selected:
         console.print("[bold yellow]Nothing selected — nothing installed.[/bold yellow]")
         raise typer.Exit(code=1)
-
-    if tool:
-        selected_tools = [tool]
-    else:
-        selected_tools = _detected_tools(tools_catalog)
-        if not selected_tools:
-            # The wizard used to ask this with a numbered list; the dialog keeps
-            # the capability without a second interactive surface.
-            try:
-                selected_tools = choose_tools(tools_catalog, scope=resolved_scope)
-            except BrowserCancelled as e:
-                console.print(f"[bold yellow]{e}[/bold yellow]")
-                raise typer.Exit(code=1)
-        if not selected_tools:
-            console.print("[bold yellow]No tool selected — nothing installed.[/bold yellow]")
-            raise typer.Exit(code=1)
-
-    # Detected tools are our default, not the user's explicit choice, so a tool
-    # with no destination for this scope is skipped with a warning — not a hard
-    # error (mirrors `install`'s skip branch). An explicit `--tool` was already
-    # validated above.
-    unsupported = [t for t in selected_tools if not tools_catalog[t].dest.get(resolved_scope)]
-    if unsupported and tool is None:
-        console.print(
-            f"[bold yellow]⚠ Skipping tools with no {resolved_scope} destination: "
-            f"{_safe(', '.join(unsupported))} (use --scope project)[/bold yellow]"
-        )
-        selected_tools = [t for t in selected_tools if t not in unsupported]
-        if not selected_tools:
-            console.print("[bold yellow]No tool applicable to this scope — nothing installed.[/bold yellow]")
-            raise typer.Exit(code=1)
 
     try:
         agents = select_agents(by_division, agent_ids=selected)

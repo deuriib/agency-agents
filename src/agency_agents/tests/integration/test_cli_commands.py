@@ -400,15 +400,25 @@ def script_browser(monkeypatch: pytest.MonkeyPatch, slugs: list[str]) -> None:
     monkeypatch.setattr("agency_agents.cli.main.run_browser", fake_browser)
 
 
+def script_scope(monkeypatch: pytest.MonkeyPatch, scope: str = "user") -> None:
+    """Answer the scope dialog with a fixed choice."""
+    monkeypatch.setattr("agency_agents.cli.main.choose_scope", lambda: scope)
+
+
 def test_install_without_flags_opens_the_browser(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A bare `install` is the browser now: TUIWizard was removed in its favour."""
-    # Declare a detection dir and create it, so the browser has a destination
-    # without asking: detection is the default, the dialog is the fallback.
+    # Declare a detection dir and create it, so the tool picker has claude-code
+    # pre-checked as the default; the test accepts that default.
     tools = json.loads((repo / "tools.json").read_text(encoding="utf-8"))
     tools["tools"]["claude-code"]["detect"]["dirs"] = [".claude"]
     write_json(repo / "tools.json", tools)
     (repo / "home" / ".claude").mkdir(parents=True)
     script_browser(monkeypatch, ["code-reviewer", "devops-automator"])
+    script_scope(monkeypatch)
+    monkeypatch.setattr(
+        "agency_agents.cli.main.choose_tools",
+        lambda catalog, detected=(), scope=None: list(detected),
+    )
 
     result = invoke(repo, ["install"], monkeypatch)
 
@@ -423,6 +433,11 @@ def test_install_interactive_cancel_writes_nothing(repo: Path, monkeypatch: pyte
         raise BrowserCancelled("No agents selected — nothing installed.")
 
     monkeypatch.setattr("agency_agents.cli.main.run_browser", cancel)
+    script_scope(monkeypatch)
+    monkeypatch.setattr(
+        "agency_agents.cli.main.choose_tools",
+        lambda catalog, detected=(), scope=None: ["claude-code"],
+    )
 
     result = invoke(repo, ["install"], monkeypatch)
 
@@ -436,6 +451,7 @@ def test_install_without_flags_asks_for_a_tool_when_none_is_detected(
 ) -> None:
     """The wizard's tool picker is preserved as a dialog, not as a second wizard."""
     script_browser(monkeypatch, ["code-reviewer"])
+    script_scope(monkeypatch)
     monkeypatch.setattr(
         "agency_agents.cli.main.choose_tools", lambda catalog, detected=(), scope=None: ["claude-code"]
     )
@@ -450,6 +466,7 @@ def test_install_interactive_reports_a_cancelled_tool_dialog(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     script_browser(monkeypatch, ["code-reviewer"])
+    script_scope(monkeypatch)
 
     def cancel(catalog: object, detected: object = (), scope: object = None) -> list[str]:
         raise BrowserCancelled("No tool selected, so nothing was installed.")

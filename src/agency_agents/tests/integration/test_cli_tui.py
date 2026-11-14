@@ -40,7 +40,7 @@ def plain(output: str) -> str:
     return _ANSI.sub("", output)
 
 
-def tool(kebab: str, user: list[str], dirs: list[str] | None = None, order: int = 1) -> dict[str, Any]:
+def tool(kebab: str, user: list[str], dirs: list[str] | None = None, order: int = 1, project: list[str] | None = None) -> dict[str, Any]:
     return {
         "id": kebab,
         "label": kebab.upper(),
@@ -55,7 +55,7 @@ def tool(kebab: str, user: list[str], dirs: list[str] | None = None, order: int 
         "format": "identity",
         "installKind": "per-agent",
         "slugFrom": "name",
-        "dest": {"user": user, "project": []},
+        "dest": {"user": user, "project": project or []},
     }
 
 
@@ -83,7 +83,8 @@ def repo(tmp_path: Path) -> Path:
                     "claude-code", [".claude/agents/{slug}.md"], dirs=[".claude"], order=1
                 ),
                 "opencode": tool(
-                    "opencode", [".config/opencode/agents/{slug}.md"], dirs=[], order=2
+                    "opencode", [".config/opencode/agents/{slug}.md"], dirs=[], order=2,
+                    project=[".opencode/agents/{slug}.md"],
                 ),
             }
         },
@@ -117,6 +118,11 @@ def fake_browser(selection: list[str]):
         return selection
 
     return _run
+
+
+def script_scope(monkeypatch: pytest.MonkeyPatch, scope: str = "user") -> None:
+    """Answer the scope dialog with a fixed choice."""
+    monkeypatch.setattr("agency_agents.cli.main.choose_scope", lambda: scope)
 
 
 # ------------------------------------------------------------------- render_screen
@@ -198,6 +204,7 @@ def test_tui_installs_the_selection(
     monkeypatch.setattr(
         "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
     )
+    script_scope(monkeypatch)
 
     result = invoke(repo, ["tui", "--tool", "claude-code"], monkeypatch)
 
@@ -211,6 +218,7 @@ def test_tui_dry_run_writes_nothing(repo: Path, monkeypatch: pytest.MonkeyPatch)
     monkeypatch.setattr(
         "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
     )
+    script_scope(monkeypatch)
 
     result = invoke(repo, ["tui", "--tool", "claude-code", "--dry-run"], monkeypatch)
 
@@ -226,6 +234,7 @@ def test_tui_exits_1_when_the_user_cancels(
         raise BrowserCancelled("No agents selected — nothing installed.")
 
     monkeypatch.setattr("agency_agents.cli.main.run_browser", _cancel)
+    script_scope(monkeypatch)
 
     result = invoke(repo, ["tui", "--tool", "claude-code"], monkeypatch)
 
@@ -237,6 +246,7 @@ def test_tui_with_an_empty_selection_installs_nothing(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr("agency_agents.cli.main.run_browser", fake_browser([]))
+    script_scope(monkeypatch)
 
     result = invoke(repo, ["tui", "--tool", "claude-code"], monkeypatch)
 
@@ -245,18 +255,28 @@ def test_tui_with_an_empty_selection_installs_nothing(
     assert not (repo / "home" / ".claude").exists()
 
 
-def test_tui_defaults_to_detected_tools(
+def test_tui_offers_detected_tools_as_the_default(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    # Only claude-code declares a detection dir, and only it exists under HOME.
+    """Detected harnesses are pre-checked in the picker, not auto-installed."""
     (repo / "home" / ".claude").mkdir(parents=True)
     monkeypatch.setattr(
         "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
     )
+    script_scope(monkeypatch)
+
+    captured: dict[str, list[str]] = {}
+
+    def _choose(catalog: object, detected: object = (), scope: object = None) -> list[str]:
+        captured["detected"] = list(detected)
+        return ["claude-code"]
+
+    monkeypatch.setattr("agency_agents.cli.main.choose_tools", _choose)
 
     result = invoke(repo, ["tui"], monkeypatch)
 
     assert result.exit_code == 0, result.output
+    assert captured["detected"] == ["claude-code"]
     assert (repo / "home" / ".claude" / "agents" / "growth-hacker.md").exists()
     assert not (repo / "home" / ".config" / "opencode").exists()
 
@@ -264,10 +284,11 @@ def test_tui_defaults_to_detected_tools(
 def test_tui_asks_for_a_tool_when_none_is_detected(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """No detected tool is a question, not an error: the dialog offers them all."""
+    """No detected tool still opens the picker: the destination is a question."""
     monkeypatch.setattr(
         "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
     )
+    script_scope(monkeypatch)
     monkeypatch.setattr(
         "agency_agents.cli.main.choose_tools", lambda catalog, detected=(), scope=None: ["claude-code"]
     )
@@ -280,11 +301,23 @@ def test_tui_asks_for_a_tool_when_none_is_detected(
 
 def test_tui_refuses_to_run_without_a_terminal(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A pipe is not a terminal: refuse loudly instead of installing nothing silently."""
-    result = invoke(repo, ["tui", "--tool", "claude-code"], monkeypatch)
+    result = invoke(repo, ["tui", "--tool", "claude-code", "--scope", "user"], monkeypatch)
 
     assert result.exit_code == 1
     assert "needs a terminal" in result.output
     assert "--tool" in result.output
+    assert not (repo / "home" / ".claude").exists()
+
+
+def test_tui_refuses_to_ask_scope_without_a_terminal(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The scope dialog also refuses a non-terminal instead of erroring."""
+    result = invoke(repo, ["tui", "--tool", "claude-code"], monkeypatch)
+
+    assert result.exit_code == 1
+    assert "needs a terminal" in result.output
+    assert "--scope" in result.output
     assert not (repo / "home" / ".claude").exists()
 
 
@@ -294,6 +327,7 @@ def test_tui_reports_a_cancelled_tool_dialog(
     monkeypatch.setattr(
         "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
     )
+    script_scope(monkeypatch)
 
     def cancel(catalog: object, detected: object = (), scope: object = None) -> list[str]:
         raise BrowserCancelled("No tool selected, so nothing was installed. Pass --tool")
@@ -316,6 +350,25 @@ def test_tui_rejects_an_unknown_tool(repo: Path, monkeypatch: pytest.MonkeyPatch
 
     assert result.exit_code == 1
     assert "Unknown tool" in result.output
+
+
+def test_tui_asks_for_a_project_path_when_scope_is_project(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Project scope without --project-root is a question, not an assumption."""
+    monkeypatch.setattr(
+        "agency_agents.cli.main.run_browser", fake_browser(["growth-hacker"])
+    )
+    monkeypatch.setattr("agency_agents.cli.main.choose_scope", lambda: "project")
+    monkeypatch.setattr(
+        "agency_agents.cli.main.choose_project_path",
+        lambda cwd: repo / "target-project",
+    )
+
+    result = invoke(repo, ["tui", "--tool", "opencode"], monkeypatch)
+
+    assert result.exit_code == 0, result.output
+    assert (repo / "target-project" / ".opencode" / "agents" / "growth-hacker.md").exists()
 
 
 def test_tui_rejects_an_invalid_scope(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:

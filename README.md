@@ -88,7 +88,7 @@ Browse the agents below and copy/adapt the ones you need!
 ### Option 4: Use with Other Tools (GitHub Copilot, Antigravity, Gemini CLI, OpenCode, OpenClaw, Cursor, Aider, Windsurf, Kimi Code, Codex, Osaurus, Hermes, Mistral Vibe, DeepSeek Harness, Pi Agent, Oh My Pi)
 
 ```bash
-# Install interactively: opens a browser of the roster (auto-detects your tool; conversion happens inline)
+# Install interactively: pick scope, harness, then tick agents in the browser
 uv run agency-agents install
 
 # Or target a specific tool directly
@@ -138,7 +138,7 @@ uv run agency-agents tui --tool claude-code --dry-run    # print the plan, write
 | `Ctrl-U` | Clear the filter |
 | `Enter` / `Esc` | Install the selection / cancel |
 
-`tui` takes `--tool`, `--scope` (default `user`) and `--dry-run`. Without `--tool` it installs into every tool it detects under your home directory, and exits 1 listing the available tools when it detects none.
+`tui` takes `--tool`, `--scope`, `--project-root` and `--dry-run`. Run it bare and it asks for the install scope first (`user` or `project`; project scope asks for a repository path), then the harness (harnesses detected under your home directory are pre-checked), then the browser to tick the agents. `--scope` and `--tool` skip those questions; `--project-root` sets the repository for `project` scope.
 
 **Install a runbook's roster.** A [runbook](strategy/runbooks.json) names the team for one job, and `--runbook` installs exactly that roster:
 
