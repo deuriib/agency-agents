@@ -56,6 +56,8 @@ def test_d3_parity() -> None:
                 if f.endswith(".md"):
                     raw_agents.append(Path(root) / f)
     expected = len(raw_agents)
+    # Coarse tripwire: a walk that finds almost nothing is a bug, not a small roster.
+    assert expected >= 250, f"Suspiciously low agent count: {expected} (walk bug?)"
     print(f"[TEST] D3: Catalog Parity (18 divisions + {expected} agents)...")
 
     # Check generated English docs
