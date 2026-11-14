@@ -13,6 +13,7 @@ be asserted in tests by reading strings instead of driving a terminal.
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 from prompt_toolkit import Application
@@ -121,6 +122,107 @@ def choose_tools(
             f"Pass --tool <kebab> to skip the question. Available: {kebab_list}"
         ) from exc
     return list(chosen or [])
+
+
+def choose_scope(default: str = "user") -> str:
+    """Ask for the install scope (user / project) with a radio dialog.
+
+    The resolved scope decides which harnesses are offered and where files land,
+    so it is answered before the tool picker. Escape and Ctrl-C cancel and
+    surface as `BrowserCancelled`, the same contract as the browser and
+    `choose_tools`.
+    """
+    from prompt_toolkit.application import get_app
+    from prompt_toolkit.key_binding.bindings.focus import focus_next, focus_previous
+    from prompt_toolkit.layout.containers import HSplit
+    from prompt_toolkit.widgets import Button, Dialog, Label, RadioList
+
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        raise BrowserCancelled(
+            "Scope selection needs a terminal, and this session has none. "
+            "Pass --scope <user|project> to skip the question."
+        )
+
+    radio = RadioList(
+        values=[
+            ("user", "user     — install under your home directory"),
+            ("project", "project  — install into a repository"),
+        ],
+        default=default,
+        select_on_focus=True,
+    )
+
+    def ok_handler() -> None:
+        get_app().exit(result=radio.current_value)
+
+    bindings = KeyBindings()
+    bindings.add("tab")(focus_next)
+    bindings.add("s-tab")(focus_previous)
+
+    @bindings.add("escape")
+    @bindings.add("c-c")
+    def _cancel(event) -> None:  # type: ignore[no-untyped-def]
+        event.app.exit(exception=KeyboardInterrupt())
+
+    dialog = Dialog(
+        title="Install scope?",
+        body=HSplit(
+            [Label(text="Up/Down selects, Tab moves, Enter confirms, Esc cancels."), radio],
+            padding=1,
+        ),
+        buttons=[
+            Button(text="Ok", handler=ok_handler),
+            Button(text="Cancel", handler=lambda: get_app().exit(result=None)),
+        ],
+        with_background=True,
+    )
+    application: Application[Any] = Application(
+        layout=Layout(dialog),
+        key_bindings=bindings,
+        mouse_support=True,
+        full_screen=True,
+    )
+    try:
+        chosen = application.run()
+    except (EOFError, KeyboardInterrupt) as exc:
+        # No terminal to ask in, or the user walked away. The answer is a flag,
+        # so the message names it instead of leaving the caller to guess.
+        raise BrowserCancelled(
+            "No scope selected, so nothing was installed. "
+            "Pass --scope <user|project> to skip the question."
+        ) from exc
+    return chosen or "user"
+
+
+def choose_project_path(cwd: Path) -> Path:
+    """Ask for the project root to install into (project scope only).
+
+    An empty answer means the current directory. The path may not exist yet;
+    the installer creates the destination directories it needs under it. Escape
+    and Ctrl-C cancel and surface as `BrowserCancelled`.
+    """
+    from prompt_toolkit.shortcuts import prompt
+
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        raise BrowserCancelled(
+            "Project-root selection needs a terminal, and this session has none. "
+            "Pass --project-root <path> to skip the question."
+        )
+
+    try:
+        raw = prompt(f"Project root [{cwd}]: ")
+    except (EOFError, KeyboardInterrupt) as exc:
+        raise BrowserCancelled(
+            "No project root given, so nothing was installed. "
+            "Pass --project-root <path> to skip the question."
+        ) from exc
+    text = (raw or "").strip()
+    if not text:
+        return cwd
+    path = Path(text).expanduser()
+    if not path.is_absolute():
+        path = cwd / path
+    return path
 
 
 def _draw_window(model: BrowserModel, list_height: int) -> tuple[List[tuple[str, str]], int]:
