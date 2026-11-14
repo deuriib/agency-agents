@@ -501,6 +501,8 @@ Accounting, financial analysis, tax strategy, and investment research specialist
 | 🔍 [Investment Researcher](finance/finance-investment-researcher.md) | Due diligence, portfolio analysis, asset valuation, equity research | Investment thesis development, risk assessment, market research |
 | 🏛️ [Tax Strategist](finance/finance-tax-strategist.md) | Tax optimization, multi-jurisdictional compliance, transfer pricing | Entity structuring, ETR analysis, audit defense, strategic tax planning |
 | 💼 [DGII 606 Tax Compliance Specialist](finance/finance-dgii-606-tax-compliance-specialist.md) | Formato 606 filing, NCF/RNC validation, ITBIS/ISR retention auditing | Monthly purchase reporting, pre-validation, retention reconciliation, zero-activity filings |
+| 💸 [DGII 607 Tax Compliance Specialist](finance/finance-dgii-607-tax-compliance-specialist.md) | Formato 607 filing, income classification, buyer ID validation, payment-mix tie-out | Monthly sales/income reporting, retention reconciliation, zero-activity filings |
+| 🚫 [DGII 608 Tax Compliance Specialist](finance/finance-dgii-608-tax-compliance-specialist.md) | Formato 608 filing, NCF annulment reasons, 608/ANECF/E34 boundary | Monthly annulled-comprobante reporting, sequence-gap detection, zero-activity filings |
 | 💰 [Profit First Strategist](finance/finance-profit-first-strategist.md) | Profit First accounts, CAPs vs TAPs, 1% transition, 10/25 rhythm | Installing behavioral cash discipline, owner pay, tax reserves, profit distribution |
 
 ### 🎮 Game Development Division

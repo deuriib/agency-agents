@@ -56,7 +56,8 @@ jobs:
           echo "### Docs Site Build Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Duration:** ${duration}s (budget: < 120s)" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Strict Mode:** PASS (0 warnings)" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Parity:** 18 divisions + 300 agents" >> "$GITHUB_STEP_SUMMARY"
+          AGENT_COUNT=$(find academic design engineering finance game-development gis healthcare marketing paid-media product project-management research sales security spatial-computing specialized support testing -type f -name '*.md' | wc -l | tr -d '[:space:]')
+          echo "- **Parity:** 18 divisions + ${AGENT_COUNT} agents" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Status:** ✅ SUCCESS" >> "$GITHUB_STEP_SUMMARY"
 
           if [ "$duration" -ge 120 ]; then
